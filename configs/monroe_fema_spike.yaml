@@ -1,0 +1,33 @@
+project:
+  name: CAPRM-Flood
+  study_region: Monroe County, New York
+  project_crs: EPSG:3857
+
+property_points:
+  source_name: NYS Tax Parcel Centroid Points
+  source_url: https://gisservices.its.ny.gov/arcgis/rest/services/NYS_Tax_Parcel_Centroid_Points/FeatureServer/0/query
+  county_field: COUNTY_NAME
+  county_value: Monroe
+  id_field_candidates:
+    - SBL
+    - PRINT_KEY
+    - OBJECTID
+  sample_limit: 1000
+  output_path: data/processed/monroe_property_points_sample.geojson
+
+fema_flood_polygons:
+  source_name: FEMA NFHL
+  manual_input_path: data/raw/fema_nfhl_monroe/S_FLD_HAZ_AR.shp
+  processed_output_path: data/processed/fema_flood_polygons_monroe.geojson
+  zone_field_candidates:
+    - FLD_ZONE
+    - ZONE_SUBTY
+  sfha_field_candidates:
+    - SFHA_TF
+  id_field_candidates:
+    - DFIRM_ID
+    - FLD_AR_ID
+    - OBJECTID
+
+outputs:
+  python_baseline_csv: outputs/baseline/python_fema_membership.csv
