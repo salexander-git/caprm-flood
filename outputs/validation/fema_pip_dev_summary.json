@@ -1,0 +1,13 @@
+{
+  "total_cpp_rows": 25,
+  "total_joined_rows": 25,
+  "missing_python_rows": 0,
+  "matched_agreements": 25,
+  "sfha_agreements": 25,
+  "zone_agreements": 25,
+  "feature_index_agreements": 25,
+  "matched_agreement_rate": 1.0,
+  "sfha_agreement_rate": 1.0,
+  "zone_agreement_rate": 1.0,
+  "feature_index_agreement_rate": 1.0
+}
