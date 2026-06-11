@@ -16,16 +16,22 @@ def load_yaml(path: Path) -> dict[str, Any]:
         return yaml.safe_load(f)
 
 
-def first_existing_field(gdf: gpd.GeoDataFrame, candidates: list[str], label: str) -> str | None:
+def first_existing_field(
+    gdf: gpd.GeoDataFrame,
+    candidates: list[str],
+    label: str,
+) -> str | None:
     for field in candidates:
         if field in gdf.columns:
             return field
+
     print(f"Warning: no {label} field found from candidates: {candidates}")
     return None
 
 
 def fetch_nys_parcel_centroids(config: dict[str, Any]) -> gpd.GeoDataFrame:
     pp = config["property_points"]
+
     params = {
         "where": f"{pp['county_field']} = '{pp['county_value']}'",
         "outFields": "*",
@@ -40,11 +46,13 @@ def fetch_nys_parcel_centroids(config: dict[str, Any]) -> gpd.GeoDataFrame:
 
     payload = response.json()
     if "features" not in payload:
-        raise RuntimeError(f"Unexpected parcel service response: {json.dumps(payload)[:500]}")
+        raise RuntimeError(
+            f"Unexpected parcel service response: {json.dumps(payload)[:500]}"
+        )
 
+    # ArcGIS GeoJSON query responses are generally returned as longitude/latitude.
     gdf = gpd.GeoDataFrame.from_features(payload["features"], crs="EPSG:4326")
 
-    # ArcGIS GeoJSON responses are usually lon/lat EPSG:4326 even if service storage CRS differs.
     if gdf.empty:
         raise RuntimeError("No property points returned. Check county filter and service query.")
 
@@ -92,12 +100,29 @@ def normalize_inputs(
     properties_projected = properties.to_crs(project_crs)
     fema_projected = fema.to_crs(project_crs)
 
+    # Preserve original lon/lat from the unprojected point geometry.
     properties_projected["longitude"] = properties.geometry.x
     properties_projected["latitude"] = properties.geometry.y
+
+    # Store projected coordinates used for spatial operations.
     properties_projected["projected_x"] = properties_projected.geometry.x
     properties_projected["projected_y"] = properties_projected.geometry.y
 
     return properties_projected, fema_projected
+
+
+def normalize_sfha_flag(value: object) -> bool:
+    """
+    Convert FEMA SFHA_TF-style values into a Boolean.
+
+    Expected FEMA values are commonly T/F, but this function is defensive
+    against lowercase strings, true/false strings, and missing values.
+    """
+    if pd.isna(value):
+        return False
+
+    text = str(value).strip().upper()
+    return text in {"T", "TRUE", "Y", "YES", "1"}
 
 
 def run_point_in_polygon(
@@ -135,8 +160,22 @@ def run_point_in_polygon(
 
     out["fema_zone"] = joined[zone_field] if zone_field else None
     out["sfha_flag"] = joined[sfha_field] if sfha_field else None
-    out["source_geometry_id"] = joined[geom_id_field] if geom_id_field else joined.get("index_right")
-    out["python_result"] = joined["index_right"].notna()
+
+    if sfha_field:
+        out["is_sfha"] = joined[sfha_field].map(normalize_sfha_flag)
+    else:
+        out["is_sfha"] = False
+
+    out["source_geometry_id"] = (
+        joined[geom_id_field] if geom_id_field else joined.get("index_right")
+    )
+
+    # This means the point matched any FEMA polygon, including Zone X polygons.
+    # It does not mean the point is in a Special Flood Hazard Area.
+    out["matched_fema_polygon"] = joined["index_right"].notna()
+
+    # This is the Python baseline Boolean for FEMA SFHA membership.
+    out["python_sfha_result"] = out["is_sfha"]
 
     return out
 

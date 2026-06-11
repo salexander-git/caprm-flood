@@ -3,8 +3,20 @@
   "total_properties": 1000,
   "matched_fema_polygon": 1000,
   "unmatched_fema_polygon": 0,
-  "python_result_counts": {
+  "is_sfha_true": 241,
+  "is_sfha_false": 759,
+  "python_sfha_true": 241,
+  "python_sfha_false": 759,
+  "matched_fema_polygon_counts": {
     "True": 1000
+  },
+  "is_sfha_counts": {
+    "False": 759,
+    "True": 241
+  },
+  "python_sfha_result_counts": {
+    "False": 759,
+    "True": 241
   },
   "sfha_flag_counts": {
     "F": 759,
