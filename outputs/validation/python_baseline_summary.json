@@ -1,0 +1,17 @@
+{
+  "input_file": "outputs\\baseline\\python_fema_membership.csv",
+  "total_properties": 1000,
+  "matched_fema_polygon": 1000,
+  "unmatched_fema_polygon": 0,
+  "python_result_counts": {
+    "True": 1000
+  },
+  "sfha_flag_counts": {
+    "F": 759,
+    "T": 241
+  },
+  "fema_zone_counts": {
+    "X": 759,
+    "AE": 241
+  }
+}
