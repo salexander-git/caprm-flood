@@ -9,7 +9,7 @@ import geopandas as gpd
 import pandas as pd
 import requests
 import yaml
-from shapely.geometry import Polygon, MultiPolygon
+from shapely.geometry import Polygon, MultiPolygon, box
 
 def load_yaml(path: Path) -> dict[str, Any]:
     with path.open("r", encoding="utf-8") as f:
@@ -74,6 +74,166 @@ def export_projected_fema_polygon_rings(
 
     print(f"Wrote projected FEMA polygon rings to {output_path}")
     print(f"Wrote {len(out)} ring vertices")
+
+def export_sampled_fema_polygon_rings(
+    properties: gpd.GeoDataFrame,
+    fema: gpd.GeoDataFrame,
+    config: dict[str, Any],
+    project_crs: str,
+    output_path: Path,
+    buffer_meters: float = 1000.0,
+) -> None:
+    fp = config["fema_flood_polygons"]
+
+    zone_field = first_existing_field(fema, fp["zone_field_candidates"], "FEMA zone")
+    sfha_field = first_existing_field(fema, fp["sfha_field_candidates"], "SFHA flag")
+    geom_id_field = first_existing_field(fema, fp["id_field_candidates"], "FEMA geometry id")
+
+    properties_projected = properties.to_crs(project_crs)
+    fema_projected = fema.to_crs(project_crs)
+
+    minx, miny, maxx, maxy = properties_projected.total_bounds
+    buffered_bbox = box(
+        minx - buffer_meters,
+        miny - buffer_meters,
+        maxx + buffer_meters,
+        maxy + buffer_meters,
+    )
+
+    fema_subset = fema_projected[fema_projected.intersects(buffered_bbox)].copy()
+
+    print(
+        f"Selected {len(fema_subset)} FEMA polygons intersecting "
+        f"sample property bounding box + {buffer_meters}m buffer"
+    )
+
+    rows = []
+
+    for polygon_index, row in fema_subset.iterrows():
+        geom = row.geometry
+
+        if geom is None or geom.is_empty:
+            continue
+
+        if geom.geom_type == "Polygon":
+            polygons = [geom]
+        elif geom.geom_type == "MultiPolygon":
+            polygons = list(geom.geoms)
+        else:
+            print(f"Skipping unsupported geometry type: {geom.geom_type}")
+            continue
+
+        fema_zone = row[zone_field] if zone_field else None
+        sfha_flag = row[sfha_field] if sfha_field else None
+        source_geometry_id = row[geom_id_field] if geom_id_field else polygon_index
+
+        for part_index, polygon in enumerate(polygons):
+            rings = [polygon.exterior] + list(polygon.interiors)
+
+            for ring_index, ring in enumerate(rings):
+                for vertex_index, (x, y) in enumerate(ring.coords):
+                    rows.append(
+                        {
+                            "polygon_index": polygon_index,
+                            "part_index": part_index,
+                            "ring_index": ring_index,
+                            "vertex_index": vertex_index,
+                            "x": x,
+                            "y": y,
+                            "fema_zone": fema_zone,
+                            "sfha_flag": sfha_flag,
+                            "source_geometry_id": source_geometry_id,
+                        }
+                    )
+
+    out = pd.DataFrame(rows)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    out.to_csv(output_path, index=False)
+
+    print(f"Wrote sampled projected FEMA polygon rings to {output_path}")
+    print(f"Wrote {len(out)} sampled ring vertices")
+
+def export_joined_sample_fema_polygon_rings(
+    fema: gpd.GeoDataFrame,
+    config: dict[str, Any],
+    project_crs: str,
+    baseline_path: Path,
+    output_path: Path,
+) -> None:
+    fp = config["fema_flood_polygons"]
+
+    zone_field = first_existing_field(fema, fp["zone_field_candidates"], "FEMA zone")
+    sfha_field = first_existing_field(fema, fp["sfha_field_candidates"], "SFHA flag")
+    geom_id_field = first_existing_field(fema, fp["id_field_candidates"], "FEMA geometry id")
+
+    baseline = pd.read_csv(baseline_path)
+
+    if "fema_feature_index" not in baseline.columns:
+        raise RuntimeError(
+            f"Baseline file {baseline_path} does not contain fema_feature_index."
+        )
+
+    feature_indices = (
+        baseline["fema_feature_index"]
+        .dropna()
+        .astype(int)
+        .unique()
+        .tolist()
+    )
+
+    projected = fema.to_crs(project_crs)
+    fema_subset = projected.loc[feature_indices].copy()
+
+    print(
+        f"Selected {len(fema_subset)} FEMA polygons matched by Python baseline "
+        f"from {len(feature_indices)} unique fema_feature_index values"
+    )
+
+    rows = []
+
+    for polygon_index, row in fema_subset.iterrows():
+        geom = row.geometry
+
+        if geom is None or geom.is_empty:
+            continue
+
+        if geom.geom_type == "Polygon":
+            polygons = [geom]
+        elif geom.geom_type == "MultiPolygon":
+            polygons = list(geom.geoms)
+        else:
+            print(f"Skipping unsupported geometry type: {geom.geom_type}")
+            continue
+
+        fema_zone = row[zone_field] if zone_field else None
+        sfha_flag = row[sfha_field] if sfha_field else None
+        source_geometry_id = row[geom_id_field] if geom_id_field else polygon_index
+
+        for part_index, polygon in enumerate(polygons):
+            rings = [polygon.exterior] + list(polygon.interiors)
+
+            for ring_index, ring in enumerate(rings):
+                for vertex_index, (x, y) in enumerate(ring.coords):
+                    rows.append(
+                        {
+                            "fema_feature_index": polygon_index,
+                            "part_index": part_index,
+                            "ring_index": ring_index,
+                            "vertex_index": vertex_index,
+                            "x": x,
+                            "y": y,
+                            "fema_zone": fema_zone,
+                            "sfha_flag": sfha_flag,
+                            "source_geometry_id": source_geometry_id,
+                        }
+                    )
+
+    out = pd.DataFrame(rows)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    out.to_csv(output_path, index=False)
+
+    print(f"Wrote joined-sample FEMA polygon rings to {output_path}")
+    print(f"Wrote {len(out)} joined-sample ring vertices")
 
 def first_existing_field(
     gdf: gpd.GeoDataFrame,
@@ -231,6 +391,31 @@ def main() -> None:
         default="outputs/cpp_input/fema_polygon_rings.csv",
         help="Output CSV path for projected FEMA polygon rings.",
     )
+    
+    parser.add_argument(
+        "--fema-sample-rings-output",
+        default="outputs/cpp_input/fema_polygon_rings_sample.csv",
+        help="Output CSV path for sampled projected FEMA polygon rings.",
+    )
+
+    parser.add_argument(
+        "--bbox-buffer-meters",
+        type=float,
+        default=1000.0,
+        help="Buffer around sampled property bounding box for selecting FEMA polygons.",
+    )
+    
+    parser.add_argument(
+        "--baseline-input",
+        default="outputs/baseline/python_fema_membership.csv",
+        help="Python baseline CSV containing fema_feature_index values.",
+    )
+
+    parser.add_argument(
+        "--fema-joined-rings-output",
+        default="outputs/cpp_input/fema_polygon_rings_joined_sample.csv",
+        help="Output CSV path for FEMA polygon rings matched by the Python baseline.",
+    )
 
     args = parser.parse_args()
 
@@ -262,6 +447,23 @@ def main() -> None:
         config=config,
         project_crs=project_crs,
         output_path=Path(args.fema_rings_output),
+    )
+    
+    export_sampled_fema_polygon_rings(
+        properties=properties,
+        fema=fema,
+        config=config,
+        project_crs=project_crs,
+        output_path=Path(args.fema_sample_rings_output),
+        buffer_meters=args.bbox_buffer_meters,
+    )
+    
+    export_joined_sample_fema_polygon_rings(
+        fema=fema,
+        config=config,
+        project_crs=project_crs,
+        baseline_path=Path(args.baseline_input),
+        output_path=Path(args.fema_joined_rings_output),
     )
 
 

@@ -160,6 +160,7 @@ def run_point_in_polygon(
 
     out["fema_zone"] = joined[zone_field] if zone_field else None
     out["sfha_flag"] = joined[sfha_field] if sfha_field else None
+    
 
     if sfha_field:
         out["is_sfha"] = joined[sfha_field].map(normalize_sfha_flag)
@@ -169,6 +170,8 @@ def run_point_in_polygon(
     out["source_geometry_id"] = (
         joined[geom_id_field] if geom_id_field else joined.get("index_right")
     )
+    
+    out["fema_feature_index"] = joined["index_right"]
 
     # This means the point matched any FEMA polygon, including Zone X polygons.
     # It does not mean the point is in a Special Flood Hazard Area.
