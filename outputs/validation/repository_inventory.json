@@ -1,0 +1,1696 @@
+{
+  "captured_at_utc": "2026-06-21T21:55:32.265329+00:00",
+  "repository_root": "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood",
+  "current_working_directory": "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood",
+  "git": {
+    "branch": "master",
+    "commit": "fdcb5afd2684619fd1bc79c0087a778cceefd7db",
+    "status_short": "?? python/scripts/capture_environment.py\n?? python/scripts/inventory_repository.py"
+  },
+  "summary": {
+    "file_count": 167,
+    "tracked_file_count": 30,
+    "untracked_file_count": 2,
+    "ignored_file_count": 135,
+    "other_file_count": 0,
+    "empty_file_count": 6,
+    "large_file_count": 9
+  },
+  "empty_files": [
+    "python/caprm/__init__.py",
+    "python/caprm/baseline.py",
+    "python/caprm/crs.py",
+    "python/caprm/ingest.py",
+    "python/caprm/validate.py",
+    "README.md"
+  ],
+  "large_files": [
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_FLD_HAZ_AR.dbf",
+      "size_bytes": 8169816,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_FLD_HAZ_AR.shp",
+      "size_bytes": 288870512,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_FLD_HAZ_LN.shp",
+      "size_bytes": 148882436,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_SUBMITTAL_INFO.shp",
+      "size_bytes": 7778044,
+      "git_state": "ignored"
+    },
+    {
+      "path": "outputs/cpp_input/fema_polygon_rings.csv",
+      "size_bytes": 1145009328,
+      "git_state": "ignored"
+    },
+    {
+      "path": "outputs/cpp_input/fema_polygon_rings_dev.csv",
+      "size_bytes": 12565936,
+      "git_state": "ignored"
+    },
+    {
+      "path": "outputs/cpp_input/fema_polygon_rings_joined_sample.csv",
+      "size_bytes": 111518925,
+      "git_state": "ignored"
+    },
+    {
+      "path": "outputs/cpp_input/fema_polygon_rings_sample.csv",
+      "size_bytes": 226502146,
+      "git_state": "ignored"
+    },
+    {
+      "path": "outputs/cpp_input/fema_polygons_projected.geojson",
+      "size_bytes": 988479439,
+      "git_state": "ignored"
+    }
+  ],
+  "tracked_files": [
+    ".gitignore",
+    "configs/monroe_fema_spike.yaml",
+    "cpp/spatial_core/src/fema_pip_dev.cpp",
+    "docs/CAPRM-Flood Project Nucleus 6.2.26.pdf",
+    "docs/crs_policy.md",
+    "docs/CSCI788 Proposal Presentation.pdf",
+    "docs/data_sources.md",
+    "docs/milestone_1.md",
+    "docs/report/sa5836_Report_Intro_Related_Works.pdf",
+    "docs/sa5836_CSCI_788_abstract.pdf",
+    "docs/Sterling_Alexander_CAPRM_Flood_Capstone_Proposal.pdf.pdf",
+    "docs/validation.md",
+    "outputs/baseline/python_fema_membership.csv",
+    "outputs/validation/fema_pip_1000_summary.json",
+    "outputs/validation/fema_pip_dev_summary.json",
+    "outputs/validation/python_baseline_summary.json",
+    "python/caprm/__init__.py",
+    "python/caprm/baseline.py",
+    "python/caprm/crs.py",
+    "python/caprm/ingest.py",
+    "python/caprm/validate.py",
+    "python/scripts/compare_python_cpp_dev.py",
+    "python/scripts/compare_python_cpp_fema.py",
+    "python/scripts/create_cpp_dev_fixture.py",
+    "python/scripts/debug_cpp_fixture.py",
+    "python/scripts/export_cpp_inputs.py",
+    "python/scripts/run_fema_baseline.py",
+    "python/scripts/summarize_baseline.py",
+    "README.md",
+    "requirements.txt"
+  ],
+  "untracked_files": [
+    "python/scripts/capture_environment.py",
+    "python/scripts/inventory_repository.py"
+  ],
+  "ignored_files": [
+    "cpp/spatial_core/fema_pip_dev.exe",
+    "data/raw/fema_nfhl_monroe/36055C_20260527_metadata.xml",
+    "data/raw/fema_nfhl_monroe/L_COMM_INFO.dbf",
+    "data/raw/fema_nfhl_monroe/L_COMM_REVIS.dbf",
+    "data/raw/fema_nfhl_monroe/L_CST_MODEL.dbf",
+    "data/raw/fema_nfhl_monroe/L_CST_TSCT_ELEV.dbf",
+    "data/raw/fema_nfhl_monroe/L_MANNINGSN.dbf",
+    "data/raw/fema_nfhl_monroe/L_MEETINGS.dbf",
+    "data/raw/fema_nfhl_monroe/L_MT2_LOMR.dbf",
+    "data/raw/fema_nfhl_monroe/L_MTG_POC.dbf",
+    "data/raw/fema_nfhl_monroe/L_PAN_REVIS.dbf",
+    "data/raw/fema_nfhl_monroe/L_POL_FHBM.dbf",
+    "data/raw/fema_nfhl_monroe/L_SOURCE_CIT.dbf",
+    "data/raw/fema_nfhl_monroe/L_SUMMARY_DISCHARGES.dbf",
+    "data/raw/fema_nfhl_monroe/L_XS_ELEV.dbf",
+    "data/raw/fema_nfhl_monroe/S_BASE_INDEX.cpg",
+    "data/raw/fema_nfhl_monroe/S_BASE_INDEX.dbf",
+    "data/raw/fema_nfhl_monroe/S_BASE_INDEX.prj",
+    "data/raw/fema_nfhl_monroe/S_BASE_INDEX.shp",
+    "data/raw/fema_nfhl_monroe/S_BASE_INDEX.shx",
+    "data/raw/fema_nfhl_monroe/S_BFE.cpg",
+    "data/raw/fema_nfhl_monroe/S_BFE.dbf",
+    "data/raw/fema_nfhl_monroe/S_BFE.prj",
+    "data/raw/fema_nfhl_monroe/S_BFE.shp",
+    "data/raw/fema_nfhl_monroe/S_BFE.shx",
+    "data/raw/fema_nfhl_monroe/S_CST_GAGE.cpg",
+    "data/raw/fema_nfhl_monroe/S_CST_GAGE.dbf",
+    "data/raw/fema_nfhl_monroe/S_CST_GAGE.prj",
+    "data/raw/fema_nfhl_monroe/S_CST_GAGE.shp",
+    "data/raw/fema_nfhl_monroe/S_CST_GAGE.shx",
+    "data/raw/fema_nfhl_monroe/S_CST_TSCT_LN.cpg",
+    "data/raw/fema_nfhl_monroe/S_CST_TSCT_LN.dbf",
+    "data/raw/fema_nfhl_monroe/S_CST_TSCT_LN.prj",
+    "data/raw/fema_nfhl_monroe/S_CST_TSCT_LN.shp",
+    "data/raw/fema_nfhl_monroe/S_CST_TSCT_LN.shx",
+    "data/raw/fema_nfhl_monroe/S_FIRM_PAN.cpg",
+    "data/raw/fema_nfhl_monroe/S_FIRM_PAN.dbf",
+    "data/raw/fema_nfhl_monroe/S_FIRM_PAN.prj",
+    "data/raw/fema_nfhl_monroe/S_FIRM_PAN.shp",
+    "data/raw/fema_nfhl_monroe/S_FIRM_PAN.shx",
+    "data/raw/fema_nfhl_monroe/S_FLD_HAZ_AR.cpg",
+    "data/raw/fema_nfhl_monroe/S_FLD_HAZ_AR.dbf",
+    "data/raw/fema_nfhl_monroe/S_FLD_HAZ_AR.prj",
+    "data/raw/fema_nfhl_monroe/S_FLD_HAZ_AR.shp",
+    "data/raw/fema_nfhl_monroe/S_FLD_HAZ_AR.shx",
+    "data/raw/fema_nfhl_monroe/S_FLD_HAZ_LN.cpg",
+    "data/raw/fema_nfhl_monroe/S_FLD_HAZ_LN.dbf",
+    "data/raw/fema_nfhl_monroe/S_FLD_HAZ_LN.prj",
+    "data/raw/fema_nfhl_monroe/S_FLD_HAZ_LN.shp",
+    "data/raw/fema_nfhl_monroe/S_FLD_HAZ_LN.shx",
+    "data/raw/fema_nfhl_monroe/S_GEN_STRUCT.cpg",
+    "data/raw/fema_nfhl_monroe/S_GEN_STRUCT.dbf",
+    "data/raw/fema_nfhl_monroe/S_GEN_STRUCT.prj",
+    "data/raw/fema_nfhl_monroe/S_GEN_STRUCT.shp",
+    "data/raw/fema_nfhl_monroe/S_GEN_STRUCT.shx",
+    "data/raw/fema_nfhl_monroe/S_LABEL_LD.cpg",
+    "data/raw/fema_nfhl_monroe/S_LABEL_LD.dbf",
+    "data/raw/fema_nfhl_monroe/S_LABEL_LD.prj",
+    "data/raw/fema_nfhl_monroe/S_LABEL_LD.shp",
+    "data/raw/fema_nfhl_monroe/S_LABEL_LD.shx",
+    "data/raw/fema_nfhl_monroe/S_LABEL_PT.cpg",
+    "data/raw/fema_nfhl_monroe/S_LABEL_PT.dbf",
+    "data/raw/fema_nfhl_monroe/S_LABEL_PT.prj",
+    "data/raw/fema_nfhl_monroe/S_LABEL_PT.shp",
+    "data/raw/fema_nfhl_monroe/S_LABEL_PT.shx",
+    "data/raw/fema_nfhl_monroe/S_LIMWA.cpg",
+    "data/raw/fema_nfhl_monroe/S_LIMWA.dbf",
+    "data/raw/fema_nfhl_monroe/S_LIMWA.prj",
+    "data/raw/fema_nfhl_monroe/S_LIMWA.shp",
+    "data/raw/fema_nfhl_monroe/S_LIMWA.shx",
+    "data/raw/fema_nfhl_monroe/S_LOMR.cpg",
+    "data/raw/fema_nfhl_monroe/S_LOMR.dbf",
+    "data/raw/fema_nfhl_monroe/S_LOMR.prj",
+    "data/raw/fema_nfhl_monroe/S_LOMR.shp",
+    "data/raw/fema_nfhl_monroe/S_LOMR.shx",
+    "data/raw/fema_nfhl_monroe/S_POL_AR.cpg",
+    "data/raw/fema_nfhl_monroe/S_POL_AR.dbf",
+    "data/raw/fema_nfhl_monroe/S_POL_AR.prj",
+    "data/raw/fema_nfhl_monroe/S_POL_AR.shp",
+    "data/raw/fema_nfhl_monroe/S_POL_AR.shx",
+    "data/raw/fema_nfhl_monroe/S_PROFIL_BASLN.cpg",
+    "data/raw/fema_nfhl_monroe/S_PROFIL_BASLN.dbf",
+    "data/raw/fema_nfhl_monroe/S_PROFIL_BASLN.prj",
+    "data/raw/fema_nfhl_monroe/S_PROFIL_BASLN.shp",
+    "data/raw/fema_nfhl_monroe/S_PROFIL_BASLN.shx",
+    "data/raw/fema_nfhl_monroe/S_STN_START.cpg",
+    "data/raw/fema_nfhl_monroe/S_STN_START.dbf",
+    "data/raw/fema_nfhl_monroe/S_STN_START.prj",
+    "data/raw/fema_nfhl_monroe/S_STN_START.shp",
+    "data/raw/fema_nfhl_monroe/S_STN_START.shx",
+    "data/raw/fema_nfhl_monroe/S_SUBBASINS.cpg",
+    "data/raw/fema_nfhl_monroe/S_SUBBASINS.dbf",
+    "data/raw/fema_nfhl_monroe/S_SUBBASINS.prj",
+    "data/raw/fema_nfhl_monroe/S_SUBBASINS.shp",
+    "data/raw/fema_nfhl_monroe/S_SUBBASINS.shx",
+    "data/raw/fema_nfhl_monroe/S_SUBMITTAL_INFO.cpg",
+    "data/raw/fema_nfhl_monroe/S_SUBMITTAL_INFO.dbf",
+    "data/raw/fema_nfhl_monroe/S_SUBMITTAL_INFO.prj",
+    "data/raw/fema_nfhl_monroe/S_SUBMITTAL_INFO.shp",
+    "data/raw/fema_nfhl_monroe/S_SUBMITTAL_INFO.shx",
+    "data/raw/fema_nfhl_monroe/S_TRNSPORT_LN.cpg",
+    "data/raw/fema_nfhl_monroe/S_TRNSPORT_LN.dbf",
+    "data/raw/fema_nfhl_monroe/S_TRNSPORT_LN.prj",
+    "data/raw/fema_nfhl_monroe/S_TRNSPORT_LN.shp",
+    "data/raw/fema_nfhl_monroe/S_TRNSPORT_LN.shx",
+    "data/raw/fema_nfhl_monroe/S_TSCT_BASLN.cpg",
+    "data/raw/fema_nfhl_monroe/S_TSCT_BASLN.dbf",
+    "data/raw/fema_nfhl_monroe/S_TSCT_BASLN.prj",
+    "data/raw/fema_nfhl_monroe/S_TSCT_BASLN.shp",
+    "data/raw/fema_nfhl_monroe/S_TSCT_BASLN.shx",
+    "data/raw/fema_nfhl_monroe/S_WTR_LN.cpg",
+    "data/raw/fema_nfhl_monroe/S_WTR_LN.dbf",
+    "data/raw/fema_nfhl_monroe/S_WTR_LN.prj",
+    "data/raw/fema_nfhl_monroe/S_WTR_LN.shp",
+    "data/raw/fema_nfhl_monroe/S_WTR_LN.shx",
+    "data/raw/fema_nfhl_monroe/S_XS.cpg",
+    "data/raw/fema_nfhl_monroe/S_XS.dbf",
+    "data/raw/fema_nfhl_monroe/S_XS.prj",
+    "data/raw/fema_nfhl_monroe/S_XS.shp",
+    "data/raw/fema_nfhl_monroe/S_XS.shx",
+    "data/raw/fema_nfhl_monroe/STUDY_INFO.dbf",
+    "outputs/cpp/cpp_fema_membership_1000.csv",
+    "outputs/cpp/cpp_fema_membership_dev.csv",
+    "outputs/cpp_input/fema_polygon_rings.csv",
+    "outputs/cpp_input/fema_polygon_rings_dev.csv",
+    "outputs/cpp_input/fema_polygon_rings_joined_sample.csv",
+    "outputs/cpp_input/fema_polygon_rings_sample.csv",
+    "outputs/cpp_input/fema_polygons_projected.geojson",
+    "outputs/cpp_input/properties_projected.csv",
+    "outputs/cpp_input/properties_projected_dev.csv",
+    "outputs/validation/fema_pip_1000_agreement_report.csv",
+    "outputs/validation/fema_pip_dev_agreement_report.csv",
+    "outputs/validation/milestone_1_environment.json",
+    "outputs/validation/repository_inventory.json",
+    "python/scripts/outputs/validation/milestone_1_environment.json"
+  ],
+  "other_files": [],
+  "expected_paths": {
+    "README.md": {
+      "exists": true,
+      "is_file": true,
+      "is_directory": false,
+      "size_bytes": 0
+    },
+    "requirements.txt": {
+      "exists": true,
+      "is_file": true,
+      "is_directory": false,
+      "size_bytes": 560
+    },
+    "configs/monroe_fema_spike.yaml": {
+      "exists": true,
+      "is_file": true,
+      "is_directory": false,
+      "size_bytes": 940
+    },
+    "python/caprm/__init__.py": {
+      "exists": true,
+      "is_file": true,
+      "is_directory": false,
+      "size_bytes": 0
+    },
+    "python/caprm/ingest.py": {
+      "exists": true,
+      "is_file": true,
+      "is_directory": false,
+      "size_bytes": 0
+    },
+    "python/caprm/crs.py": {
+      "exists": true,
+      "is_file": true,
+      "is_directory": false,
+      "size_bytes": 0
+    },
+    "python/caprm/baseline.py": {
+      "exists": true,
+      "is_file": true,
+      "is_directory": false,
+      "size_bytes": 0
+    },
+    "python/caprm/validate.py": {
+      "exists": true,
+      "is_file": true,
+      "is_directory": false,
+      "size_bytes": 0
+    },
+    "python/scripts/run_fema_baseline.py": {
+      "exists": true,
+      "is_file": true,
+      "is_directory": false,
+      "size_bytes": 6867
+    },
+    "python/scripts/export_cpp_inputs.py": {
+      "exists": true,
+      "is_file": true,
+      "is_directory": false,
+      "size_bytes": 15990
+    },
+    "python/scripts/compare_python_cpp_dev.py": {
+      "exists": true,
+      "is_file": true,
+      "is_directory": false,
+      "size_bytes": 4687
+    },
+    "python/scripts/compare_python_cpp_fema.py": {
+      "exists": true,
+      "is_file": true,
+      "is_directory": false,
+      "size_bytes": 4687
+    },
+    "python/scripts/create_cpp_dev_fixture.py": {
+      "exists": true,
+      "is_file": true,
+      "is_directory": false,
+      "size_bytes": 2527
+    },
+    "cpp/spatial_core/include": {
+      "exists": true,
+      "is_file": false,
+      "is_directory": true,
+      "size_bytes": null
+    },
+    "cpp/spatial_core/src/fema_pip_dev.cpp": {
+      "exists": true,
+      "is_file": true,
+      "is_directory": false,
+      "size_bytes": 10103
+    },
+    "cpp/spatial_core/tests": {
+      "exists": true,
+      "is_file": false,
+      "is_directory": true,
+      "size_bytes": null
+    },
+    "cpp/spatial_core/CMakeLists.txt": {
+      "exists": false,
+      "is_file": false,
+      "is_directory": false,
+      "size_bytes": null
+    },
+    "tests": {
+      "exists": true,
+      "is_file": false,
+      "is_directory": true,
+      "size_bytes": null
+    }
+  },
+  "files": [
+    {
+      "path": ".gitignore",
+      "suffix": "",
+      "size_bytes": 200,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "tracked"
+    },
+    {
+      "path": "configs/monroe_fema_spike.yaml",
+      "suffix": ".yaml",
+      "size_bytes": 940,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "tracked"
+    },
+    {
+      "path": "cpp/spatial_core/fema_pip_dev.exe",
+      "suffix": ".exe",
+      "size_bytes": 310605,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "cpp/spatial_core/src/fema_pip_dev.cpp",
+      "suffix": ".cpp",
+      "size_bytes": 10103,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "tracked"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/36055C_20260527_metadata.xml",
+      "suffix": ".xml",
+      "size_bytes": 57,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/L_COMM_INFO.dbf",
+      "suffix": ".dbf",
+      "size_bytes": 11266,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/L_COMM_REVIS.dbf",
+      "suffix": ".dbf",
+      "size_bytes": 914,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/L_CST_MODEL.dbf",
+      "suffix": ".dbf",
+      "size_bytes": 1761,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/L_CST_TSCT_ELEV.dbf",
+      "suffix": ".dbf",
+      "size_bytes": 60710,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/L_MANNINGSN.dbf",
+      "suffix": ".dbf",
+      "size_bytes": 28506,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/L_MEETINGS.dbf",
+      "suffix": ".dbf",
+      "size_bytes": 7882,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/L_MT2_LOMR.dbf",
+      "suffix": ".dbf",
+      "size_bytes": 521,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/L_MTG_POC.dbf",
+      "suffix": ".dbf",
+      "size_bytes": 12880,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/L_PAN_REVIS.dbf",
+      "suffix": ".dbf",
+      "size_bytes": 11854,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/L_POL_FHBM.dbf",
+      "suffix": ".dbf",
+      "size_bytes": 7794,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/L_SOURCE_CIT.dbf",
+      "suffix": ".dbf",
+      "size_bytes": 15874,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/L_SUMMARY_DISCHARGES.dbf",
+      "suffix": ".dbf",
+      "size_bytes": 319634,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/L_XS_ELEV.dbf",
+      "suffix": ".dbf",
+      "size_bytes": 1083952,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_BASE_INDEX.cpg",
+      "suffix": ".cpg",
+      "size_bytes": 5,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_BASE_INDEX.dbf",
+      "suffix": ".dbf",
+      "size_bytes": 71227,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_BASE_INDEX.prj",
+      "suffix": ".prj",
+      "size_bytes": 167,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_BASE_INDEX.shp",
+      "suffix": ".shp",
+      "size_bytes": 47340,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_BASE_INDEX.shx",
+      "suffix": ".shx",
+      "size_bytes": 2844,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_BFE.cpg",
+      "suffix": ".cpg",
+      "size_bytes": 5,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_BFE.dbf",
+      "suffix": ".dbf",
+      "size_bytes": 502863,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_BFE.prj",
+      "suffix": ".prj",
+      "size_bytes": 167,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_BFE.shp",
+      "suffix": ".shp",
+      "size_bytes": 379276,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_BFE.shx",
+      "suffix": ".shx",
+      "size_bytes": 29884,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_CST_GAGE.cpg",
+      "suffix": ".cpg",
+      "size_bytes": 5,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_CST_GAGE.dbf",
+      "suffix": ".dbf",
+      "size_bytes": 4210,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_CST_GAGE.prj",
+      "suffix": ".prj",
+      "size_bytes": 167,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_CST_GAGE.shp",
+      "suffix": ".shp",
+      "size_bytes": 268,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_CST_GAGE.shx",
+      "suffix": ".shx",
+      "size_bytes": 148,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_CST_TSCT_LN.cpg",
+      "suffix": ".cpg",
+      "size_bytes": 5,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_CST_TSCT_LN.dbf",
+      "suffix": ".dbf",
+      "size_bytes": 84363,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_CST_TSCT_LN.prj",
+      "suffix": ".prj",
+      "size_bytes": 167,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_CST_TSCT_LN.shp",
+      "suffix": ".shp",
+      "size_bytes": 5116,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_CST_TSCT_LN.shx",
+      "suffix": ".shx",
+      "size_bytes": 556,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_FIRM_PAN.cpg",
+      "suffix": ".cpg",
+      "size_bytes": 5,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_FIRM_PAN.dbf",
+      "suffix": ".dbf",
+      "size_bytes": 82522,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_FIRM_PAN.prj",
+      "suffix": ".prj",
+      "size_bytes": 167,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_FIRM_PAN.shp",
+      "suffix": ".shp",
+      "size_bytes": 28492,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_FIRM_PAN.shx",
+      "suffix": ".shx",
+      "size_bytes": 1708,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_FLD_HAZ_AR.cpg",
+      "suffix": ".cpg",
+      "size_bytes": 5,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_FLD_HAZ_AR.dbf",
+      "suffix": ".dbf",
+      "size_bytes": 8169816,
+      "is_empty": false,
+      "is_large": true,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_FLD_HAZ_AR.prj",
+      "suffix": ".prj",
+      "size_bytes": 167,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_FLD_HAZ_AR.shp",
+      "suffix": ".shp",
+      "size_bytes": 288870512,
+      "is_empty": false,
+      "is_large": true,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_FLD_HAZ_AR.shx",
+      "suffix": ".shx",
+      "size_bytes": 134572,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_FLD_HAZ_LN.cpg",
+      "suffix": ".cpg",
+      "size_bytes": 5,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_FLD_HAZ_LN.dbf",
+      "suffix": ".dbf",
+      "size_bytes": 5131882,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_FLD_HAZ_LN.prj",
+      "suffix": ".prj",
+      "size_bytes": 167,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_FLD_HAZ_LN.shp",
+      "suffix": ".shp",
+      "size_bytes": 148882436,
+      "is_empty": false,
+      "is_large": true,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_FLD_HAZ_LN.shx",
+      "suffix": ".shx",
+      "size_bytes": 423332,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_GEN_STRUCT.cpg",
+      "suffix": ".cpg",
+      "size_bytes": 5,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_GEN_STRUCT.dbf",
+      "suffix": ".dbf",
+      "size_bytes": 358391,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_GEN_STRUCT.prj",
+      "suffix": ".prj",
+      "size_bytes": 167,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_GEN_STRUCT.shp",
+      "suffix": ".shp",
+      "size_bytes": 41068,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_GEN_STRUCT.shx",
+      "suffix": ".shx",
+      "size_bytes": 3580,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_LABEL_LD.cpg",
+      "suffix": ".cpg",
+      "size_bytes": 5,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_LABEL_LD.dbf",
+      "suffix": ".dbf",
+      "size_bytes": 27918,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_LABEL_LD.prj",
+      "suffix": ".prj",
+      "size_bytes": 167,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_LABEL_LD.shp",
+      "suffix": ".shp",
+      "size_bytes": 28436,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_LABEL_LD.shx",
+      "suffix": ".shx",
+      "size_bytes": 2676,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_LABEL_PT.cpg",
+      "suffix": ".cpg",
+      "size_bytes": 5,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_LABEL_PT.dbf",
+      "suffix": ".dbf",
+      "size_bytes": 40352,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_LABEL_PT.prj",
+      "suffix": ".prj",
+      "size_bytes": 167,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_LABEL_PT.shp",
+      "suffix": ".shp",
+      "size_bytes": 2396,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_LABEL_PT.shx",
+      "suffix": ".shx",
+      "size_bytes": 756,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_LIMWA.cpg",
+      "suffix": ".cpg",
+      "size_bytes": 5,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_LIMWA.dbf",
+      "suffix": ".dbf",
+      "size_bytes": 1994,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_LIMWA.prj",
+      "suffix": ".prj",
+      "size_bytes": 167,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_LIMWA.shp",
+      "suffix": ".shp",
+      "size_bytes": 4860,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_LIMWA.shx",
+      "suffix": ".shx",
+      "size_bytes": 300,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_LOMR.cpg",
+      "suffix": ".cpg",
+      "size_bytes": 5,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_LOMR.dbf",
+      "suffix": ".dbf",
+      "size_bytes": 1162,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_LOMR.prj",
+      "suffix": ".prj",
+      "size_bytes": 167,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_LOMR.shp",
+      "suffix": ".shp",
+      "size_bytes": 2596,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_LOMR.shx",
+      "suffix": ".shx",
+      "size_bytes": 164,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_POL_AR.cpg",
+      "suffix": ".cpg",
+      "size_bytes": 5,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_POL_AR.dbf",
+      "suffix": ".dbf",
+      "size_bytes": 34582,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_POL_AR.prj",
+      "suffix": ".prj",
+      "size_bytes": 167,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_POL_AR.shp",
+      "suffix": ".shp",
+      "size_bytes": 288704,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_POL_AR.shx",
+      "suffix": ".shx",
+      "size_bytes": 1092,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_PROFIL_BASLN.cpg",
+      "suffix": ".cpg",
+      "size_bytes": 5,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_PROFIL_BASLN.dbf",
+      "suffix": ".dbf",
+      "size_bytes": 626154,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_PROFIL_BASLN.prj",
+      "suffix": ".prj",
+      "size_bytes": 337,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_PROFIL_BASLN.shp",
+      "suffix": ".shp",
+      "size_bytes": 391156,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_PROFIL_BASLN.shx",
+      "suffix": ".shx",
+      "size_bytes": 2244,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_STN_START.cpg",
+      "suffix": ".cpg",
+      "size_bytes": 5,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_STN_START.dbf",
+      "suffix": ".dbf",
+      "size_bytes": 3867,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_STN_START.prj",
+      "suffix": ".prj",
+      "size_bytes": 167,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_STN_START.shp",
+      "suffix": ".shp",
+      "size_bytes": 408,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_STN_START.shx",
+      "suffix": ".shx",
+      "size_bytes": 188,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_SUBBASINS.cpg",
+      "suffix": ".cpg",
+      "size_bytes": 5,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_SUBBASINS.dbf",
+      "suffix": ".dbf",
+      "size_bytes": 4348,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_SUBBASINS.prj",
+      "suffix": ".prj",
+      "size_bytes": 167,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_SUBBASINS.shp",
+      "suffix": ".shp",
+      "size_bytes": 119228,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_SUBBASINS.shx",
+      "suffix": ".shx",
+      "size_bytes": 140,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_SUBMITTAL_INFO.cpg",
+      "suffix": ".cpg",
+      "size_bytes": 5,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_SUBMITTAL_INFO.dbf",
+      "suffix": ".dbf",
+      "size_bytes": 8032,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_SUBMITTAL_INFO.prj",
+      "suffix": ".prj",
+      "size_bytes": 167,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_SUBMITTAL_INFO.shp",
+      "suffix": ".shp",
+      "size_bytes": 7778044,
+      "is_empty": false,
+      "is_large": true,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_SUBMITTAL_INFO.shx",
+      "suffix": ".shx",
+      "size_bytes": 140,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_TRNSPORT_LN.cpg",
+      "suffix": ".cpg",
+      "size_bytes": 5,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_TRNSPORT_LN.dbf",
+      "suffix": ".dbf",
+      "size_bytes": 2436739,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_TRNSPORT_LN.prj",
+      "suffix": ".prj",
+      "size_bytes": 167,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_TRNSPORT_LN.shp",
+      "suffix": ".shp",
+      "size_bytes": 679212,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_TRNSPORT_LN.shx",
+      "suffix": ".shx",
+      "size_bytes": 42380,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_TSCT_BASLN.cpg",
+      "suffix": ".cpg",
+      "size_bytes": 5,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_TSCT_BASLN.dbf",
+      "suffix": ".dbf",
+      "size_bytes": 1896,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_TSCT_BASLN.prj",
+      "suffix": ".prj",
+      "size_bytes": 167,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_TSCT_BASLN.shp",
+      "suffix": ".shp",
+      "size_bytes": 74708,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_TSCT_BASLN.shx",
+      "suffix": ".shx",
+      "size_bytes": 116,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_WTR_LN.cpg",
+      "suffix": ".cpg",
+      "size_bytes": 5,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_WTR_LN.dbf",
+      "suffix": ".dbf",
+      "size_bytes": 640531,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_WTR_LN.prj",
+      "suffix": ".prj",
+      "size_bytes": 167,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_WTR_LN.shp",
+      "suffix": ".shp",
+      "size_bytes": 3284396,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_WTR_LN.shx",
+      "suffix": ".shx",
+      "size_bytes": 29708,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_XS.cpg",
+      "suffix": ".cpg",
+      "size_bytes": 5,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_XS.dbf",
+      "suffix": ".dbf",
+      "size_bytes": 930083,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_XS.prj",
+      "suffix": ".prj",
+      "size_bytes": 167,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_XS.shp",
+      "suffix": ".shp",
+      "size_bytes": 409500,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/S_XS.shx",
+      "suffix": ".shx",
+      "size_bytes": 13596,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "data/raw/fema_nfhl_monroe/STUDY_INFO.dbf",
+      "suffix": ".dbf",
+      "size_bytes": 1745,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "docs/CAPRM-Flood Project Nucleus 6.2.26.pdf",
+      "suffix": ".pdf",
+      "size_bytes": 179427,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "tracked"
+    },
+    {
+      "path": "docs/crs_policy.md",
+      "suffix": ".md",
+      "size_bytes": 2272,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "tracked"
+    },
+    {
+      "path": "docs/CSCI788 Proposal Presentation.pdf",
+      "suffix": ".pdf",
+      "size_bytes": 1115006,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "tracked"
+    },
+    {
+      "path": "docs/data_sources.md",
+      "suffix": ".md",
+      "size_bytes": 1018,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "tracked"
+    },
+    {
+      "path": "docs/milestone_1.md",
+      "suffix": ".md",
+      "size_bytes": 4905,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "tracked"
+    },
+    {
+      "path": "docs/report/sa5836_Report_Intro_Related_Works.pdf",
+      "suffix": ".pdf",
+      "size_bytes": 50263,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "tracked"
+    },
+    {
+      "path": "docs/sa5836_CSCI_788_abstract.pdf",
+      "suffix": ".pdf",
+      "size_bytes": 85976,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "tracked"
+    },
+    {
+      "path": "docs/Sterling_Alexander_CAPRM_Flood_Capstone_Proposal.pdf.pdf",
+      "suffix": ".pdf",
+      "size_bytes": 151950,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "tracked"
+    },
+    {
+      "path": "docs/validation.md",
+      "suffix": ".md",
+      "size_bytes": 3983,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "tracked"
+    },
+    {
+      "path": "outputs/baseline/python_fema_membership.csv",
+      "suffix": ".csv",
+      "size_bytes": 124383,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "tracked"
+    },
+    {
+      "path": "outputs/cpp/cpp_fema_membership_1000.csv",
+      "suffix": ".csv",
+      "size_bytes": 40767,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "outputs/cpp/cpp_fema_membership_dev.csv",
+      "suffix": ".csv",
+      "size_bytes": 1097,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "outputs/cpp_input/fema_polygon_rings.csv",
+      "suffix": ".csv",
+      "size_bytes": 1145009328,
+      "is_empty": false,
+      "is_large": true,
+      "git_state": "ignored"
+    },
+    {
+      "path": "outputs/cpp_input/fema_polygon_rings_dev.csv",
+      "suffix": ".csv",
+      "size_bytes": 12565936,
+      "is_empty": false,
+      "is_large": true,
+      "git_state": "ignored"
+    },
+    {
+      "path": "outputs/cpp_input/fema_polygon_rings_joined_sample.csv",
+      "suffix": ".csv",
+      "size_bytes": 111518925,
+      "is_empty": false,
+      "is_large": true,
+      "git_state": "ignored"
+    },
+    {
+      "path": "outputs/cpp_input/fema_polygon_rings_sample.csv",
+      "suffix": ".csv",
+      "size_bytes": 226502146,
+      "is_empty": false,
+      "is_large": true,
+      "git_state": "ignored"
+    },
+    {
+      "path": "outputs/cpp_input/fema_polygons_projected.geojson",
+      "suffix": ".geojson",
+      "size_bytes": 988479439,
+      "is_empty": false,
+      "is_large": true,
+      "git_state": "ignored"
+    },
+    {
+      "path": "outputs/cpp_input/properties_projected.csv",
+      "suffix": ".csv",
+      "size_bytes": 90842,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "outputs/cpp_input/properties_projected_dev.csv",
+      "suffix": ".csv",
+      "size_bytes": 2321,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "outputs/validation/fema_pip_1000_agreement_report.csv",
+      "suffix": ".csv",
+      "size_bytes": 101147,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "outputs/validation/fema_pip_1000_summary.json",
+      "suffix": ".json",
+      "size_bytes": 549,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "tracked"
+    },
+    {
+      "path": "outputs/validation/fema_pip_dev_agreement_report.csv",
+      "suffix": ".csv",
+      "size_bytes": 2765,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "outputs/validation/fema_pip_dev_summary.json",
+      "suffix": ".json",
+      "size_bytes": 337,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "tracked"
+    },
+    {
+      "path": "outputs/validation/milestone_1_environment.json",
+      "suffix": ".json",
+      "size_bytes": 7699,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "outputs/validation/python_baseline_summary.json",
+      "suffix": ".json",
+      "size_bytes": 591,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "tracked"
+    },
+    {
+      "path": "outputs/validation/repository_inventory.json",
+      "suffix": ".json",
+      "size_bytes": 46227,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "python/caprm/__init__.py",
+      "suffix": ".py",
+      "size_bytes": 0,
+      "is_empty": true,
+      "is_large": false,
+      "git_state": "tracked"
+    },
+    {
+      "path": "python/caprm/baseline.py",
+      "suffix": ".py",
+      "size_bytes": 0,
+      "is_empty": true,
+      "is_large": false,
+      "git_state": "tracked"
+    },
+    {
+      "path": "python/caprm/crs.py",
+      "suffix": ".py",
+      "size_bytes": 0,
+      "is_empty": true,
+      "is_large": false,
+      "git_state": "tracked"
+    },
+    {
+      "path": "python/caprm/ingest.py",
+      "suffix": ".py",
+      "size_bytes": 0,
+      "is_empty": true,
+      "is_large": false,
+      "git_state": "tracked"
+    },
+    {
+      "path": "python/caprm/validate.py",
+      "suffix": ".py",
+      "size_bytes": 0,
+      "is_empty": true,
+      "is_large": false,
+      "git_state": "tracked"
+    },
+    {
+      "path": "python/scripts/capture_environment.py",
+      "suffix": ".py",
+      "size_bytes": 11705,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "untracked"
+    },
+    {
+      "path": "python/scripts/compare_python_cpp_dev.py",
+      "suffix": ".py",
+      "size_bytes": 4687,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "tracked"
+    },
+    {
+      "path": "python/scripts/compare_python_cpp_fema.py",
+      "suffix": ".py",
+      "size_bytes": 4687,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "tracked"
+    },
+    {
+      "path": "python/scripts/create_cpp_dev_fixture.py",
+      "suffix": ".py",
+      "size_bytes": 2527,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "tracked"
+    },
+    {
+      "path": "python/scripts/debug_cpp_fixture.py",
+      "suffix": ".py",
+      "size_bytes": 2395,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "tracked"
+    },
+    {
+      "path": "python/scripts/export_cpp_inputs.py",
+      "suffix": ".py",
+      "size_bytes": 15990,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "tracked"
+    },
+    {
+      "path": "python/scripts/inventory_repository.py",
+      "suffix": ".py",
+      "size_bytes": 11899,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "untracked"
+    },
+    {
+      "path": "python/scripts/outputs/validation/milestone_1_environment.json",
+      "suffix": ".json",
+      "size_bytes": 4629,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "ignored"
+    },
+    {
+      "path": "python/scripts/run_fema_baseline.py",
+      "suffix": ".py",
+      "size_bytes": 6867,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "tracked"
+    },
+    {
+      "path": "python/scripts/summarize_baseline.py",
+      "suffix": ".py",
+      "size_bytes": 2196,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "tracked"
+    },
+    {
+      "path": "README.md",
+      "suffix": ".md",
+      "size_bytes": 0,
+      "is_empty": true,
+      "is_large": false,
+      "git_state": "tracked"
+    },
+    {
+      "path": "requirements.txt",
+      "suffix": ".txt",
+      "size_bytes": 560,
+      "is_empty": false,
+      "is_large": false,
+      "git_state": "tracked"
+    }
+  ]
+}
