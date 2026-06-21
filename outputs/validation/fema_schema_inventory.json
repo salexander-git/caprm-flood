@@ -1,0 +1,157 @@
+{
+  "row_count": 16809,
+  "crs": "EPSG:4269",
+  "geometry_column": "geometry",
+  "geometry_types": {
+    "Polygon": 16802,
+    "MultiPolygon": 5,
+    "nan": 2
+  },
+  "null_geometry_count": 2,
+  "empty_geometry_count": 0,
+  "invalid_geometry_count": 156,
+  "configured_id_candidates": [
+    "DFIRM_ID",
+    "FLD_AR_ID",
+    "OBJECTID"
+  ],
+  "id_candidate_summary": {
+    "DFIRM_ID": {
+      "dtype": "str",
+      "row_count": 16809,
+      "nonmissing_count": 16809,
+      "missing_count": 0,
+      "unique_nonmissing_count": 1,
+      "duplicate_nonmissing_rows": 16809,
+      "is_unique_when_nonmissing": false,
+      "sample_values": [
+        "36055C"
+      ]
+    },
+    "FLD_AR_ID": {
+      "dtype": "str",
+      "row_count": 16809,
+      "nonmissing_count": 16809,
+      "missing_count": 0,
+      "unique_nonmissing_count": 16809,
+      "duplicate_nonmissing_rows": 0,
+      "is_unique_when_nonmissing": true,
+      "sample_values": [
+        "36055C_1",
+        "36055C_65",
+        "36055C_301",
+        "36055C_684",
+        "36055C_1064",
+        "36055C_1149",
+        "36055C_1227",
+        "36055C_1238",
+        "36055C_1356",
+        "36055C_1399"
+      ]
+    },
+    "OBJECTID": {
+      "present": false
+    }
+  },
+  "viable_unique_id_candidates": [
+    "FLD_AR_ID"
+  ],
+  "all_columns": {
+    "DFIRM_ID": {
+      "dtype": "str",
+      "nonmissing_count": 16809,
+      "unique_nonmissing_count": 1
+    },
+    "VERSION_ID": {
+      "dtype": "str",
+      "nonmissing_count": 16809,
+      "unique_nonmissing_count": 5
+    },
+    "FLD_AR_ID": {
+      "dtype": "str",
+      "nonmissing_count": 16809,
+      "unique_nonmissing_count": 16809
+    },
+    "STUDY_TYP": {
+      "dtype": "str",
+      "nonmissing_count": 16809,
+      "unique_nonmissing_count": 3
+    },
+    "FLD_ZONE": {
+      "dtype": "str",
+      "nonmissing_count": 16809,
+      "unique_nonmissing_count": 6
+    },
+    "ZONE_SUBTY": {
+      "dtype": "str",
+      "nonmissing_count": 12315,
+      "unique_nonmissing_count": 5
+    },
+    "SFHA_TF": {
+      "dtype": "str",
+      "nonmissing_count": 16809,
+      "unique_nonmissing_count": 2
+    },
+    "STATIC_BFE": {
+      "dtype": "float64",
+      "nonmissing_count": 16809,
+      "unique_nonmissing_count": 39
+    },
+    "V_DATUM": {
+      "dtype": "str",
+      "nonmissing_count": 196,
+      "unique_nonmissing_count": 1
+    },
+    "DEPTH": {
+      "dtype": "float64",
+      "nonmissing_count": 16809,
+      "unique_nonmissing_count": 4
+    },
+    "LEN_UNIT": {
+      "dtype": "str",
+      "nonmissing_count": 200,
+      "unique_nonmissing_count": 1
+    },
+    "VELOCITY": {
+      "dtype": "float64",
+      "nonmissing_count": 16809,
+      "unique_nonmissing_count": 1
+    },
+    "VEL_UNIT": {
+      "dtype": "object",
+      "nonmissing_count": 0,
+      "unique_nonmissing_count": 0
+    },
+    "AR_REVERT": {
+      "dtype": "object",
+      "nonmissing_count": 0,
+      "unique_nonmissing_count": 0
+    },
+    "AR_SUBTRV": {
+      "dtype": "object",
+      "nonmissing_count": 0,
+      "unique_nonmissing_count": 0
+    },
+    "BFE_REVERT": {
+      "dtype": "float64",
+      "nonmissing_count": 16809,
+      "unique_nonmissing_count": 1
+    },
+    "DEP_REVERT": {
+      "dtype": "float64",
+      "nonmissing_count": 16809,
+      "unique_nonmissing_count": 1
+    },
+    "DUAL_ZONE": {
+      "dtype": "object",
+      "nonmissing_count": 0,
+      "unique_nonmissing_count": 0
+    },
+    "SOURCE_CIT": {
+      "dtype": "str",
+      "nonmissing_count": 16809,
+      "unique_nonmissing_count": 10
+    }
+  },
+  "input_file": "data/raw/fema_nfhl_monroe/S_FLD_HAZ_AR.shp"
+}
