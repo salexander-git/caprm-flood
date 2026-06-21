@@ -1,0 +1,13 @@
+{
+  "created_at_utc": "2026-06-21T22:53:04.871594+00:00",
+  "cache_origin": "validated_milestone_1_baseline",
+  "baseline_input": "outputs/baseline/python_fema_membership.csv",
+  "baseline_sha256": "e628f48c44c0dbed45dfad8564215e5a7fa6bc675e87c2af56644e03a92ce9dd",
+  "property_cache": "data/processed/monroe_property_points_sample.geojson",
+  "property_cache_sha256": "6ae34cac10e33106f7bd140d4d4ebc88944bb66939e56bceea0cc75258f3a542",
+  "row_count": 1000,
+  "unique_property_ids": 1000,
+  "crs": "EPSG:4326",
+  "first_sample_order": 0,
+  "last_sample_order": 999
+}
