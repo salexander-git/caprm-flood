@@ -84,6 +84,7 @@ def main() -> None:
             args.summary_output
         ),
         comparison_scope=args.scope,
+        path_display_root=REPOSITORY_ROOT,
     )
 
     print(json.dumps(summary, indent=2))

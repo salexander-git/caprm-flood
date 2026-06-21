@@ -455,12 +455,31 @@ def compare_fema_membership(
 
     return merged, summary
 
+
+def format_output_path(
+    path: Path,
+    display_root: Path | None,
+) -> str:
+    resolved_path = path.resolve()
+
+    if display_root is not None:
+        try:
+            return resolved_path.relative_to(
+                display_root.resolve()
+            ).as_posix()
+        except ValueError:
+            pass
+
+    return str(resolved_path)
+
+
 def compare_fema_files(
     python_baseline_path: Path,
     cpp_output_path: Path,
     detail_output_path: Path,
     summary_output_path: Path,
     comparison_scope: str = "union",
+    path_display_root: Path | None = None,
 ) -> tuple[pd.DataFrame, dict[str, Any]]:
     if comparison_scope not in {"union", "cpp"}:
         raise ValueError(
@@ -500,8 +519,14 @@ def compare_fema_files(
     summary["total_python_source_rows"] = int(
         total_python_source_rows
     )
-    summary["python_baseline"] = str(python_baseline_path)
-    summary["cpp_output"] = str(cpp_output_path)
+    summary["python_baseline"] = format_output_path(
+        python_baseline_path,
+        path_display_root,
+    )
+    summary["cpp_output"] = format_output_path(
+        cpp_output_path,
+        path_display_root,
+    )
 
     detail_output_path.parent.mkdir(
         parents=True,

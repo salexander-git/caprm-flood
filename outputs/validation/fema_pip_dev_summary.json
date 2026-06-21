@@ -1,13 +1,23 @@
 {
+  "total_python_rows": 25,
   "total_cpp_rows": 25,
+  "total_union_rows": 25,
   "total_joined_rows": 25,
   "missing_python_rows": 0,
+  "missing_cpp_rows": 0,
+  "coverage_rate": 1.0,
   "matched_agreements": 25,
   "sfha_agreements": 25,
   "zone_agreements": 25,
   "feature_index_agreements": 25,
+  "all_fields_agree": 25,
   "matched_agreement_rate": 1.0,
   "sfha_agreement_rate": 1.0,
   "zone_agreement_rate": 1.0,
-  "feature_index_agreement_rate": 1.0
+  "feature_index_agreement_rate": 1.0,
+  "all_fields_agreement_rate": 1.0,
+  "comparison_scope": "cpp",
+  "total_python_source_rows": 1000,
+  "python_baseline": "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\baseline\\python_fema_membership.csv",
+  "cpp_output": "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp\\cpp_fema_membership_dev.csv"
 }
