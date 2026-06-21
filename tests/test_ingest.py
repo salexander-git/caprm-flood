@@ -6,11 +6,36 @@ import pytest
 from shapely.geometry import Point
 
 from caprm.ingest import (
+    add_canonical_fema_fields,
     select_unique_identifier,
     validate_property_points,
 )
 
+def test_fema_fields_are_canonicalized() -> None:
+    fema = gpd.GeoDataFrame(
+        {
+            "FLD_ZONE": ["AE", "X"],
+            "SFHA_TF": ["T", "F"],
+        },
+        geometry=[
+            Point(0, 0),
+            Point(1, 1),
+        ],
+        crs="EPSG:4326",
+    )
 
+    result = add_canonical_fema_fields(
+        fema,
+        {
+            "zone_field_candidates": ["FLD_ZONE"],
+            "sfha_field_candidates": ["SFHA_TF"],
+        },
+    )
+
+    assert result["fema_zone"].tolist() == ["AE", "X"]
+    assert result["sfha_flag"].tolist() == ["T", "F"]
+
+    
 def test_unique_identifier_skips_nonunique_candidate() -> None:
     dataframe = pd.DataFrame(
         {

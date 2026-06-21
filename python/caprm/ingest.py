@@ -81,6 +81,54 @@ def select_unique_identifier(
         + "; ".join(diagnostics)
     )
 
+def select_existing_field(
+    dataframe: pd.DataFrame,
+    candidates: list[str],
+    label: str,
+) -> str:
+    for candidate in candidates:
+        if candidate in dataframe.columns:
+            return candidate
+
+    raise ValueError(
+        f"No {label} field was found from candidates: {candidates}"
+    )
+
+
+def add_canonical_fema_fields(
+    fema: gpd.GeoDataFrame,
+    fema_config: dict[str, Any],
+) -> gpd.GeoDataFrame:
+    zone_field = select_existing_field(
+        fema,
+        fema_config["zone_field_candidates"],
+        "FEMA zone",
+    )
+
+    sfha_field = select_existing_field(
+        fema,
+        fema_config["sfha_field_candidates"],
+        "SFHA flag",
+    )
+
+    prepared = fema.copy()
+
+    prepared["fema_zone"] = (
+        prepared[zone_field]
+        .astype("string")
+        .str.strip()
+        .mask(lambda values: values.eq(""))
+    )
+
+    prepared["sfha_flag"] = (
+        prepared[sfha_field]
+        .astype("string")
+        .str.strip()
+        .mask(lambda values: values.eq(""))
+    )
+
+    return prepared
+
 
 def validate_property_points(
     properties: gpd.GeoDataFrame,
@@ -422,7 +470,10 @@ def load_fema_polygons(
         "FEMA feature identifier",
     )
 
-    fema = fema.copy()
+    fema = add_canonical_fema_fields(
+        fema,
+        fema_config,
+    )
 
     fema["source_geometry_id"] = (
         fema[id_field]

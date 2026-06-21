@@ -1,0 +1,21 @@
+{
+  "created_at_utc": "2026-06-21T23:49:22.837039+00:00",
+  "scope": "baseline",
+  "project_crs": "EPSG:3857",
+  "config": "configs/monroe_fema_spike.yaml",
+  "property_cache": "data/processed/monroe_property_points_sample.geojson",
+  "baseline_input": "outputs/baseline/python_fema_membership.csv",
+  "properties_output": "outputs/cpp_input/properties_projected.csv",
+  "rings_output": "outputs/cpp_input/fema_polygon_rings_joined_sample.csv",
+  "bbox_buffer_meters": null,
+  "property_count": 1000,
+  "property_output_size_bytes": 99367,
+  "property_output_sha256": "0b084ebf6b3ac6d1f8f0323cd3180df433f3a147fd302f6a3cc1bb29f55da9b4",
+  "fema_feature_count": 39,
+  "polygon_part_count": 39,
+  "ring_count": 260,
+  "ring_vertex_count": 1714858,
+  "invalid_geometry_count": 5,
+  "rings_output_size_bytes": 125230117,
+  "rings_output_sha256": "d7c62217c23de6b33669e22145c65778b34b281b6b9dbd28a2ffb0deb256efdb"
+}
