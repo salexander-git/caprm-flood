@@ -25,8 +25,8 @@ fema_flood_polygons:
   sfha_field_candidates:
     - SFHA_TF
   id_field_candidates:
-    - DFIRM_ID
     - FLD_AR_ID
+    - DFIRM_ID
     - OBJECTID
 
 outputs:
