@@ -1,23 +1,30 @@
 {
-  "input_file": "outputs\\baseline\\python_fema_membership.csv",
-  "total_properties": 1000,
-  "matched_fema_polygon": 1000,
-  "unmatched_fema_polygon": 0,
-  "is_sfha_true": 241,
-  "is_sfha_false": 759,
-  "python_sfha_true": 241,
-  "python_sfha_false": 759,
-  "matched_fema_polygon_counts": {
-    "True": 1000
+  "input_file": "outputs/baseline/python_fema_membership.csv",
+  "total_rows": 1000,
+  "unique_property_ids": 1000,
+  "missing_property_ids": 0,
+  "duplicate_property_rows": 0,
+  "duplicate_property_ids": 0,
+  "rows_with_missing_coordinates": 0,
+  "matched_fema_polygon": {
+    "true": 1000,
+    "false": 0,
+    "unknown": 0
   },
-  "is_sfha_counts": {
-    "False": 759,
-    "True": 241
+  "is_sfha": {
+    "true": 241,
+    "false": 759,
+    "unknown": 0
   },
-  "python_sfha_result_counts": {
-    "False": 759,
-    "True": 241
+  "python_sfha_result": {
+    "true": 241,
+    "false": 759,
+    "unknown": 0
   },
+  "matched_without_fema_zone": 0,
+  "matched_without_feature_index": 0,
+  "sfha_true_without_polygon_match": 0,
+  "is_sfha_python_result_disagreements": 0,
   "sfha_flag_counts": {
     "F": 759,
     "T": 241
@@ -25,5 +32,7 @@
   "fema_zone_counts": {
     "X": 759,
     "AE": 241
-  }
+  },
+  "fema_feature_count": 39,
+  "source_geometry_count": 1
 }
