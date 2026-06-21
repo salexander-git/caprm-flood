@@ -18,6 +18,6 @@
   "all_fields_agreement_rate": 1.0,
   "comparison_scope": "cpp",
   "total_python_source_rows": 1000,
-  "python_baseline": "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\baseline\\python_fema_membership.csv",
-  "cpp_output": "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp\\cpp_fema_membership_dev.csv"
+  "python_baseline": "outputs/baseline/python_fema_membership.csv",
+  "cpp_output": "outputs/cpp/cpp_fema_membership_dev.csv"
 }
