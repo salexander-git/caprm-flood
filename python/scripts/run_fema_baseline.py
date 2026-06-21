@@ -1,211 +1,110 @@
 from __future__ import annotations
 
 import argparse
-import json
+import sys
 from pathlib import Path
-from typing import Any
-
-import geopandas as gpd
-import pandas as pd
-import requests
-import yaml
 
 
-def load_yaml(path: Path) -> dict[str, Any]:
-    with path.open("r", encoding="utf-8") as f:
-        return yaml.safe_load(f)
+REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
+PYTHON_SOURCE_DIRECTORY = REPOSITORY_ROOT / "python"
 
+sys.path.insert(0, str(PYTHON_SOURCE_DIRECTORY))
 
-def first_existing_field(
-    gdf: gpd.GeoDataFrame,
-    candidates: list[str],
-    label: str,
-) -> str | None:
-    for field in candidates:
-        if field in gdf.columns:
-            return field
-
-    print(f"Warning: no {label} field found from candidates: {candidates}")
-    return None
-
-
-def fetch_nys_parcel_centroids(config: dict[str, Any]) -> gpd.GeoDataFrame:
-    pp = config["property_points"]
-
-    params = {
-        "where": f"{pp['county_field']} = '{pp['county_value']}'",
-        "outFields": "*",
-        "f": "geojson",
-        "returnGeometry": "true",
-        "resultRecordCount": pp.get("sample_limit", 1000),
-    }
-
-    print(f"Fetching property points from {pp['source_name']}...")
-    response = requests.get(pp["source_url"], params=params, timeout=120)
-    response.raise_for_status()
-
-    payload = response.json()
-    if "features" not in payload:
-        raise RuntimeError(
-            f"Unexpected parcel service response: {json.dumps(payload)[:500]}"
-        )
-
-    # ArcGIS GeoJSON query responses are generally returned as longitude/latitude.
-    gdf = gpd.GeoDataFrame.from_features(payload["features"], crs="EPSG:4326")
-
-    if gdf.empty:
-        raise RuntimeError("No property points returned. Check county filter and service query.")
-
-    id_field = first_existing_field(gdf, pp["id_field_candidates"], "property id")
-    if id_field is None:
-        gdf["property_id"] = [f"P{i:06d}" for i in range(len(gdf))]
-    else:
-        gdf["property_id"] = gdf[id_field].astype(str)
-
-    return gdf
-
-
-def load_fema_polygons(config: dict[str, Any]) -> gpd.GeoDataFrame:
-    fp = config["fema_flood_polygons"]
-    path = Path(fp["manual_input_path"])
-
-    if not path.exists():
-        raise FileNotFoundError(
-            f"FEMA polygon file not found: {path}\n"
-            "Download/extract FEMA NFHL data for Monroe County or New York, then update "
-            "configs/monroe_fema_spike.yaml -> fema_flood_polygons.manual_input_path."
-        )
-
-    print(f"Loading FEMA polygons from {path}...")
-    gdf = gpd.read_file(path)
-
-    if gdf.empty:
-        raise RuntimeError("FEMA polygon layer is empty.")
-
-    if gdf.crs is None:
-        raise RuntimeError("FEMA polygon layer has no CRS. Define CRS before continuing.")
-
-    return gdf
-
-
-def normalize_inputs(
-    properties: gpd.GeoDataFrame,
-    fema: gpd.GeoDataFrame,
-    project_crs: str,
-) -> tuple[gpd.GeoDataFrame, gpd.GeoDataFrame]:
-    print(f"Property CRS before transform: {properties.crs}")
-    print(f"FEMA CRS before transform: {fema.crs}")
-    print(f"Project CRS: {project_crs}")
-
-    properties_projected = properties.to_crs(project_crs)
-    fema_projected = fema.to_crs(project_crs)
-
-    # Preserve original lon/lat from the unprojected point geometry.
-    properties_projected["longitude"] = properties.geometry.x
-    properties_projected["latitude"] = properties.geometry.y
-
-    # Store projected coordinates used for spatial operations.
-    properties_projected["projected_x"] = properties_projected.geometry.x
-    properties_projected["projected_y"] = properties_projected.geometry.y
-
-    return properties_projected, fema_projected
-
-
-def normalize_sfha_flag(value: object) -> bool:
-    """
-    Convert FEMA SFHA_TF-style values into a Boolean.
-
-    Expected FEMA values are commonly T/F, but this function is defensive
-    against lowercase strings, true/false strings, and missing values.
-    """
-    if pd.isna(value):
-        return False
-
-    text = str(value).strip().upper()
-    return text in {"T", "TRUE", "Y", "YES", "1"}
-
-
-def run_point_in_polygon(
-    properties: gpd.GeoDataFrame,
-    fema: gpd.GeoDataFrame,
-    config: dict[str, Any],
-) -> pd.DataFrame:
-    fp = config["fema_flood_polygons"]
-
-    zone_field = first_existing_field(fema, fp["zone_field_candidates"], "FEMA zone")
-    sfha_field = first_existing_field(fema, fp["sfha_field_candidates"], "SFHA flag")
-    geom_id_field = first_existing_field(fema, fp["id_field_candidates"], "FEMA geometry id")
-
-    keep_fields = ["geometry"]
-    for field in [zone_field, sfha_field, geom_id_field]:
-        if field is not None and field not in keep_fields:
-            keep_fields.append(field)
-
-    fema_join = fema[keep_fields].copy()
-
-    print("Running GeoPandas point-in-polygon spatial join...")
-    joined = gpd.sjoin(
-        properties,
-        fema_join,
-        how="left",
-        predicate="within",
-    )
-
-    out = pd.DataFrame()
-    out["property_id"] = joined["property_id"]
-    out["latitude"] = joined["latitude"]
-    out["longitude"] = joined["longitude"]
-    out["projected_x"] = joined["projected_x"]
-    out["projected_y"] = joined["projected_y"]
-
-    out["fema_zone"] = joined[zone_field] if zone_field else None
-    out["sfha_flag"] = joined[sfha_field] if sfha_field else None
-    
-
-    if sfha_field:
-        out["is_sfha"] = joined[sfha_field].map(normalize_sfha_flag)
-    else:
-        out["is_sfha"] = False
-
-    out["source_geometry_id"] = (
-        joined[geom_id_field] if geom_id_field else joined.get("index_right")
-    )
-    
-    out["fema_feature_index"] = joined["index_right"]
-
-    # This means the point matched any FEMA polygon, including Zone X polygons.
-    # It does not mean the point is in a Special Flood Hazard Area.
-    out["matched_fema_polygon"] = joined["index_right"].notna()
-
-    # This is the Python baseline Boolean for FEMA SFHA membership.
-    out["python_sfha_result"] = out["is_sfha"]
-
-    return out
+from caprm.baseline import run_fema_point_in_polygon
+from caprm.crs import normalize_inputs
+from caprm.ingest import (
+    load_fema_polygons,
+    load_property_points,
+    load_yaml,
+    repository_path,
+)
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Run CAPRM-Flood FEMA Python baseline.")
+    parser = argparse.ArgumentParser(
+        description=(
+            "Run the cache-first CAPRM-Flood FEMA Python baseline."
+        )
+    )
+
     parser.add_argument(
         "--config",
         default="configs/monroe_fema_spike.yaml",
-        help="Path to YAML config.",
     )
+
+    parser.add_argument(
+        "--output",
+        default=None,
+        help=(
+            "Optional output override. The configured baseline path "
+            "is used by default."
+        ),
+    )
+
+    parser.add_argument(
+        "--refresh-properties",
+        action="store_true",
+        help=(
+            "Explicitly query ArcGIS and replace the property cache. "
+            "Without this flag, no remote property request is made."
+        ),
+    )
+
     args = parser.parse_args()
 
-    config = load_yaml(Path(args.config))
-    project_crs = config["project"]["project_crs"]
+    config = load_yaml(args.config)
 
-    properties = fetch_nys_parcel_centroids(config)
+    properties = load_property_points(
+        config,
+        refresh=args.refresh_properties,
+    )
+
     fema = load_fema_polygons(config)
-    properties_projected, fema_projected = normalize_inputs(properties, fema, project_crs)
 
-    output = run_point_in_polygon(properties_projected, fema_projected, config)
+    properties_projected, fema_projected = normalize_inputs(
+        properties,
+        fema,
+        config["project"]["project_crs"],
+    )
 
-    output_path = Path(config["outputs"]["python_baseline_csv"])
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    output.to_csv(output_path, index=False)
+    output = run_fema_point_in_polygon(
+        properties_projected,
+        fema_projected,
+        config,
+        predicate="within",
+    )
+
+    configured_output = config["outputs"][
+        "python_baseline_csv"
+    ]
+
+    output_path = repository_path(
+        args.output or configured_output
+    )
+
+    output_path.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    output.to_csv(
+        output_path,
+        index=False,
+    )
 
     print(f"Wrote {len(output)} rows to {output_path}")
+    print(
+        "Matched FEMA polygons: "
+        f"{int(output['matched_fema_polygon'].sum())}"
+    )
+    print(
+        "SFHA properties: "
+        f"{int(output['is_sfha'].sum())}"
+    )
+    print(
+        "Stable FEMA source IDs: "
+        f"{output['source_geometry_id'].nunique(dropna=True)}"
+    )
 
 
 if __name__ == "__main__":
