@@ -1,0 +1,29 @@
+{
+  "property_count": 1000,
+  "unique_property_ids": 1000,
+  "minimum_distance_m": 3.4026181572805485,
+  "maximum_distance_m": 824.8671113424665,
+  "mean_distance_m": 230.1924019054082,
+  "median_distance_m": 214.26162565131722,
+  "zero_distance_property_count": 0,
+  "multiple_nearest_tie_count": 0,
+  "unique_nearest_feature_count": 28,
+  "nearest_feature_class_counts": {
+    "flowline": 542,
+    "waterbody": 458
+  },
+  "nearest_feature_type_counts": {
+    "Channel Line": 542,
+    "Lake": 323,
+    "River": 119,
+    "Canal": 16
+  },
+  "distance_crs": "EPSG:26918",
+  "query_buffer_meters": 20000.0,
+  "tie_tolerance_meters": 1e-06,
+  "hydrography_feature_count": 4159,
+  "hydrography_cache": "data/raw/usgs_3dhp_monroe.gpkg",
+  "hydrography_cache_sha256": "3b942854dad7c3cdb92f4d13847e9c49134c69c053019cda16a56fa58e8069ed",
+  "property_cache": "data/processed/monroe_property_points_sample.geojson",
+  "output_csv": "outputs/baseline/python_nearest_water.csv"
+}

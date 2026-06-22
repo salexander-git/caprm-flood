@@ -56,3 +56,5 @@ hydrography:
 
 outputs:
   python_baseline_csv: outputs/baseline/python_fema_membership.csv
+  python_nearest_water_csv: outputs/baseline/python_nearest_water.csv
+  python_nearest_water_summary: outputs/validation/python_nearest_water_summary.json
