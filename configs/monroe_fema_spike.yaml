@@ -2,6 +2,7 @@ project:
   name: CAPRM-Flood
   study_region: Monroe County, New York
   project_crs: EPSG:3857
+  distance_crs: EPSG:26918
 
 property_points:
   source_name: NYS Tax Parcel Centroid Points
@@ -28,6 +29,30 @@ fema_flood_polygons:
     - FLD_AR_ID
     - DFIRM_ID
     - OBJECTID
+
+hydrography:
+  source_name: USGS 3D Hydrography Program
+  service_url: https://hydro.nationalmap.gov/arcgis/rest/services/3DHP_all/MapServer
+  query_crs: EPSG:26918
+  cache_crs: EPSG:4326
+  query_buffer_meters: 20000
+  cache_path: data/raw/usgs_3dhp_monroe.gpkg
+  manifest_path: outputs/validation/hydrography_cache_manifest.json
+
+  flowline:
+    layer_id: 50
+    included_feature_types:
+      - 1
+      - 2
+      - 3
+
+  waterbody:
+    layer_id: 60
+    included_feature_types:
+      - 1
+      - 2
+      - 3
+      - 4
 
 outputs:
   python_baseline_csv: outputs/baseline/python_fema_membership.csv

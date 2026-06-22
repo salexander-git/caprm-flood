@@ -1,0 +1,63 @@
+{
+  "created_at_utc": "2026-06-22T03:52:19.860791+00:00",
+  "source_name": "USGS 3D Hydrography Program",
+  "service_url": "https://hydro.nationalmap.gov/arcgis/rest/services/3DHP_all/MapServer",
+  "source_is_dynamic": true,
+  "property_cache": "data/processed/monroe_property_points_sample.geojson",
+  "query_crs": "EPSG:26918",
+  "cache_crs": "EPSG:4326",
+  "distance_crs": "EPSG:26918",
+  "query_buffer_meters": 20000.0,
+  "query_envelope": {
+    "min_x": 262030.012997746,
+    "min_y": 4754582.937280162,
+    "max_x": 309613.3726186929,
+    "max_y": 4796107.667782259
+  },
+  "query_completeness_condition": "Every computed nearest-water distance must be strictly less than query_buffer_meters. Otherwise features outside the cached envelope may be closer.",
+  "cache_path": "data/raw/usgs_3dhp_monroe.gpkg",
+  "cache_size_bytes": 13254656,
+  "cache_sha256": "3b942854dad7c3cdb92f4d13847e9c49134c69c053019cda16a56fa58e8069ed",
+  "layers": {
+    "flowline": {
+      "layer_id": 50,
+      "layer_name": "Flowline",
+      "geometry_type": "esriGeometryPolyline",
+      "object_id_field": "OBJECTID",
+      "max_record_count": 2500,
+      "where_clause": "featuretype IN (1,2,3)",
+      "returned_feature_count": 2595,
+      "feature_count": 2595,
+      "excluded_null_or_empty_geometry_count": 0,
+      "invalid_geometry_count": 0,
+      "geometry_types": {
+        "LineString": 2595
+      },
+      "feature_type_counts": {
+        "Channel Line": 2586,
+        "Canal": 9
+      }
+    },
+    "waterbody": {
+      "layer_id": 60,
+      "layer_name": "Waterbody",
+      "geometry_type": "esriGeometryPolygon",
+      "object_id_field": "OBJECTID",
+      "max_record_count": 2500,
+      "where_clause": "featuretype IN (1,2,3,4)",
+      "returned_feature_count": 1564,
+      "feature_count": 1564,
+      "excluded_null_or_empty_geometry_count": 0,
+      "invalid_geometry_count": 0,
+      "geometry_types": {
+        "Polygon": 1564
+      },
+      "feature_type_counts": {
+        "Lake": 1540,
+        "River": 18,
+        "Canal": 5,
+        "Ocean or Great Lake": 1
+      }
+    }
+  }
+}
