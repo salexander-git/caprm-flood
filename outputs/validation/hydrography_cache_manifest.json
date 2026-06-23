@@ -1,23 +1,51 @@
 {
-  "created_at_utc": "2026-06-22T03:52:19.860791+00:00",
+  "created_at_utc": "2026-06-22T05:26:00.057315+00:00",
   "source_name": "USGS 3D Hydrography Program",
   "service_url": "https://hydro.nationalmap.gov/arcgis/rest/services/3DHP_all/MapServer",
   "source_is_dynamic": true,
+  "study_area_basis": "Official Monroe County boundary plus a metric outward buffer.",
+  "study_area": {
+    "source_name": "U.S. Census Bureau TIGERweb Counties",
+    "service_url": "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer",
+    "layer_id": 1,
+    "county_geoid": "36055",
+    "county_name": "Monroe County, New York",
+    "source_vintage": "January 1, 2025",
+    "boundary_cache": "data/raw/census_monroe_county_2025.geojson",
+    "boundary_cache_size_bytes": 47851,
+    "boundary_cache_sha256": "edc75fa8a51c1231b7de36d524c6ecd3863741f318721e007d538c0d2d1602d9",
+    "boundary_query": {
+      "service_url": "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer",
+      "layer_id": 1,
+      "layer_name": "Counties",
+      "layer_description": "Counties (or statistically equivalent entities); January 1, 2025 vintage",
+      "geometry_type": "esriGeometryPolygon",
+      "county_geoid": "36055",
+      "returned_feature_count": 1
+    },
+    "county_area_sq_km": 3541.1124572315275,
+    "buffered_study_area_sq_km": 9682.44131769981
+  },
   "property_cache": "data/processed/monroe_property_points_sample.geojson",
+  "property_coverage": {
+    "property_count": 1000,
+    "properties_covered_by_county": 1000,
+    "properties_outside_county": 0
+  },
   "query_crs": "EPSG:26918",
   "cache_crs": "EPSG:4326",
   "distance_crs": "EPSG:26918",
   "query_buffer_meters": 20000.0,
   "query_envelope": {
-    "min_x": 262030.012997746,
-    "min_y": 4754582.937280162,
-    "max_x": 309613.3726186929,
-    "max_y": 4796107.667782259
+    "min_x": 236235.71981709276,
+    "min_y": 4737475.950337737,
+    "max_x": 327420.15089077724,
+    "max_y": 4855261.863185232
   },
-  "query_completeness_condition": "Every computed nearest-water distance must be strictly less than query_buffer_meters. Otherwise features outside the cached envelope may be closer.",
+  "query_completeness_condition": "All selected hydrography features intersecting the official county boundary plus the configured buffer are cached. For a property covered by the county polygon, a nearest distance strictly less than the buffer proves that no feature outside the cached study area can be closer.",
   "cache_path": "data/raw/usgs_3dhp_monroe.gpkg",
-  "cache_size_bytes": 13254656,
-  "cache_sha256": "3b942854dad7c3cdb92f4d13847e9c49134c69c053019cda16a56fa58e8069ed",
+  "cache_size_bytes": 21155840,
+  "cache_sha256": "3510ad04f6aae545274ea34bd4a33f17da5667c679f495cfb4706ffc6d7c5de8",
   "layers": {
     "flowline": {
       "layer_id": 50,
@@ -26,17 +54,20 @@
       "object_id_field": "OBJECTID",
       "max_record_count": 2500,
       "where_clause": "featuretype IN (1,2,3)",
-      "returned_feature_count": 2595,
-      "feature_count": 2595,
+      "returned_feature_count": 7168,
+      "canonical_feature_count": 7168,
       "excluded_null_or_empty_geometry_count": 0,
       "invalid_geometry_count": 0,
       "geometry_types": {
-        "LineString": 2595
+        "LineString": 7168
       },
       "feature_type_counts": {
-        "Channel Line": 2586,
-        "Canal": 9
-      }
+        "Channel Line": 6910,
+        "Canal": 258
+      },
+      "feature_count_before_study_filter": 7168,
+      "retained_feature_count": 5600,
+      "excluded_outside_study_area_count": 1568
     },
     "waterbody": {
       "layer_id": 60,
@@ -45,19 +76,22 @@
       "object_id_field": "OBJECTID",
       "max_record_count": 2500,
       "where_clause": "featuretype IN (1,2,3,4)",
-      "returned_feature_count": 1564,
-      "feature_count": 1564,
+      "returned_feature_count": 3462,
+      "canonical_feature_count": 3462,
       "excluded_null_or_empty_geometry_count": 0,
       "invalid_geometry_count": 0,
       "geometry_types": {
-        "Polygon": 1564
+        "Polygon": 3462
       },
       "feature_type_counts": {
-        "Lake": 1540,
-        "River": 18,
+        "Lake": 3419,
+        "River": 37,
         "Canal": 5,
         "Ocean or Great Lake": 1
-      }
+      },
+      "feature_count_before_study_filter": 3462,
+      "retained_feature_count": 2972,
+      "excluded_outside_study_area_count": 490
     }
   }
 }
