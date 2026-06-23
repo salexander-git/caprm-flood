@@ -1,154 +1,144 @@
 # Validation
 
-## Purpose
+## Validation contract
 
-Validation ensures that CAPRM-Flood's C++ spatial feature-extraction implementation reproduces the Python GeoPandas/Shapely baseline before performance optimization or additional feature layers are added.
+CAPRM-Flood treats Python GeoPandas/Shapely calculations as trusted geospatial references and evaluates independently implemented C++ results against them before making systems-performance claims.
 
-Milestone 1 validates FEMA flood-zone membership and Special Flood Hazard Area membership for a Monroe County property-point sample.
+Validation requires:
 
-## Validation Pipeline
+- complete property-ID coverage;
+- no missing Python or C++ rows;
+- exact categorical and identifier agreement;
+- documented numerical tolerance for distance;
+- explicit CRS agreement;
+- nonzero exit status when the comparison contract fails.
 
-The validation workflow is:
+## FEMA validation
 
-```text
-NYS property points
-        +
-FEMA flood-zone polygons
-        ↓
-Python GeoPandas/Shapely baseline
-        ↓
-C++ input fixture export
-        ↓
-C++ point-in-polygon implementation
-        ↓
-Python/C++ comparison report
-```
-
-## Python Baseline
-
-Script:
-
-```text
-python/scripts/run_fema_baseline.py
-```
-
-Output:
-
-```text
-outputs/baseline/python_fema_membership.csv
-```
-
-The Python baseline uses GeoPandas spatial join behavior with projected property points and FEMA flood-hazard polygons.
-
-Important fields:
+The FEMA comparison aligns results by canonical `property_id` and checks:
 
 ```text
 matched_fema_polygon
-is_sfha
+is_sfha / cpp_sfha_result
 fema_zone
 fema_feature_index
 ```
 
-`matched_fema_polygon` indicates whether a property point matched any FEMA polygon. `is_sfha` indicates whether the matched FEMA polygon is marked as a Special Flood Hazard Area.
+The feature-index check is intentionally stricter than Boolean SFHA agreement. It verifies that Python and C++ selected the same exported FEMA source feature.
 
-## C++ Output
+### Results
 
-C++ source:
+| Workload | Rows | Coverage | All-field agreement |
+|---:|---:|---:|---:|
+| 1K | 1,000 | 100% | 1,000/1,000 |
+| 10K | 10,000 | 100% | 10,000/10,000 |
+| 100K | 100,000 | 100% | 100,000/100,000 |
+| Countywide | 267,362 | 100% | 267,362/267,362 |
 
-```text
-cpp/spatial_core/src/fema_pip_dev.cpp
-```
+The countywide comparison includes the four properties unmatched by both implementations.
 
-Output:
+## Nearest-water validation
 
-```text
-outputs/cpp/cpp_fema_membership_1000.csv
-```
-
-Important fields:
-
-```text
-cpp_matched_fema_polygon
-cpp_sfha_result
-cpp_fema_zone
-cpp_fema_feature_index
-```
-
-## Comparison Script
-
-Script:
+The water comparison aligns the union of Python and C++ property IDs and checks:
 
 ```text
-python/scripts/compare_python_cpp_fema.py
+nearest-water distance within 1e-6 m
+canonical nearest feature ID
+feature class
+feature type
+source feature ID
+source object ID
+feature name
+multiple-nearest tie count
+distance CRS
 ```
 
-Default inputs:
+Both C++ algorithms are validated independently against Python.
+
+### Results
+
+| Workload | Brute-force agreement | Indexed agreement | Maximum absolute error |
+|---:|---:|---:|---:|
+| 1K | 1,000/1,000 | 1,000/1,000 | `4.386e-10 m` |
+| 10K | 10,000/10,000 | 10,000/10,000 | `4.637e-10 m` |
+| 100K | 100,000/100,000 | 100,000/100,000 | `4.656e-10 m` |
+| Countywide | 267,362/267,362 | 267,362/267,362 | `4.658e-10 m` |
+
+The observed errors are approximately four orders of magnitude below the `1e-6 m` acceptance tolerance.
+
+## Geometry semantics
+
+### FEMA polygons
+
+- Python uses `within` semantics.
+- C++ reconstructs feature parts and rings.
+- Exterior rings include the feature interior.
+- Interior holes are excluded.
+- Feature bounding boxes prefilter impossible matches.
+
+### Water lines and polygons
+
+- Line distance is the minimum exact point-to-segment distance.
+- A property inside a waterbody polygon has distance zero.
+- A point inside a polygon hole is not treated as inside water.
+- Polygon boundary and segment distance are handled by the same exact geometry kernel in brute force and BVH search.
+- Equal-distance nearest features are retained for tie counting and resolved by deterministic canonical feature ID order.
+
+## Cache and workload validation
+
+The data pipeline validates:
+
+- immutable 1K regression-cache checksum;
+- exact nested prefixes for 10K, 100K, and countywide workloads;
+- unique canonical `SBL` values;
+- contiguous `sample_order`;
+- finite Point geometry;
+- current-source overlap and coordinate drift within `1e-9` degrees;
+- hydrography checksum and CRS agreement;
+- reference-to-export property and feature alignment;
+- expected feature, vertex, and segment counts across benchmark trials.
+
+The countywide cache retained all 267,362 unique current-source `SBL` values and matched all 100,000 validated-prefix coordinates within tolerance.
+
+## Automated tests
+
+The Python test suite covers:
+
+- FEMA baseline and comparison behavior;
+- deterministic ingestion, ArcGIS batching, retry logic, duplicate IDs, and cache validation;
+- county study-area retrieval and caching;
+- hydrography inclusion, cache, and geometry behavior;
+- nearest-water distance, ties, waterbody interiors, holes, and completeness;
+- C++ input flattening and alignment;
+- strict water comparison logic;
+- benchmark output parsing and summary generation;
+- integrated evidence schema and provenance requirements;
+- larger and countywide workload construction.
+
+Final result:
 
 ```text
-outputs/baseline/python_fema_membership.csv
-outputs/cpp/cpp_fema_membership_1000.csv
+55 passed in 1.06s
 ```
 
-Default outputs:
+## Evidence integration gate
 
-```text
-outputs/validation/fema_pip_1000_agreement_report.csv
-outputs/validation/fema_pip_1000_summary.json
-```
+`build_property_evidence.py` refuses to build the integrated table unless:
 
-## Agreement Metrics
+- both FEMA and water baseline inputs exist;
+- FEMA validation reports full agreement;
+- indexed-water validation reports full agreement;
+- the benchmark summary contains both `brute_force` and `feature_bvh` results;
+- property IDs and required evidence fields align.
 
-The comparison checks:
+The resulting manifest stores validation-summary paths and checksums, benchmark metadata, output checksum, schema version, aggregate evidence statistics, and explicit confirmation that scoring is not included.
 
-```text
-matched_fema_polygon vs cpp_matched_fema_polygon
-is_sfha vs cpp_sfha_result
-fema_zone vs cpp_fema_zone
-fema_feature_index vs cpp_fema_feature_index
-```
+## Known limitations
 
-The feature-index comparison is stricter than merely checking the Boolean SFHA result. It confirms that the C++ implementation identifies the same FEMA polygon feature as the Python baseline for each property point.
-
-## Milestone 1 Validation Result
-
-The 1,000-property validation run produced:
-
-```json
-{
-  "total_cpp_rows": 1000,
-  "total_joined_rows": 1000,
-  "missing_python_rows": 0,
-  "matched_agreements": 1000,
-  "sfha_agreements": 1000,
-  "zone_agreements": 1000,
-  "feature_index_agreements": 1000,
-  "all_fields_agree": 1000,
-  "matched_agreement_rate": 1.0,
-  "sfha_agreement_rate": 1.0,
-  "zone_agreement_rate": 1.0,
-  "feature_index_agreement_rate": 1.0,
-  "all_fields_agreement_rate": 1.0
-}
-```
-
-This result means the C++ point-in-polygon prototype reproduced the Python baseline for all 1,000 tested property points.
-
-## Development Fixture
-
-A smaller 25-property development fixture is generated by:
-
-```text
-python/scripts/create_cpp_dev_fixture.py
-```
-
-It is used for rapid C++ debugging before running the 1,000-property validation set.
-
-The development fixture produced 100% agreement after hole handling was added to the C++ polygon test.
-
-## Known Validation Limitations
-
-The current sample is a 1,000-record service-return sample from Monroe County, not a randomized or countywide exhaustive validation set.
-
-The C++ prototype does not yet implement a full spatial index. It uses a feature-level bounding-box prefilter, which is adequate for the current validation but should be replaced or supplemented by an R-tree or similar indexing structure for larger benchmarks.
-
-Boundary-case behavior has not yet been stress-tested. Future validation should include synthetic points exactly on polygon boundaries, points inside polygon holes, points outside all FEMA polygons, and points near overlapping or adjacent polygons.
+- Agreement with Python validates implementation consistency; it is not independent ground-truth validation of FEMA or USGS source accuracy.
+- Invalid FEMA source geometries were retained when baseline-referenced. Full agreement does not repair or certify those geometries.
+- The `within` predicate excludes exact polygon-boundary points by definition. Boundary behavior should remain explicit if later requirements change to `covers` or another predicate.
+- Peak memory is not validated or benchmarked.
+- Large-scale benchmark timing has only one measured trial at 100K and countywide scale.
+- The current C++ computation timer includes CSV output and progress logging.
+- Property centroids can misrepresent parcel or building intersection with a hazard feature.
