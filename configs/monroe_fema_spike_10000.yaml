@@ -9,14 +9,14 @@ property_points:
   source_url: https://gisservices.its.ny.gov/arcgis/rest/services/NYS_Tax_Parcel_Centroid_Points/FeatureServer/0/query
   county_field: COUNTY_NAME
   county_value: Monroe
-  canonical_id_field: SBL
   id_field_candidates:
     - SBL
     - PRINT_KEY
     - OBJECTID
+  canonical_id_field: SBL
   object_id_batch_size: 500
-  sample_limit: 1000
-  output_path: data/processed/monroe_property_points_sample.geojson
+  sample_limit: 10000
+  output_path: data/processed/monroe_property_points_sample_10000.geojson
 
 fema_flood_polygons:
   source_name: FEMA NFHL
@@ -67,8 +67,8 @@ hydrography:
       - 4
 
 outputs:
-  python_baseline_csv: outputs/baseline/python_fema_membership.csv
-  python_nearest_water_csv: outputs/baseline/python_nearest_water.csv
-  python_nearest_water_summary: outputs/validation/python_nearest_water_summary.json
-  integrated_property_evidence_csv: outputs/evidence/property_flood_evidence.csv
-  integrated_property_evidence_manifest: outputs/validation/property_flood_evidence_manifest.json
+  python_baseline_csv: outputs/baseline/python_fema_membership_10000.csv
+  python_nearest_water_csv: outputs/baseline/python_nearest_water_10000.csv
+  python_nearest_water_summary: outputs/validation/python_nearest_water_10000_summary.json
+  integrated_property_evidence_csv: outputs/evidence/property_flood_evidence_10000.csv
+  integrated_property_evidence_manifest: outputs/validation/property_flood_evidence_10000_manifest.json

@@ -13,10 +13,12 @@ from pyproj import CRS
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 PYTHON_SOURCE_DIRECTORY = REPOSITORY_ROOT / "python"
 
-sys.path.insert(0, str(PYTHON_SOURCE_DIRECTORY))
+sys.path.insert(
+    0,
+    str(PYTHON_SOURCE_DIRECTORY),
+)
 
 from caprm.hydrography import (
-    build_query_envelope,
     calculate_sha256,
     canonicalize_hydrography,
     query_arcgis_layer,
@@ -26,6 +28,16 @@ from caprm.ingest import (
     load_property_points,
     load_yaml,
     repository_path,
+)
+from caprm.study_area import (
+    build_buffered_study_area,
+    filter_features_to_study_area,
+    load_study_area_cache,
+    query_county_boundary,
+    study_area_envelope,
+    study_area_statistics,
+    validate_properties_within_county,
+    write_study_area_cache,
 )
 
 
@@ -47,7 +59,7 @@ def epsg_code(crs_value: str) -> int:
 
     if code is None:
         raise ValueError(
-            f"CRS does not resolve to an EPSG code: "
+            "CRS does not resolve to an EPSG code: "
             f"{crs_value}"
         )
 
@@ -57,9 +69,9 @@ def epsg_code(crs_value: str) -> int:
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=(
-            "Query and cache selected USGS 3DHP flowlines and "
-            "waterbodies surrounding the deterministic property "
-            "sample."
+            "Cache selected USGS 3DHP flowlines and "
+            "waterbodies intersecting the official Monroe "
+            "County boundary plus the configured metric buffer."
         )
     )
 
@@ -72,8 +84,16 @@ def main() -> None:
         "--overwrite",
         action="store_true",
         help=(
-            "Replace an existing hydrography cache. The source "
-            "service is never refreshed implicitly."
+            "Replace the existing hydrography cache."
+        ),
+    )
+
+    parser.add_argument(
+        "--refresh-study-area",
+        action="store_true",
+        help=(
+            "Refresh the official Census county-boundary "
+            "cache before querying hydrography."
         ),
     )
 
@@ -82,9 +102,21 @@ def main() -> None:
     config_path = repository_path(args.config)
     config = load_yaml(config_path)
 
+    study_area_config = config.get(
+        "study_area"
+    )
+
     hydrography_config = config.get(
         "hydrography"
     )
+
+    if not isinstance(
+        study_area_config,
+        dict,
+    ):
+        raise ValueError(
+            "Configuration is missing study_area."
+        )
 
     if not isinstance(
         hydrography_config,
@@ -94,7 +126,7 @@ def main() -> None:
             "Configuration is missing hydrography."
         )
 
-    cache_path = repository_path(
+    hydrography_cache_path = repository_path(
         hydrography_config["cache_path"]
     )
 
@@ -102,16 +134,20 @@ def main() -> None:
         hydrography_config["manifest_path"]
     )
 
-    if cache_path.exists() and not args.overwrite:
-        raise FileExistsError(
-            f"Hydrography cache already exists: {cache_path}\n"
-            "Use --overwrite only for an intentional source refresh."
-        )
-
-    properties = load_property_points(
-        config,
-        refresh=False,
+    county_cache_path = repository_path(
+        study_area_config["cache_path"]
     )
+
+    if (
+        hydrography_cache_path.exists()
+        and not args.overwrite
+    ):
+        raise FileExistsError(
+            "Hydrography cache already exists: "
+            f"{hydrography_cache_path}\n"
+            "Use --overwrite only for an intentional "
+            "source refresh."
+        )
 
     query_crs = hydrography_config[
         "query_crs"
@@ -121,24 +157,24 @@ def main() -> None:
         "cache_crs"
     ]
 
+    distance_crs = config["project"][
+        "distance_crs"
+    ]
+
+    if query_crs != distance_crs:
+        raise ValueError(
+            "Hydrography query_crs and project "
+            "distance_crs must match."
+        )
+
     query_buffer_meters = float(
         hydrography_config[
             "query_buffer_meters"
         ]
     )
 
-    envelope = build_query_envelope(
-        properties=properties,
-        query_crs=query_crs,
-        buffer_meters=query_buffer_meters,
-    )
-
     query_epsg = epsg_code(query_crs)
     cache_epsg = epsg_code(cache_crs)
-
-    service_url = hydrography_config[
-        "service_url"
-    ]
 
     session = requests.Session()
     session.headers.update(
@@ -149,6 +185,91 @@ def main() -> None:
             )
         }
     )
+
+    county_query_statistics = None
+
+    if (
+        args.refresh_study_area
+        or not county_cache_path.exists()
+    ):
+        county, county_query_statistics = (
+            query_county_boundary(
+                session=session,
+                service_url=(
+                    study_area_config[
+                        "service_url"
+                    ]
+                ),
+                layer_id=int(
+                    study_area_config[
+                        "layer_id"
+                    ]
+                ),
+                county_geoid=str(
+                    study_area_config[
+                        "county_geoid"
+                    ]
+                ),
+                output_crs_wkid=epsg_code(
+                    study_area_config[
+                        "cache_crs"
+                    ]
+                ),
+            )
+        )
+
+        write_study_area_cache(
+            county,
+            county_cache_path,
+        )
+    else:
+        county = load_study_area_cache(
+            county_cache_path,
+            expected_geoid=str(
+                study_area_config[
+                    "county_geoid"
+                ]
+            ),
+        )
+
+    county_cache_checksum = calculate_sha256(
+        county_cache_path
+    )
+
+    properties = load_property_points(
+        config,
+        refresh=False,
+    )
+
+    property_coverage = (
+        validate_properties_within_county(
+            properties,
+            county,
+        )
+    )
+
+    buffered_study_area = (
+        build_buffered_study_area(
+            county=county,
+            distance_crs=query_crs,
+            buffer_meters=(
+                query_buffer_meters
+            ),
+        )
+    )
+
+    envelope = study_area_envelope(
+        buffered_study_area
+    )
+
+    area_statistics = study_area_statistics(
+        county,
+        buffered_study_area,
+    )
+
+    service_url = hydrography_config[
+        "service_url"
+    ]
 
     layer_outputs = {}
     layer_statistics = {}
@@ -161,6 +282,13 @@ def main() -> None:
             feature_class
         ]
 
+        included_feature_types = [
+            int(value)
+            for value in layer_config[
+                "included_feature_types"
+            ]
+        ]
+
         raw, query_statistics = (
             query_arcgis_layer(
                 session=session,
@@ -168,12 +296,9 @@ def main() -> None:
                 layer_id=int(
                     layer_config["layer_id"]
                 ),
-                included_feature_types=[
-                    int(value)
-                    for value in layer_config[
-                        "included_feature_types"
-                    ]
-                ],
+                included_feature_types=(
+                    included_feature_types
+                ),
                 envelope=envelope,
                 query_crs_wkid=query_epsg,
                 output_crs_wkid=cache_epsg,
@@ -184,20 +309,34 @@ def main() -> None:
             canonicalize_hydrography(
                 dataframe=raw,
                 feature_class=feature_class,
-                included_feature_types=[
-                    int(value)
-                    for value in layer_config[
-                        "included_feature_types"
-                    ]
-                ],
+                included_feature_types=(
+                    included_feature_types
+                ),
             )
         )
 
-        layer_outputs[feature_class] = canonical
+        retained, filter_statistics = (
+            filter_features_to_study_area(
+                canonical,
+                buffered_study_area,
+            )
+        )
+
+        layer_outputs[feature_class] = retained
+
+        canonical_feature_count = int(
+            canonical_statistics.pop(
+                "feature_count"
+            )
+        )
 
         layer_statistics[feature_class] = {
             **query_statistics,
+            "canonical_feature_count": (
+                canonical_feature_count
+            ),
             **canonical_statistics,
+            **filter_statistics,
         }
 
     write_hydrography_cache(
@@ -205,7 +344,7 @@ def main() -> None:
         waterbodies=layer_outputs[
             "waterbody"
         ],
-        output_path=cache_path,
+        output_path=hydrography_cache_path,
     )
 
     manifest = {
@@ -217,6 +356,55 @@ def main() -> None:
         ],
         "service_url": service_url,
         "source_is_dynamic": True,
+        "study_area_basis": (
+            "Official Monroe County boundary plus a "
+            "metric outward buffer."
+        ),
+        "study_area": {
+            "source_name": (
+                study_area_config[
+                    "source_name"
+                ]
+            ),
+            "service_url": (
+                study_area_config[
+                    "service_url"
+                ]
+            ),
+            "layer_id": int(
+                study_area_config[
+                    "layer_id"
+                ]
+            ),
+            "county_geoid": str(
+                study_area_config[
+                    "county_geoid"
+                ]
+            ),
+            "county_name": (
+                study_area_config[
+                    "county_name"
+                ]
+            ),
+            "source_vintage": (
+                study_area_config[
+                    "source_vintage"
+                ]
+            ),
+            "boundary_cache": display_path(
+                county_cache_path
+            ),
+            "boundary_cache_size_bytes": (
+                county_cache_path.stat().st_size
+            ),
+            "boundary_cache_sha256": (
+                county_cache_checksum
+            ),
+            "boundary_query": (
+                county_query_statistics
+            ),
+            **area_statistics,
+        },
         "property_cache": display_path(
             repository_path(
                 config["property_points"][
@@ -224,11 +412,12 @@ def main() -> None:
                 ]
             )
         ),
+        "property_coverage": (
+            property_coverage
+        ),
         "query_crs": query_crs,
         "cache_crs": cache_crs,
-        "distance_crs": config["project"][
-            "distance_crs"
-        ],
+        "distance_crs": distance_crs,
         "query_buffer_meters": (
             query_buffer_meters
         ),
@@ -239,16 +428,21 @@ def main() -> None:
             "max_y": envelope[3],
         },
         "query_completeness_condition": (
-            "Every computed nearest-water distance must be "
-            "strictly less than query_buffer_meters. Otherwise "
-            "features outside the cached envelope may be closer."
+            "All selected hydrography features intersecting "
+            "the official county boundary plus the configured "
+            "buffer are cached. For a property covered by the "
+            "county polygon, a nearest distance strictly less "
+            "than the buffer proves that no feature outside "
+            "the cached study area can be closer."
         ),
-        "cache_path": display_path(cache_path),
+        "cache_path": display_path(
+            hydrography_cache_path
+        ),
         "cache_size_bytes": (
-            cache_path.stat().st_size
+            hydrography_cache_path.stat().st_size
         ),
         "cache_sha256": calculate_sha256(
-            cache_path
+            hydrography_cache_path
         ),
         "layers": layer_statistics,
     }
@@ -259,11 +453,19 @@ def main() -> None:
     )
 
     manifest_path.write_text(
-        json.dumps(manifest, indent=2),
+        json.dumps(
+            manifest,
+            indent=2,
+        ),
         encoding="utf-8",
     )
 
-    print(json.dumps(manifest, indent=2))
+    print(
+        json.dumps(
+            manifest,
+            indent=2,
+        )
+    )
 
 
 if __name__ == "__main__":
