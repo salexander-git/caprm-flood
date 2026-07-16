@@ -36,6 +36,28 @@ DEFAULT_WEIGHTS = {
 
 COMPONENT_NAMES = tuple(DEFAULT_WEIGHTS)
 
+# Decimal places the composite is rounded to before it is ranked or stored.
+#
+# Under any percentile-based weighting the composite lies on a lattice.
+# Each percentile component is rank * 100/n with ranks in half steps, so
+# with the default weights the composite is 0.40*C_fema plus a multiple of
+# 2.5/n, about 9.4e-6 for the countywide workload. Distinct rank triples
+# collide on that lattice constantly: many properties have mathematically
+# identical composites.
+#
+# Float arithmetic separates a colliding pair by around 1e-14, depending on
+# operation order. Ranking the unrounded value therefore imposes an
+# ordering on properties that are tied in substance, and the ordering comes
+# from rounding order rather than from evidence. It also means the stored
+# percentile cannot be reproduced from the stored index, because writing
+# the index at 12 decimal places re-merges the pair.
+#
+# Rounding at 1e-9 sits four orders of magnitude below the smallest
+# distinction the lattice can express and five above float noise. It merges
+# only values that are tied in substance, and it makes the artifact
+# reproducible from itself.
+COMPOSITE_DECIMALS = 9
+
 # Mapped FEMA flood-hazard zones in ascending severity.
 #
 # A matched property carrying any zone absent from this table raises rather
@@ -434,8 +456,12 @@ def build_exposure_index(
     merged["exposure_index_0_100"] = sum(
         scoring_weights[name] * merged[COMPONENT_COLUMNS[name]]
         for name in COMPONENT_NAMES
-    )
+    ).round(COMPOSITE_DECIMALS)
 
+    # Ranked from the rounded composite, so properties whose components
+    # combine to the same value share a rank rather than being ordered by
+    # float noise. This also makes the stored percentile reproducible from
+    # the stored index.
     merged["exposure_percentile"] = percentile_score(
         merged["exposure_index_0_100"],
         higher_value_is_higher_exposure=True,
