@@ -17,9 +17,11 @@ sys.path.insert(0, str(PYTHON_SOURCE_DIRECTORY))
 from caprm.ingest import repository_path
 from caprm.scoring import (
     DEFAULT_WEIGHTS,
+    SCORING_POLICY_VERSION,
     build_exposure_index,
     calculate_sha256,
     summarize_exposure_index,
+    validate_weights,
 )
 
 
@@ -57,7 +59,10 @@ def main() -> None:
 
     parser.add_argument(
         "--manifest-output",
-        default="outputs/validation/property_exposure_index_countywide_manifest.json",
+        default=(
+            "outputs/validation/"
+            "property_exposure_index_countywide_manifest.json"
+        ),
     )
 
     parser.add_argument(
@@ -70,7 +75,25 @@ def main() -> None:
         default="EPSG:26918",
     )
 
+    parser.add_argument(
+        "--weights",
+        default=None,
+        help=(
+            "JSON object of component weights. Must contain exactly "
+            "fema, water, terrain_absolute, and terrain_relative, and must "
+            'sum to 1.0. Example: \'{"fema":0.4,"water":0.35,'
+            '"terrain_absolute":0.15,"terrain_relative":0.1}\'. '
+            "Defaults to caprm.scoring.DEFAULT_WEIGHTS."
+        ),
+    )
+
     args = parser.parse_args()
+
+    # Validate before reading any input so a bad weight specification fails
+    # immediately rather than after a countywide read.
+    scoring_weights = validate_weights(
+        json.loads(args.weights) if args.weights else DEFAULT_WEIGHTS
+    )
 
     evidence_path = repository_path(args.evidence)
     terrain_path = repository_path(args.terrain)
@@ -92,6 +115,7 @@ def main() -> None:
         terrain=terrain,
         expected_distance_crs=args.distance_crs,
         expected_terrain_crs=args.terrain_crs,
+        weights=scoring_weights,
     )
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -104,7 +128,7 @@ def main() -> None:
 
     manifest = {
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
-        "schema_version": "preliminary_exposure_index_v1",
+        "schema_version": SCORING_POLICY_VERSION,
         "input_evidence": display_path(evidence_path),
         "input_evidence_sha256": calculate_sha256(evidence_path),
         "input_terrain": display_path(terrain_path),
@@ -113,8 +137,11 @@ def main() -> None:
         "output_sha256": calculate_sha256(output_path),
         "distance_crs": args.distance_crs,
         "terrain_crs": args.terrain_crs,
-        "weights": DEFAULT_WEIGHTS,
-        "summary": summarize_exposure_index(index),
+        # The weights actually applied, not the defaults. These plus the
+        # two input tables are sufficient to reproduce the index.
+        "weights": scoring_weights,
+        "weights_are_default": scoring_weights == DEFAULT_WEIGHTS,
+        "summary": summarize_exposure_index(index, scoring_weights),
         "interpretation": (
             "The exposure index is a preliminary relative ranking built from "
             "validated evidence components. It is not a flood-probability "

@@ -133,15 +133,8 @@ def spearman_matrix(frame: pd.DataFrame) -> dict[str, dict[str, float]]:
     transform already applied to three of the four components. Correlation
     between components therefore equals correlation between the raw
     evidence they came from.
-
-    Ranking first and taking the default Pearson correlation is exactly
-    equivalent to method="spearman" with average tie handling, and keeps
-    this consistent with caprm.scoring.spearman_correlation. It also avoids
-    depending on which pandas code path handles method="spearman": the
-    DataFrame form uses an internal implementation, while the Series form
-    requires scipy.
     """
-    matrix = frame.rank().corr()
+    matrix = frame.corr(method="spearman")
 
     return {
         str(row): {

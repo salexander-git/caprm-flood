@@ -78,7 +78,10 @@ def build_summary(
             ["Metric", "Value"],
             [
                 ["Property count", terrain_summary["property_count"]],
-                ["Unique property IDs", terrain_summary["unique_property_ids"]],
+                [
+                    "Unique property IDs",
+                    terrain_summary["unique_property_ids"],
+                ],
                 ["Minimum elevation m", terrain_summary["minimum_elevation_m"]],
                 ["Maximum elevation m", terrain_summary["maximum_elevation_m"]],
                 ["Mean elevation m", terrain_summary["mean_elevation_m"]],
@@ -101,9 +104,17 @@ def build_summary(
                 ],
                 ["Missing slope count", terrain_summary["missing_slope_count"]],
                 ["Mean slope degrees", terrain_summary["mean_slope_degrees"]],
-                ["Median slope degrees", terrain_summary["median_slope_degrees"]],
+                [
+                    "Median slope degrees",
+                    terrain_summary["median_slope_degrees"],
+                ],
             ],
         )
+    )
+    lines.append("")
+    lines.append(
+        "Slope is preserved as terrain evidence and does not enter the "
+        "exposure index."
     )
     lines.append("")
 
@@ -124,7 +135,10 @@ def build_summary(
                     index_summary["maximum_exposure_index"],
                 ],
                 ["Mean exposure index", index_summary["mean_exposure_index"]],
-                ["Median exposure index", index_summary["median_exposure_index"]],
+                [
+                    "Median exposure index",
+                    index_summary["median_exposure_index"],
+                ],
                 [
                     "Minimum exposure percentile",
                     index_summary["minimum_exposure_percentile"],
@@ -132,12 +146,6 @@ def build_summary(
                 [
                     "Maximum exposure percentile",
                     index_summary["maximum_exposure_percentile"],
-                ],
-                ["Mean FEMA component", index_summary["mean_fema_component"]],
-                ["Mean water component", index_summary["mean_water_component"]],
-                [
-                    "Mean terrain component",
-                    index_summary["mean_terrain_component"],
                 ],
             ],
         )
@@ -147,15 +155,48 @@ def build_summary(
     lines.append("## Scoring Policy")
     lines.append("")
     lines.append(
+        f"- Policy version: `{index_summary['scoring_policy_version']}`"
+    )
+    lines.append(
+        f"- Weights are default: {index_manifest.get('weights_are_default')}"
+    )
+    lines.append("")
+
+    influence = index_summary["component_influence"]["components"]
+
+    # Iterate the manifest's weights rather than a hard-coded component
+    # list, so a new evidence family does not silently drop out of the
+    # report.
+    lines.append(
         markdown_table(
-            ["Component", "Weight"],
             [
-                ["FEMA flood-zone evidence", index_manifest["weights"]["fema"]],
-                ["Nearest-water evidence", index_manifest["weights"]["water"]],
-                ["Terrain evidence", index_manifest["weights"]["terrain"]],
+                "Component",
+                "Weight",
+                "Mean score",
+                "Variance share",
+                "Spearman vs index",
+            ],
+            [
+                [
+                    name,
+                    influence[name]["weight"],
+                    index_summary["component_means"][name],
+                    influence[name]["variance_share"],
+                    influence[name]["spearman_with_index"],
+                ]
+                for name in index_manifest["weights"]
             ],
         )
     )
+    lines.append("")
+    lines.append(
+        "Nominal weight and measured influence differ because the components "
+        "do not have equal spread. The percentile components are uniform by "
+        "construction, while the FEMA component is concentrated on a small "
+        "number of values."
+    )
+    lines.append("")
+    lines.append(index_summary["component_influence"]["method"])
     lines.append("")
 
     lines.append("## Interpretation Boundary")
@@ -177,12 +218,18 @@ def main() -> None:
 
     parser.add_argument(
         "--terrain-manifest",
-        default="outputs/validation/property_terrain_evidence_countywide_manifest.json",
+        default=(
+            "outputs/validation/"
+            "property_terrain_evidence_countywide_manifest.json"
+        ),
     )
 
     parser.add_argument(
         "--index-manifest",
-        default="outputs/validation/property_exposure_index_countywide_manifest.json",
+        default=(
+            "outputs/validation/"
+            "property_exposure_index_countywide_manifest.json"
+        ),
     )
 
     parser.add_argument(
