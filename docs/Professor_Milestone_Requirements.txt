@@ -1,0 +1,377 @@
+CAPRM-Flood — Professor / Course Milestone Requirements
+Canonical working record
+Last updated: 2026-07-15
+
+PURPOSE
+=======
+
+This file preserves the externally imposed CSCI 788 course and milestone requirements that should constrain CAPRM-Flood planning.
+
+It is deliberately separate from:
+
+- CAPRM_Flood_Project_Nucleus_2026-07-15.md
+- CAPRM_Flood_Current_Status.md
+- CAPRM_Flood_Roadmap.md
+- Capstone_Proposal.pdf
+
+Those documents contain project-specific architecture, implementation decisions, and self-imposed quality standards.
+
+This file should answer a different question:
+
+    What does the course / professor actually require?
+
+IMPORTANT SOURCE NOTE
+=====================
+
+The requirements below are reconstructed from the available CSCI 788 course lecture transcript and the professor/course guidance previously discussed during this project.
+
+Do not treat project-specific roadmap items as professor-mandated unless they are explicitly identified here.
+
+No detailed project-specific Milestone 3 technical rubric was found in the available course materials. Therefore:
+
+- the professor/course defines the milestone and presentation structure;
+- the faculty advisor evaluates the milestone deliverables;
+- CAPRM-Flood's detailed technical milestone contents are project/advisor planning decisions unless separately confirmed.
+
+When this file conflicts with a later written rubric, assignment page, or direct professor/advisor instruction, the newer explicit instruction should take precedence.
+
+
+1. COURSE PURPOSE
+=================
+
+CSCI 788 includes a required colloquium component intended to:
+
+- help students stay on track toward project completion;
+- develop presentation and visualization skills;
+- develop scientific/technical writing skills;
+- provide practice designing and critiquing presentations;
+- support preparation of reports and posters;
+- culminate in a public poster session.
+
+The colloquium instructor oversees lectures and student presentations.
+
+The student's overall project grade is determined through a combination of:
+
+- faculty-advisor assessment;
+- colloquium-instructor assessment;
+- faculty feedback on the final poster.
+
+
+2. CONFIRMED GRADE STRUCTURE
+============================
+
+The course lecture described the overall grading structure as follows:
+
+Final report assessed by faculty advisor:
+    45% of overall grade
+
+Faculty feedback on final poster:
+    15% of overall grade
+
+Milestone deliverables assessed by faculty advisor:
+    20% of overall grade
+
+Colloquium-instructor component:
+    20% of overall grade
+
+The colloquium-instructor component was described as:
+
+    60% presentations
+    20% participation / feedback
+    20% homework assignments
+
+Expressed as approximate shares of the overall course grade:
+
+    presentations:          12%
+    participation:           4%
+    homework:                4%
+
+The 20% faculty-advisor milestone-deliverable portion is distributed across three milestones.
+
+If divided evenly, each milestone is worth approximately:
+
+    6.67% of the overall course grade
+
+However, the faculty advisor is the evaluator of those milestone deliverables.
+
+
+3. REQUIRED PRESENTATIONS
+=========================
+
+The course includes four class presentations:
+
+1. Project Overview Presentation
+2. Milestone 1 Presentation
+3. Milestone 2 Presentation
+4. Milestone 3 Presentation
+
+The professor stated that the live presentation itself should be designed for approximately:
+
+    8 minutes
+
+The surrounding time slot allows additional time for questions and discussion.
+
+The professor reasoned that an 8-minute presentation will often correspond to approximately:
+
+    5–6 substantive slides
+
+depending on how much time each slide requires.
+
+This is presentation-design guidance, not a rigid slide-count rule.
+
+The practical constraint is:
+
+    Design the presentation to fit comfortably within 8 minutes.
+
+
+4. PRESENTATION EXPECTATIONS
+============================
+
+Course presentation guidance emphasized communicating a clear technical story rather than simply listing project sections.
+
+Presentations should generally:
+
+- establish a compelling motivation;
+- explain why the problem matters;
+- use a clear storyline;
+- be audience-centered;
+- explain the project top-down before diving into detail;
+- use concrete examples before or alongside technical detail where useful;
+- avoid excessive slide density;
+- use visual explanation where it improves understanding;
+- make the main takeaway clear;
+- present actual implementation/progress evidence;
+- explain evaluation or validation rather than only describing intended future work.
+
+The project should not spend presentation time on material that does not help the audience understand:
+
+- the problem;
+- what was built;
+- what changed since the previous milestone;
+- how the work was evaluated;
+- what the results show;
+- what remains next.
+
+For CAPRM-Flood, milestone presentations should therefore emphasize verified progress and measured results, not merely restate the original proposal.
+
+
+5. MILESTONE DELIVERABLE STRUCTURE
+==================================
+
+There are three milestone deliverables.
+
+The faculty advisor assesses the milestone deliverables.
+
+The colloquium course separately includes Milestone 1, Milestone 2, and Milestone 3 presentations.
+
+The available course materials do NOT establish one universal project-specific technical checklist for every student's milestone.
+
+Therefore, for CAPRM-Flood:
+
+CONFIRMED EXTERNAL REQUIREMENT:
+    Show substantive project progress at each milestone and provide the milestone deliverable expected by the faculty advisor.
+
+PROJECT-SPECIFIC IMPLEMENTATION PLAN:
+    Defined in CAPRM_Flood_Roadmap.md and the advisor/project planning context.
+
+Do not confuse the latter with a professor-issued rubric.
+
+
+6. WHAT A CAPRM-FLOOD MILESTONE PRESENTATION SHOULD PROVE
+=========================================================
+
+This section is an application of the confirmed course presentation expectations to CAPRM-Flood. It is not a verbatim professor rubric.
+
+Each milestone presentation should make it possible for the audience to understand:
+
+1. What technical goal the milestone addressed.
+2. What was actually implemented.
+3. What data and methods were used.
+4. What changed from the previous milestone.
+5. How correctness or validity was checked.
+6. What measurable results were obtained.
+7. What limitations or unresolved issues remain, where relevant.
+8. What the next milestone will do.
+
+For an 8-minute presentation, only the strongest evidence should be shown.
+
+Do not attempt to present the entire repository.
+
+
+7. REPORT-RELATED COURSE CONTEXT
+================================
+
+The final report is a major course deliverable and is assessed by the faculty advisor.
+
+Confirmed overall weighting:
+
+    Final report: 45% of overall grade
+
+The course also includes writing-focused instruction and homework involving report preparation.
+
+Based on the report-writing guidance already extracted and used in CAPRM-Flood work, the currently relevant technical report material includes sections covering:
+
+- System Architecture
+- Implementation
+- Validation Methodology
+- Results
+
+These sections should describe the implemented system and the evidence supporting its claims rather than repeat proposal language.
+
+A separate Limitations section should only be included where required by the final report structure or where it materially improves accurate interpretation; it should not be inserted into a constrained assignment section merely because it is generally good practice.
+
+Where exact page-length requirements have been given for an individual homework/report-section assignment, follow that assignment's specific instructions rather than this general file.
+
+
+8. POSTER REQUIREMENT
+=====================
+
+The colloquium culminates in a poster session open to the public.
+
+Computer Science faculty attend and assess posters.
+
+Faculty poster feedback contributes:
+
+    15% of the overall course grade
+
+The course schedule includes poster-design discussion before the final poster session.
+
+CAPRM-Flood should therefore eventually produce a poster that communicates:
+
+- project motivation;
+- system architecture;
+- implementation;
+- evaluation methodology;
+- key results;
+- conclusions / limitations at an appropriate level.
+
+The poster is a final communication artifact, not a substitute for the underlying implementation.
+
+
+9. PARTICIPATION REQUIREMENT
+============================
+
+Participation and feedback are part of the colloquium-instructor grade.
+
+The professor explicitly described participation as being based on ongoing observation of engagement, including activities such as:
+
+- participating in class discussion;
+- asking questions;
+- providing feedback.
+
+This component accounts for approximately:
+
+    4% of the overall course grade
+
+It is evaluated throughout the course rather than retroactively at the end.
+
+
+10. HOMEWORK COMPONENT
+======================
+
+Homework accounts for approximately:
+
+    4% of the overall course grade
+
+The professor described four homework assignments, with examples/categories including:
+
+- project information;
+- report-related sections;
+- poster-related work.
+
+Each homework assignment represents 25% of the homework component.
+
+Specific assignment instructions should take precedence over this summary.
+
+
+11. CURRENT COURSE TIMELINE CONTEXT
+===================================
+
+The course sequence described in the available materials includes:
+
+- introduction / presentation guidance;
+- project overview presentations;
+- Milestone 1 presentations;
+- writing discussion;
+- Milestone 2 presentations;
+- report / poster-design discussion;
+- Milestone 3 presentations;
+- poster presentations / poster session;
+- final report.
+
+For CAPRM-Flood as of 2026-07-15:
+
+    Project Overview: completed
+    Milestone 1: completed
+    Milestone 2: completed
+    Milestone 3: current phase
+
+The immediate course-facing milestone is therefore Milestone 3.
+
+
+12. WHAT IS NOT CONFIRMED AS A PROFESSOR REQUIREMENT
+====================================================
+
+The following may be good or important CAPRM-Flood engineering goals, but they should NOT automatically be represented as explicit professor/course requirements unless separately confirmed:
+
+- a specific number of evidence families;
+- precipitation as a Milestone 3 requirement;
+- a specific terrain algorithm;
+- sensitivity analysis specifically during Milestone 3;
+- Docker;
+- FastAPI;
+- a 1-million-property benchmark;
+- a particular C++ spatial index;
+- a particular scoring formula;
+- a specific Git branching strategy;
+- a specific repository structure;
+- a specific number of unit tests;
+- a specific benchmark speedup target.
+
+These belong to the project's technical plan and quality standard unless the advisor or professor explicitly requires them.
+
+
+13. REQUIREMENT-HIERARCHY RULE FOR FUTURE AI ASSISTANTS
+=======================================================
+
+When deciding what CAPRM-Flood must do, use this hierarchy:
+
+1. New direct written instruction from the professor or faculty advisor.
+2. Formal assignment/rubric text.
+3. This Professor_Milestone_Requirements.txt file.
+4. CAPRM_Flood_Project_Nucleus_2026-07-15.md.
+5. CAPRM_Flood_Current_Status.md.
+6. CAPRM_Flood_Roadmap.md.
+7. Older project plans and proposal-era assumptions.
+
+The roadmap may intentionally exceed minimum course requirements in order to produce a stronger technical artifact.
+
+Do not cut roadmap work merely because it is not professor-mandated if it remains valuable and feasible.
+
+Conversely, do not claim that a self-imposed roadmap item is required by the professor.
+
+
+14. CURRENT PRACTICAL INTERPRETATION FOR MILESTONE 3
+====================================================
+
+For the current Milestone 3 phase, the externally constrained goal is:
+
+    Demonstrate substantive new project progress in an approximately 8-minute milestone presentation and satisfy the faculty advisor's milestone deliverable expectations.
+
+For CAPRM-Flood, the strongest current Milestone 3 story is expected to come from:
+
+- the addition of countywide terrain/elevation evidence;
+- the transition from raw evidence toward a preliminary relative exposure index;
+- explicit scoring methodology;
+- validation/testing;
+- countywide results;
+- sensitivity or robustness analysis if completed before the milestone presentation;
+- a clear statement of what remains for final project completion.
+
+The exact technical content is governed by the current repository and CAPRM_Flood_Roadmap.md, not by a known professor-issued technical checklist.
+
+
+15. CANONICAL SUMMARY
+=====================
+
+CSCI 788 requires three milestone deliverables assessed by the faculty advisor and three corresponding milestone presentations in the colloquium, in addition to the initial project overview presentation. Presentations should be designed for approximately eight minutes, with additional time reserved for questions/discussion; roughly five to six substantive slides is reasonable guidance rather than a hard rule. The course emphasizes clear, audience-centered technical communication, concrete progress, evaluation, scientific/technical writing, and final poster preparation. The final report carries 45% of the overall grade, faculty poster feedback 15%, faculty-advisor milestone deliverables 20%, and the colloquium-instructor component 20%. CAPRM-Flood's detailed technical roadmap intentionally goes beyond these generic course requirements and should not be misrepresented as a professor-issued milestone rubric.
