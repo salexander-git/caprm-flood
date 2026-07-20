@@ -60,6 +60,8 @@ property-level evidence, score, and regional ranking
 
 The flood-exposure index is the application-layer output. The main computer science and engineering contribution is the system that makes the evidence behind that index **correct, deterministic, reproducible, benchmarkable, inspectable, and traceable to source data**.
 
+The index is not the claim. It is the reason the extraction has to be fast, exact, and checkable.
+
 ---
 
 # 2. Core Problem
@@ -69,6 +71,30 @@ Given a large set of property locations in a selected region and a collection of
 > Can a transparent C++/Python processing system derive defensible property-level flood-exposure evidence efficiently and reproducibly, validate the spatial computations across implementations, and convert those evidence fields into an interpretable relative exposure ranking?
 
 The project addresses this as a batch-processing and evidence-engineering problem.
+
+Milestones 1 through 3 answered that question affirmatively and produced the evidence. Milestone 4 asks the sharper form of it:
+
+> The exact geometric computation is expensive. What are the ways to make it cheap, what does each one cost, and how do you know?
+
+Two answers exist, and the project implements both:
+
+```text
+learn where to look     -> a learned spatial index.  Still exact. Faster.
+learn the answer        -> a neural surrogate.       Approximate. Fastest.
+                                                     The error is structured.
+```
+
+Pursuing the first leads somewhere the literature has not been. Learned spatial
+indexes are evaluated almost exclusively on point data, and several return
+approximate results. This project's data is line segments and polygon
+boundaries, and its query is exact nearest neighbour. Section 14b states the
+resulting research question and the evidence that the gap is real.
+
+Both are measured against an exact baseline whose correctness is already proven
+field-by-field against an independent implementation. That combination —
+an approximate method, and infrastructure that can prove exactly how wrong it
+is — is the project's distinguishing property. The learned-index literature
+reports speed and assumes correctness; this project can verify it.
 
 For each property, the system is designed to answer questions such as:
 
@@ -106,7 +132,10 @@ Current implemented evidence families are:
 2. **Hydrography / nearest-water evidence**
 3. **Terrain / elevation evidence**
 
-A preliminary derived exposure-index layer has also been implemented.
+A derived exposure-index layer has also been implemented, together with
+rank-based sensitivity analysis and an automated product audit.
+
+A fourth precipitation family is planned as a gated stretch goal. See section 14b.
 
 Planned later work adds precipitation evidence and then revisits the scoring/index design with a fuller evidence set.
 
@@ -201,10 +230,15 @@ unmatched  4   no zone
 ```
 
 SFHA status is perfectly determined by zone in this dataset: every matched
-non-X zone is SFHA, and X never is. `is_sfha` therefore carries no information
-beyond `fema_zone` for the current workload. That relationship is a property of
-this data, not a guarantee of the FEMA schema, and should not be assumed to hold
-for another county or a future NFHL vintage.
+non-X zone is SFHA, and X never is. `is_sfha` therefore carries no
+information beyond `fema_zone` for the current workload, and does not
+contribute to the score. It is retained as a validation cross-check enforcing
+the FEMA invariant that a property cannot be SFHA without matching a
+flood-hazard polygon.
+
+The zone-to-SFHA relationship is a property of this data, not a guarantee of
+the FEMA schema, and should not be assumed to hold for another county or a
+future NFHL vintage.
 
 ## 5.3 USGS Hydrography / 3D Hydrography Program
 
@@ -316,8 +350,9 @@ The central design principle is:
 
 CRS handling is a first-class engineering requirement.
 
-The detailed canonical policy lives in the repository at `docs/crs_policy.md`.
-This section records the durable principle; that file records the operational rules.
+The detailed operational policy lives in the repository at
+`docs/crs_policy.md`. This section records the durable principle; that file
+records the rules.
 
 ## Principle
 
@@ -369,6 +404,8 @@ Any future raster or interpolated family must document its own native CRS,
 resampling or interpolation policy, target CRS, units, and distortion
 implications. It must not inherit the FEMA EPSG:3857 path merely because that
 path exists.
+
+---
 
 # 8. Determinism and Traceability
 
@@ -532,6 +569,29 @@ That pattern became the basis for later spatial kernels.
 
 ---
 
+## Where machine learning sits in the boundary
+
+Milestone 4 introduces trained models. They do not change the boundary; they
+follow it.
+
+```text
+Python  trains.    Model fitting, evaluation, error analysis, held-out
+                   splits, artifacts, manifests. Training is offline, once,
+                   and reproducibility comes from a recorded seed and a
+                   checksummed model artifact.
+
+C++     infers.    A recursive model index is a handful of multiply-adds.
+                   Porting inference is trivial; porting training would be
+                   pointless. Inference is on the query path, which is the
+                   only place performance is claimed.
+```
+
+A trained model is an artifact like any other: it has a manifest, a checksum,
+a recorded seed, and a documented training set. A result produced by a model
+whose weights are not checksummed is not reproducible.
+
+---
+
 # 13. Milestone 2 — Nearest-Water Evidence and Countywide Scaling
 
 Milestone 2 extended the project from polygon membership to nearest-feature spatial analysis.
@@ -568,66 +628,297 @@ The validated Milestone 2 FEMA/water evidence is a preserved upstream product an
 
 ---
 
-# 14. Milestone 3 — Terrain Evidence and Preliminary Exposure Index
+# 14. Milestone 3 — Terrain Evidence and Exposure Index
 
-Milestone 3 introduces the third implemented evidence family: raster-derived terrain.
+Milestone 3 introduces the third implemented evidence family, raster-derived
+terrain, and the first derived scoring layer.
 
-Current Milestone 3 implementation includes:
+Current implementation:
 
 ```text
 python/caprm/terrain.py
 python/caprm/scoring.py
+python/caprm/sensitivity.py
+python/caprm/audit.py
 
 python/scripts/prepare_terrain_raster.py
 python/scripts/build_terrain_evidence.py
 python/scripts/build_exposure_index.py
 python/scripts/summarize_milestone3_results.py
+python/scripts/summarize_scoring_inputs.py
+python/scripts/summarize_component_correlation.py
+python/scripts/analyze_scoring_sensitivity.py
+python/scripts/audit_milestone3_products.py
 
 tests/test_terrain.py
 tests/test_scoring.py
+tests/test_sensitivity.py
+tests/test_audit.py
+
+docs/scoring_methodology.md
 ```
 
-The implementation was committed to Git at:
-
-```text
-0dd85ab Add Milestone 3 terrain evidence and exposure scoring
-```
-
-and pushed to the GitHub repository's `master` branch on July 15, 2026.
-
-Current generated terrain/index artifacts include:
-
-```text
-data/raw/terrain/source_dem/monroe_3dep_13arcsec.tif
-data/raw/terrain/monroe_dem_utm18.tif
-
-outputs/evidence/property_terrain_evidence_countywide.csv
-outputs/validation/property_terrain_evidence_countywide_manifest.json
-
-outputs/index/property_exposure_index_countywide.csv
-outputs/validation/property_exposure_index_countywide_manifest.json
-
-outputs/validation/milestone3_results_summary.md
-```
-
-These large data/output paths are runtime artifacts rather than ordinary Git-tracked source files.
-
-The current countywide terrain and preliminary index products contain:
+The current countywide products contain:
 
 ```text
 267,362 unique property IDs
 0 missing slope values
 terrain elevation range: approximately 75.000–296.309 m
-preliminary exposure index range: approximately 7.915–99.929
-preliminary exposure index mean: approximately 34.632
-preliminary exposure index median: approximately 33.728
+exposure index range: approximately 7.915–99.929
+exposure index mean: approximately 34.632
+exposure index median: approximately 33.728
 ```
 
-The full automated test suite passed after the terrain and preliminary scoring implementation.
+Scoring policy `preliminary_exposure_index_v2`.
 
-Milestone 3 is not yet considered fully closed merely because these outputs exist. Remaining work includes hardening the scoring methodology, sensitivity analysis, reproducibility cleanup, final regeneration/audit of milestone artifacts, and documentation/runbook work.
+Milestone 3's lasting contributions are not the terrain fields or the score.
+They are three methodological patterns:
 
-Those remaining tasks belong in `CAPRM_Flood_Roadmap.md` and `CAPRM_Flood_Current_Status.md`, rather than being expanded exhaustively here.
+**A manifest must reproduce the result it describes.** The first scoring
+implementation recorded three weights while applying five. The index could not
+be recomputed from its own manifest. This is now a structural requirement
+verified on every audit run.
+
+**A stability metric must be calibrated before it is trusted.** Three of four
+components are percentile ranks, and reweighting a linear sum of rank
+variables tends to preserve order, so a high rank correlation could have been
+an artifact of the design rather than a finding. Reference configurations that
+are deliberately implausible establish the floor.
+
+**Measured influence is not nominal weight.** A weight expresses intent; the
+variance decomposition expresses effect. Reporting only the former invites a
+reader to assume the wrong component dominates.
+
+The exact remaining tasks belong in `CAPRM_Flood_Roadmap.md` and
+`CAPRM_Flood_Current_Status.md`.
+
+---
+
+# 14b. Milestone 4 — Learned Indexing of Extended Spatial Objects
+
+Milestone 4 is where the project's computer-science contribution is
+concentrated. It adds no evidence family. It asks a question the literature has
+not asked, using a dataset that forced the question.
+
+## The research question
+
+> Learned spatial indexes are evaluated almost exclusively on **point** data
+> with range and kNN queries, and several return **approximate** results. Does
+> the approach extend to **exact nearest-neighbour queries over extended
+> objects** — line segments and polygon boundaries — and what does exactness
+> cost?
+
+## The gap, and the evidence that it exists
+
+The learned spatial index literature is large and active: ZM-index, ML-Index,
+HM-Index, IF-Index, RSMI, LISA, Flood, Tsunami, LMSFC, WaZI, SLBRIN. Every one
+of them indexes point data.
+
+This is not an inference from reading them. The RLR-Tree authors state it as a
+limitation of the entire class:
+
+> "they can only handle spatial point objects while our proposed method is able
+> to handle any spatial data, such as rectangular objects"
+> — RLR-Tree, arXiv:2103.04541
+
+The same passage records two further weaknesses:
+
+> "some of these learned indices return approximate query results while our
+> query results are accurate"
+
+> "some of them do not consider KNN queries ... LISA extends their algorithm
+> for range queries to handle KNN queries by issuing a series of range queries
+> until k points are found. However, the query performance largely depends on
+> the size of the region used."
+
+A comprehensive benchmark now exists — *How good are multi-dimensional learned
+indexes? An experimental survey*, VLDB Journal 2024 — and it finds that IF-Index,
+Flood, and LISA robustly outperform non-learned baselines while ZM-index,
+ML-Index, and RSMI cannot systematically do so. It evaluates point data.
+
+So three properties are simultaneously outside the literature:
+
+```text
+extended objects        rather than points
+exact nearest neighbour rather than kNN over points, or approximate results
+verified exactness      rather than assumed exactness
+```
+
+**This is an unexplored corner, not an open problem.** The distinction matters
+and the project should state it plainly. Nobody has done this because nobody
+needed to, not because it is hard. The contribution available here is a
+rigorous measurement the literature lacks, not a solution to something the
+field is stuck on.
+
+## Why the project arrives here without contrivance
+
+The path was forced by the project's own measurement, not chosen to
+accommodate machine learning:
+
+```text
+the Feature BVH stalls at 93.34% pruning
+  because water features are enormous and 104x size-heterogeneous
+    so index segments rather than features
+      segments are small and roughly uniform in size
+        so they can be ordered by midpoint along a space-filling curve,
+        nearly losslessly
+          which is what makes a learned index possible at all
+            and roughly 1,063,159 segments is squarely learned-index scale
+```
+
+**The reason nobody learned-indexes extended objects is that extended objects
+break space-filling curves.** A long object occupies many cells; its midpoint
+is a lie; the smallest-enclosing-cell approach places anything crossing a
+partition boundary at the root. This is why R-trees exist.
+
+The granularity change dissolves that objection. A segment between two
+consecutive vertices of Lake Ontario's boundary is small. The project did not
+select segments to enable learning; it selected them because its own benchmark
+showed features were 104 times too large, and the learning became possible as a
+consequence.
+
+## The technical problem: search-radius inflation
+
+Ordering segments by midpoint breaks exact nearest-neighbour search unless the
+search radius is inflated.
+
+A segment's midpoint can lie outside a query disk while its nearest point lies
+inside it. Searching `disk(r)` by midpoint therefore misses that segment. To
+remain exact, the search must cover:
+
+```text
+disk(r + L/2)      where L is the longest segment in the index
+```
+
+**That inflation is the entire cost of treating extended objects as points**,
+and it is tunable. Grouping segments into runs reduces node count and improves
+traversal, but enlarges the extent of each entry and therefore the inflation.
+No theory predicts the optimum; it is an empirical property of the data.
+
+A single long segment inflates every query in the index. Whether the project's
+hydrography contains such outliers — a straight canal reach represented as one
+long segment, for instance — is measurable and must be measured before anything
+is built on top of it.
+
+## The project's unusual asset
+
+The learned-index literature generally reports speed and assumes correctness.
+Some of it returns approximate results by design.
+
+This project has an **exactness oracle**: a trusted Python reference and a
+comparison harness that has already proven field-by-field agreement across
+267,362 properties. Any learned method can therefore be verified rather than
+asserted.
+
+That combination — an approximate method, and infrastructure that can prove
+exactly how wrong it is — is what the project has and the literature generally
+does not.
+
+## The implementations
+
+```text
+1. brute force              no index                    existing
+2. Feature BVH              2D,  8,572 features         existing
+3. Segment BVH              2D, ~1M segments
+4. Hilbert + binary search  1D, ~1M segments            control
+5. Hilbert + RMI            1D, ~1M segments            learned position
+6. + learned radius         seeds the search disk       stretch
+```
+
+The comparisons that matter are adjacent, never global:
+
+```text
+3 vs 2   granularity              does indexing geometry beat indexing features
+4 vs 3   dimensionality reduction what does flattening 2D to 1D cost
+5 vs 4   machine learning         same data, order, decomposition, and kernel.
+                                  The only difference is whether a model or a
+                                  binary search finds the position.
+6 vs 5   learned radius           does predicting the answer accelerate
+                                  computing it exactly
+```
+
+**Implementation 4 is not optional.** Without it, comparing a segment index
+against a learned index confounds the dimensionality reduction with the
+learning, and a loss could not be attributed to either.
+
+## The learned radius, and why it unifies the two halves
+
+The RLR-Tree authors note that kNN performance "largely depends on the size of
+the region used." That region can be learned.
+
+The neural surrogate trains a mapping from coordinates to the index. The water
+component of the index is a percentile of distance-to-nearest-water, so the same
+machinery trains a mapping from coordinates to that distance — a **distance
+field**.
+
+A predicted radius seeds the exact query. Search `disk(r_hat + L/2)`; if a
+candidate is found at distance `d <= r_hat`, then `disk(d)` was fully covered
+and `d` is provably correct. If nothing is found, double and retry.
+
+**Overestimating is safe and merely slower. Underestimating costs a retry.**
+Biasing the model to overestimate makes it an admissible heuristic. The exact
+kernel still decides, so correctness never depends on the model being good.
+
+This makes the surrogate load-bearing rather than a curiosity: the approximate
+answer is used to make the exact answer fast. The two halves of Milestone 4
+stop being separate projects.
+
+## Why this does not deviate from the project
+
+`benchmarkable` is one of the six properties named in the contribution
+statement in section 1. Milestone 4 is the most benchmarkable work the project
+can do: six implementations, one exact geometry kernel, one validation harness,
+exact agreement required of every implementation that claims to be exact.
+
+The exposure index is unchanged and remains preliminary. It stops being the
+story and returns to being the application layer.
+
+## Honest risks, stated in advance
+
+**The result may be uninteresting.** If segments are effectively points, the
+finding reduces to "learned indexes work on points," which is known. The
+mitigation is that the inflation radius *is* the extended-object problem, and
+characterizing its cost is a contribution regardless of which implementation
+wins.
+
+**The learned index may lose.** At roughly one million keys in two dimensions,
+a well-built segment index may simply be better. This is unremarkable: the
+published record already shows that ZM-index, ML-Index, and RSMI cannot
+systematically outperform non-learned indexes. A negative result, measured
+against an exact baseline with verified correctness, is a finding.
+
+**The project will not beat R-trees.** It does not need to. The question is
+whether the approach extends to a query class the literature has not touched,
+and what it costs.
+
+## Scope decision: precipitation becomes a gated stretch goal
+
+Precipitation was planned as the fourth evidence family and was presented as a
+Milestone 3 forward-looking goal. It is not cancelled. It is outranked.
+
+A fourth family adds ingestion, provenance, and validation work, and adds no
+algorithmic content. The project's identified weakness is that its
+computer-science contribution stalled after Milestone 2's Feature BVH; a
+fourth data source would not address it. The remaining time buys more by going
+deeper on index structure than wider on evidence.
+
+**Gate.** Precipitation may begin only after the segment index, the learned
+index, and the surrogate are complete and documented. A stretch goal without an
+explicit precondition becomes roadmap noise.
+
+**Its value is architectural, not evidentiary.** Precipitation is the fourth
+data topology — interpolated point statistics. Section 1 claims the evidence
+contract generalizes across topologies, and terrain demonstrated that for
+raster. Precipitation would confirm the claim rather than restate it. That is
+worth having if the time exists, and not worth having at the cost of the
+computational work.
+
+**Ordering consequence.** The surrogate learns a mapping from coordinates to
+the index as frozen at `preliminary_exposure_index_v2`. If precipitation lands
+afterward, the index becomes a five-component v3 and the surrogate continues to
+describe v2. That is acceptable and must be documented rather than repaired:
+the surrogate's claim is that it can approximate a deterministic geometric
+function, not that it approximates whichever index is current.
 
 ---
 
@@ -656,12 +947,14 @@ Future terrain sophistication should only be added if it materially improves def
 
 # 16. Preliminary Exposure Index
 
-The project includes a preliminary deterministic exposure-index implementation in:
+The project includes a deterministic exposure-index implementation in:
 
 ```text
 python/caprm/scoring.py
 python/scripts/build_exposure_index.py
 ```
+
+The methodology is documented in `docs/scoring_methodology.md`.
 
 The conceptual scoring pipeline is:
 
@@ -689,28 +982,56 @@ Its main design requirements are:
 - rankings must be described as relative to the selected study region;
 - sensitivity analysis must test how dependent the rankings are on weighting assumptions.
 
-The current index should be treated as **preliminary** until the remaining Milestone 3 sensitivity and scoring-policy work is complete.
+The current index should be treated as **preliminary** until the precipitation
+evidence family is added and the final index methodology is revisited with the
+full evidence set.
 
-The project should not present one weighting configuration as objectively true merely because it produces a clean ranking.
+The project should not present one weighting configuration as objectively true
+merely because it produces a clean ranking.
 
-## Known properties of the current preliminary implementation
+## Durable properties of the scoring layer
 
-Recorded here because they are durable facts about the design, not transient status:
+Recorded here because they are facts about the design rather than transient
+status.
 
-- The index consumes FEMA zone/SFHA/match, nearest-water distance, terrain
-  elevation, and terrain relative elevation. **Slope is extracted and stored as
-  evidence but does not enter any score.**
-- The terrain component contains internal sub-weights (0.60 absolute elevation,
-  0.40 relative elevation) that are separate from the three top-level component
-  weights and are not currently exposed as configuration.
-- The FEMA component is absolute and threshold-based. The water and terrain
-  components are percentile ranks over the supplied workload, so they are
-  distribution-dependent by construction: scoring a subset yields different
-  scores for the same property. The index is meaningful only for the full
-  countywide workload.
-- Because percentile components have a mean fixed near 50 by construction, the
-  countywide mean of the composite is determined almost entirely by the FEMA
-  component.
+**Four components, four declared weights.** No component applies an internal
+sub-weight. The manifest's weights plus the evidence tables are sufficient to
+reproduce the index. This is a requirement, not a convenience: a manifest that
+records some of the constants and leaves the rest in source cannot support a
+reproducibility claim.
+
+**Slope is extracted and preserved as evidence but does not score.** Whether
+it should is a methodology question, not a defect. The directionality is not
+obvious: steep slope implies runoff, flat implies ponding.
+
+**FEMA is absolute; water and terrain are percentile ranks over the
+workload.** The percentile components are distribution-dependent by
+construction, so scoring a subset yields different scores for the same
+property. The index is meaningful only for the full countywide population and
+is not comparable across workloads or NFHL vintages.
+
+**The composite is rounded before ranking** so that properties tied in
+substance share a rank. The composite lies on a lattice, and float noise would
+otherwise impose an ordering sourced from operation order rather than
+evidence.
+
+**Nominal weight is not influence.** Influence scales with weight times spread,
+and the components do not have equal spread. Percentile components are uniform
+by construction (σ ≈ 28.87); the FEMA component is concentrated (σ ≈ 11.39,
+with 98.1% of properties tied at one value). Water carries 35% of the weight
+and 65% of the variance; FEMA carries 40% and 17%.
+
+This is not a defect to be corrected. FEMA adds a constant to 98.1% of
+properties, and constants do not affect ranking; its role is to move the 1.9%
+it has information about decisively. Transforming the component to give it
+comparable spread would invent distinctions the source data does not contain.
+
+**The components are near-orthogonal.** Maximum pairwise rank correlation is
+0.152. None duplicates another.
+
+**Rank stability is moderately sensitive to weight choice.** The extremes are
+immovable; the middle ordering depends on assumptions. The measured
+characterization is that the index reliably identifies the extremes.
 
 ---
 
@@ -796,22 +1117,125 @@ Reason:
 
 The repository should remain usable and reviewable while preserving scripts, manifests, small fixtures, and instructions needed to reconstruct large artifacts.
 
+## 18.10 A manifest must reproduce the result it describes
+
+Reason:
+
+No constant may live only in source. A manifest recording some of the inputs
+to a calculation, with the rest hidden in code, cannot support a
+reproducibility claim, and is worse than an obviously incomplete manifest
+because it looks complete.
+
+## 18.11 Round a derived score before ranking it
+
+Reason:
+
+A composite built from rank-based components lies on a lattice, so distinct
+inputs collide on identical values. Float noise separates those collisions by
+around 1e-14, which lets a rank function impose an ordering sourced from
+operation order rather than from evidence. Rounding at a threshold derived
+from the lattice spacing merges only values tied in substance.
+
+## 18.12 Declare a threshold before measuring against it
+
+Reason:
+
+A threshold chosen after inspecting the result it is meant to judge makes the
+verdict unfalsifiable.
+
+## 18.13 Calibrate a metric before trusting it
+
+Reason:
+
+A stability metric that cannot distinguish a genuinely different configuration
+from the baseline is uninformative, and a high score on it means nothing.
+Include deliberately implausible reference configurations to establish the
+floor; exclude them from the verdict; report them alongside it.
+
+## 18.14 Never manufacture spread
+
+Reason:
+
+Transforming a component to give it variance the source data does not contain
+invents distinctions that do not exist. A component concentrated on one value
+is reporting faithfully that its source has nothing further to say.
+
+---
+
+## 18.15 An approximate method must be measured against an exact one
+
+Reason:
+
+An approximation is only meaningful relative to the thing it approximates. The
+project already has an exact baseline whose correctness is proven field-by-
+field against an independent implementation, so any learned or approximate
+method can be measured rather than asserted. The learned-index literature
+generally reports speed and assumes correctness; this project has no reason
+to.
+
+## 18.16 An index may change what is examined, never what is computed
+
+Reason:
+
+The Feature BVH established this: it changes search strategy, not distance
+semantics. The rule extends to a learned index without modification, and it is
+what makes learning safe here. A model that predicts badly produces a wider
+candidate window and a slower query. It cannot produce a wrong answer, because
+the exact kernel still decides. Correctness does not depend on the model being
+good.
+
+## 18.17 Split spatially, not randomly
+
+Reason:
+
+Adjacent parcels are near-duplicates: they share a FEMA polygon, sit metres
+apart on the same DEM cells, and often select the same nearest water feature.
+A random train/test split places near-identical records on both sides and
+reports a generalization score that is really a memorization score. Any
+held-out evaluation in this project must partition by spatial block.
+
+## 18.18 A negative result is a result
+
+Reason:
+
+The learned index may lose to a well-built segment index at this scale. Stated
+in advance, measured against an exact baseline, and explained, that is a
+finding. Tuning until the preferred method wins is not.
+
+## 18.19 An index over extended objects must inflate its search radius
+
+Reason:
+
+Ordering extended objects by a representative point is lossy: a segment's
+midpoint can lie outside a query disk while its nearest point lies inside.
+Exactness therefore requires searching `disk(r + L/2)`, where `L` is the
+longest object in the index.
+
+This is the price of treating extended objects as points, it is the reason the
+learned-index literature has stayed on point data, and it is tunable rather
+than fixed. It must be measured before it is designed around: a single long
+segment inflates every query in the index.
+
+## 18.20 A model is an artifact
+
+Reason:
+
+Weights, a seed, a training-set checksum, and a manifest, or the result is not
+reproducible. A model is held to the same provenance standard as a CSV.
+
 ---
 
 # 19. Repository Structure and Current Source Responsibilities
 
-The repository is organized around code, configuration, documentation, tests, data staging, and generated outputs.
-
-Core source areas include:
+The repository is organized around code, configuration, documentation, tests,
+data staging, and generated outputs.
 
 ```text
 caprm-flood/
 ├── configs/                 Workload YAML (1K, 10K, 100K, countywide)
 ├── cpp/spatial_core/
-│   ├── src/                 fema_pip_dev, water_distance_bruteforce,
-│   │                        water_distance_indexed
-│   ├── include/             empty
-│   └── tests/               no C++ test source
+│   └── src/                 fema_pip_dev, water_distance_bruteforce,
+│                            water_distance_indexed
 ├── docs/                    Methods, policy, milestone, and source documentation
 ├── python/
 │   ├── caprm/               Library modules
@@ -824,6 +1248,35 @@ caprm-flood/
 └── requirements.txt
 ```
 
+Library modules:
+
+```text
+python/caprm/audit.py            Product structure and provenance auditing
+python/caprm/baseline.py         FEMA point-in-polygon reference
+python/caprm/crs.py              CRS normalization
+python/caprm/evidence.py         Integrated FEMA + water evidence
+python/caprm/export.py           C++ input export
+python/caprm/hydrography.py      USGS 3DHP ingestion and cache
+python/caprm/ingest.py           Configuration and path resolution
+python/caprm/scoring.py          Component scores and exposure index
+python/caprm/sensitivity.py      Rank-stability analysis
+python/caprm/study_area.py       County boundary and buffered study area
+python/caprm/terrain.py          DEM sampling and terrain metrics
+python/caprm/validate.py         Python/C++ comparison contracts
+python/caprm/water_benchmark.py  Benchmark harness support
+python/caprm/water_distance.py   Nearest-water reference
+python/caprm/water_export.py     Water C++ input export
+python/caprm/water_validate.py   Water comparison contracts
+```
+
+Key C++ sources:
+
+```text
+cpp/spatial_core/src/fema_pip_dev.cpp
+cpp/spatial_core/src/water_distance_bruteforce.cpp
+cpp/spatial_core/src/water_distance_indexed.cpp
+```
+
 Current `docs/` contents:
 
 ```text
@@ -832,65 +1285,25 @@ docs/crs_policy.md             Canonical operational CRS policy
 docs/data_sources.md           Source provenance, vintages, inclusion rules, limits
 docs/milestone_1.md            Milestone 1 method and results
 docs/milestone_2.md            Milestone 2 method and results
+docs/scoring_methodology.md    Scoring behavior, influence, sensitivity
 docs/validation.md             Validation contract and agreement results
 docs/report/                   In-progress report sections
 ```
 
-The following directories exist but are empty: `benchmarks/`, `docker/`,
-`data/sample/`, `cpp/spatial_core/include/`. They should be removed or populated
-deliberately rather than left as ambiguous scaffolding.
+There are no C++ unit tests. Every C++ correctness claim rests on
+field-by-field comparison against the Python reference over the full
+property-ID union. This is a deliberate consequence of the validation
+architecture: comparison against an independent implementation is a stronger
+check than self-authored unit assertions. It should be stated plainly rather
+than implied.
 
-There are no C++ unit tests. Every C++ correctness claim rests on field-by-field
-comparison against the Python reference over the full property-ID union. This is
-a deliberate consequence of the validation architecture — comparison against an
-independent implementation is a stronger check than self-authored unit
-assertions — but it should be stated plainly rather than implied.
-Important current modules include:
-
-```text
-python/caprm/baseline.py
-python/caprm/crs.py
-python/caprm/evidence.py
-python/caprm/export.py
-python/caprm/hydrography.py
-python/caprm/ingest.py
-python/caprm/scoring.py
-python/caprm/study_area.py
-python/caprm/terrain.py
-python/caprm/validate.py
-python/caprm/water_benchmark.py
-python/caprm/water_distance.py
-python/caprm/water_export.py
-python/caprm/water_validate.py
-```
-
-Key C++ sources include:
-
-```text
-cpp/spatial_core/src/fema_pip_dev.cpp
-cpp/spatial_core/src/water_distance_bruteforce.cpp
-cpp/spatial_core/src/water_distance_indexed.cpp
-```
-
-The repository also contains scripts for:
-
-- property workload materialization;
-- FEMA baseline execution;
-- C++ input export;
-- Python/C++ comparison;
-- hydrography caching;
-- water benchmarking;
-- environment capture;
-- terrain raster preparation;
-- terrain evidence generation;
-- exposure-index generation;
-- milestone summary generation.
-
-The repository should be understood by reading the code and current documentation together. Historical nucleus/proposal documents may contain planned items that have since been completed, changed, or deferred.
+The repository should be understood by reading the code and current
+documentation together. Historical nucleus/proposal documents may contain
+planned items that have since been completed, changed, or deferred.
 
 ---
 
-# 20. Git and Repository State as of 2026-07-15
+# 20. Git and Repository State
 
 GitHub repository:
 
@@ -904,23 +1317,13 @@ Primary branch:
 master
 ```
 
-Current synchronized commit:
+The current commit, synchronization status, and exact artifact checksums are
+recorded in `CAPRM_Flood_Current_Status.md` rather than here, because they
+change with every completed task and this document records durable facts.
 
-```text
-0dd85ab Add Milestone 3 terrain evidence and exposure scoring
-```
-
-As of the synchronization check on July 15, 2026:
-
-```text
-HEAD == origin/master
-ahead: 0
-behind: 0
-```
-
-The GitHub repository therefore contains the committed implementation through the current Milestone 3 terrain and preliminary scoring work.
-
-Some local presentation, Word-document, editor, and temporary inventory files remain intentionally untracked and are not part of the canonical source repository.
+Some local presentation, Word-document, editor, and temporary inventory files
+remain intentionally untracked and are not part of the canonical source
+repository.
 
 ---
 
@@ -1050,20 +1453,26 @@ document
 
 # 25. Current Project Phase
 
-As of July 15, 2026:
+As of July 16, 2026:
 
-- Milestone 1 is complete and validated.
-- Milestone 2 is complete and validated.
-- Milestone 3 has implemented countywide terrain evidence and a preliminary exposure index.
-- The full test suite has passed after the current terrain/scoring implementation.
-- The repository is synchronized to GitHub through commit `0dd85ab`.
-- Milestone 3 still requires final hardening and completion work before it should be frozen as complete.
-- Precipitation remains a later evidence-family addition.
-- Final report work is not the immediate implementation priority.
+- Milestones 1, 2, and 3 are complete, validated, and frozen.
+- Milestone 3 delivered countywide terrain evidence, a four-component exposure
+  index at scoring policy `preliminary_exposure_index_v2`, measured component
+  influence, rank-based sensitivity analysis, an automated product audit, and
+  a reproducibility runbook. The measured sensitivity verdict is moderately
+  sensitive. The suite passes at 181 tests.
+- **Milestone 4 is index structure and learned approximation.** See section
+  14b. It adds no evidence family.
+- **Precipitation is a gated stretch goal**, permitted only after the Milestone 4
+  computational work is complete and documented. See section 14b.
+- The exposure index is frozen as-is and remains preliminary. It is no longer
+  the subject of active work.
+- Report and poster work follow Milestone 4.
 
-The precise remaining tasks should be read from `CAPRM_Flood_Roadmap.md` once that document is created.
+The precise remaining tasks should be read from `CAPRM_Flood_Roadmap.md`.
 
-The exact latest implementation/output state should be read from `CAPRM_Flood_Current_Status.md` once that document is created.
+The exact latest implementation and output state should be read from
+`CAPRM_Flood_Current_Status.md`.
 
 ---
 
@@ -1071,12 +1480,14 @@ The exact latest implementation/output state should be read from `CAPRM_Flood_Cu
 
 A new assistant continuing this project should begin by reading:
 
-1. `CAPRM_Flood_Project_Nucleus_2026-07-15.md`
-2. `CAPRM_Flood_Current_Status.md`
-3. `CAPRM_Flood_Roadmap.md`
-4. `Capstone_Proposal.pdf`
-5. `Professor_Milestone_Requirements.txt`
-6. the current GitHub repository
+1. `docs/CAPRM_Flood_Project_Nucleus_2026-07-15.md`
+2. `docs/CAPRM_Flood_Current_Status.md`
+3. `docs/CAPRM_Flood_Roadmap.md`
+4. `docs/scoring_methodology.md`
+5. `docs/crs_policy.md`
+6. `docs/data_sources.md`
+7. `docs/Professor_Milestone_Requirements.txt`
+8. the current GitHub repository
 
 Before writing new code, the assistant should reconstruct:
 
@@ -1105,4 +1516,36 @@ Older documents are valuable for project intent, but they may describe work that
 
 # 27. Canonical One-Paragraph Summary
 
-CAPRM-Flood is a reproducible C++/Python geospatial evidence-extraction framework for large-batch property-to-hazard spatial joins, demonstrated through a property-level relative flood-exposure indexing workload for Monroe County, New York. The system ingests property coordinates and public hazard data, derives validated FEMA flood-zone, nearest-water, and terrain evidence, preserves source provenance and deterministic behavior, compares independent Python and C++ spatial implementations for correctness and performance, and feeds validated evidence into an explicit preliminary scoring layer that produces relative exposure scores and regional rankings. The project's central engineering values are correct spatial computation, CRS discipline, deterministic outputs, source-family evidence separation, independent validation, manifests/checksums, benchmarkable implementations, and reproducible workflows. As of July 15, 2026, Milestones 1 and 2 are validated, countywide terrain evidence and preliminary exposure scoring are implemented for 267,362 properties, the automated test suite passes, and the project is completing the remaining Milestone 3 hardening work before moving to later precipitation and final-project completion tasks.
+CAPRM-Flood is a reproducible C++/Python geospatial evidence-extraction
+framework for large-batch property-to-hazard spatial joins, demonstrated
+through a property-level relative flood-exposure indexing workload for Monroe
+County, New York. The system ingests property coordinates and public hazard
+data, derives validated FEMA flood-zone, nearest-water, and terrain evidence,
+preserves source provenance and deterministic behavior, compares independent
+Python and C++ spatial implementations for correctness and performance, and
+feeds validated evidence into an explicit four-component scoring layer that
+produces relative exposure scores and regional rankings. The project's central
+engineering values are correct spatial computation, CRS discipline,
+deterministic outputs, source-family evidence separation, independent
+validation, manifests that can reproduce the results they describe,
+benchmarkable implementations, and reproducible workflows. As of July 16, 2026,
+Milestones 1 through 3 are complete and frozen: three evidence families
+spanning three different data topologies produce one evidence contract for
+267,362 properties, the exposure index is characterized as moderately sensitive
+to weight choice with immovable extremes, the test suite passes at 181 tests,
+and the product audit reports no failures. Milestone 4 concentrates the
+project's computer-science contribution on a question the project's own
+Milestone 2 benchmark raised: the Feature BVH examines only 5.498 candidate
+features per property yet still performs 70,771 segment checks, because it
+indexes features rather than geometry and the largest water features are near
+everything in the county. Rebuilding the index at segment granularity leads
+somewhere the literature has not been, because learned spatial indexes are
+evaluated almost exclusively on point data and several return approximate
+results, whereas this project's data is extended objects and its query is exact
+nearest neighbour. Milestone 4 therefore asks whether learned indexing extends
+to exact nearest-neighbour search over line segments and polygon boundaries,
+characterizes the search-radius inflation that representative-point ordering
+imposes on extended objects, isolates the contribution of learning from the
+contribution of dimensionality reduction using a binary-search control, and
+verifies exactness field-by-field against an independent implementation rather
+than assuming it. Precipitation remains a gated stretch goal behind that depth.

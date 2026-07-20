@@ -1,29 +1,28 @@
-# CAPRM-Flood Current Status — 2026-07-15
+# CAPRM-Flood Current Status — 2026-07-16
 
-## Purpose
+## Purpose of This Document
 
-This document records the exact current operational state of CAPRM-Flood as of **July 15, 2026**.
-
-It is intended to answer:
-
-- What is implemented now?
-- What has been validated?
-- What files and outputs currently exist?
-- What is committed to GitHub?
-- What remains unfinished in Milestone 3?
-- What should the next implementation conversation begin with?
-
-For durable project identity, architecture, and design principles, see:
+This document records the exact current operational state of CAPRM-Flood as of **July 16, 2026**.
 
 ```text
-CAPRM_Flood_Project_Nucleus_2026-07-15.md
+Verified at commit:   see section 2
+Test suite:           181 passed
+Product audit:        49 pass, 1 warn, 0 fail
+Scoring policy:       preliminary_exposure_index_v2
 ```
 
-For ordered future work, see:
+**Staleness check.** This document lives in the repository. If you are reading
+it through a synced integration rather than the working tree, confirm the
+commit recorded in section 2 matches `git log -1 --oneline` before relying on
+anything here. Integration syncs lag; the working tree does not.
 
-```text
-CAPRM_Flood_Roadmap.md
-```
+Where the canonical documents differ in role:
+
+- **Nucleus** defines what CAPRM-Flood fundamentally is, why it exists, how it is architected, and which engineering principles govern it.
+- **This document** records the exact present implementation state, latest outputs, test status, and immediate next task.
+- **Roadmap** records remaining work in ordered implementation chunks.
+- **`docs/scoring_methodology.md`** records the scoring layer's exact behavior.
+- **`docs/milestone_3.md`** records how to reproduce Milestone 3 from source data.
 
 ---
 
@@ -40,11 +39,16 @@ Current implementation state:
 ```text
 Milestone 1: complete and validated
 Milestone 2: complete and validated
-Milestone 3: substantially implemented, not yet frozen as complete
+Milestone 3: complete and frozen
+Milestone 4: index structure and learned approximation — starting
 Milestone 4: not yet started as a dedicated implementation phase
 ```
 
-The immediate priority is to finish and harden Milestone 3.
+Milestone 3 is frozen and the exposure index is no longer under active work.
+
+Milestone 4 concentrates the project's computer-science contribution on index
+structure and learned approximation. See `CAPRM_Flood_Roadmap.md` and Nucleus
+section 14b. Precipitation is a gated stretch goal behind that work.
 
 Final report writing is intentionally deferred until the remaining Milestone 3 implementation and validation work is complete.
 
@@ -124,7 +128,6 @@ m2_presentation_script.docx
 presentation_assets/
 report body .docx
 repository_tree_current.txt
-python/scripts/summarize_scoring_inputs.py     (new, added during Milestone 3 A1)
 ```
 
 Ignored by rule, not untracked:
@@ -134,27 +137,19 @@ milestone2_closeout_context.zip                (*.zip)
 .venv/  .pytest_cache/  cpp/spatial_core/build/
 ```
 
-`summarize_scoring_inputs.py` is real source and should be committed with the
-A1 work. The remainder are local presentation, editor, and scratch files to be
-triaged separately.
+These are local presentation, editor, and scratch files to be triaged
+separately.
 
 ## Documentation state
 
-The repository tracks `docs/CAPRM-Flood Project Nucleus 6.2.26.pdf`, the
-superseded June 2 nucleus, which describes the project as still in the
-Milestone 1 spike phase.
-
-The current canonical documents — this file, the July 15 nucleus, and the
-roadmap — are **not** in the repository.
-
-A visitor to GitHub therefore finds only the stale nucleus. This must be
-corrected in A6.
+The repository previously tracked `docs/CAPRM-Flood Project Nucleus 6.2.26.pdf`,
+the superseded June 2 nucleus, which described the project as still in the
+Milestone 1 spike phase. It was retired at commit `683af3f`, and the current
+canonical documents were added to `docs/` in the same commit.
 
 ---
 
 # 4. Current `.gitignore` Policy
-
-The repository currently ignores:
 
 ```text
 .venv/
@@ -183,28 +178,63 @@ cmake-build-*/
 
 .env
 .DS_Store
+
+# Editor state
+.vscode/
+.idea/
+.pytest_cache/
+
+# Regenerable scratch output
+git_log_current.txt
+git_status_current.txt
+repository_tree_current.txt
 ```
 
-Important consequence:
+## Files tracked despite the ignore rules
 
-Some older files under `data/raw/`, `data/processed/`, and `outputs/` are still tracked because they were committed before the ignore rules were applied.
-
-Current examples include:
+Some files under `data/` and `outputs/` remain tracked because they were
+committed before the ignore rules were applied. Verified by
+`python/scripts/inventory_repository.py` on 2026-07-16:
 
 ```text
-data/processed/monroe_property_points_sample.geojson
-data/raw/usgs_3dhp_monroe.gpkg
-
-outputs/baseline/python_fema_membership.csv
-outputs/baseline/python_nearest_water.csv
-outputs/benchmark/water_cpp_benchmark_runs.csv
-outputs/cpp/cpp_nearest_water_bruteforce.csv
-outputs/cpp/cpp_nearest_water_indexed.csv
-outputs/validation/*.json
-outputs/validation/*.csv
+data/raw/usgs_3dhp_monroe.gpkg                    21,155,840 bytes   tracked
 ```
 
-This is not blocking current development, but repository cleanup may be appropriate later.
+This is the **only large tracked file in the repository**. Every other file
+above 5 MB reports `ignored`. It matches `*.gpkg`. The hydrography cache is
+checksummed in `docs/data_sources.md` and regenerable by
+`cache_hydrography.py`, so the working copy does not depend on it being
+tracked.
+
+Also tracked and empty, from Milestone 1:
+
+```text
+outputs/validation/fema_pip_refresh_stderr.txt
+outputs/validation/fema_pip_refresh_stdout.txt
+```
+
+`outputs/validation/repository_inventory.json` was untracked at commit time
+because it is regenerated on every inventory run and would otherwise dirty
+the working tree whenever the repository is inspected.
+
+Repository inventory as of 2026-07-16:
+
+```text
+362 files inventoried
+108 tracked
+248 ignored
+  6 untracked
+```
+
+## PowerShell encoding note
+
+The repository's Markdown is correct UTF-8. `Get-Content` in PowerShell 5.1
+defaults to cp1252 and will render `km²` as `kmÂ²` and curly quotes as
+`â€œ`. This is a display artefact, not file corruption; verified with
+`Select-String -Encoding UTF8`, which found no mojibake sequences in
+`docs/*.md` or `README.md`.
+
+Use `-Encoding UTF8` when inspecting these files from PowerShell.
 
 ---
 
@@ -215,6 +245,7 @@ Important tracked source modules currently include:
 ```text
 python/caprm/
 ├── __init__.py
+├── audit.py
 ├── baseline.py
 ├── crs.py
 ├── evidence.py
@@ -222,6 +253,7 @@ python/caprm/
 ├── hydrography.py
 ├── ingest.py
 ├── scoring.py
+├── sensitivity.py
 ├── study_area.py
 ├── terrain.py
 ├── validate.py
@@ -235,6 +267,8 @@ Important tracked scripts include:
 
 ```text
 python/scripts/
+├── analyze_scoring_sensitivity.py
+├── audit_milestone3_products.py
 ├── benchmark_water_cpp.py
 ├── build_exposure_index.py
 ├── build_property_evidence.py
@@ -256,7 +290,9 @@ python/scripts/
 ├── run_fema_baseline.py
 ├── run_water_baseline.py
 ├── summarize_baseline.py
-└── summarize_milestone3_results.py
+├── summarize_component_correlation.py
+├── summarize_milestone3_results.py
+└── summarize_scoring_inputs.py
 ```
 
 Important C++ sources include:
@@ -273,6 +309,7 @@ Important tests include:
 ```text
 tests/
 ├── conftest.py
+├── test_audit.py
 ├── test_baseline.py
 ├── test_evidence.py
 ├── test_export.py
@@ -280,6 +317,7 @@ tests/
 ├── test_ingest.py
 ├── test_materialize_countywide_property_workload.py
 ├── test_scoring.py
+├── test_sensitivity.py
 ├── test_study_area.py
 ├── test_terrain.py
 ├── test_validate.py
@@ -356,14 +394,47 @@ The earlier 1,000-property fixture remains the regression/validation fixture.
 
 # 9. Milestone 3 Implemented Components
 
-Milestone 3 currently includes two major implemented components:
+Milestone 3 includes:
 
 ```text
 A. terrain evidence extraction
-B. preliminary exposure-index generation
+B. exposure-index generation, scoring policy preliminary_exposure_index_v2
+C. rank-based sensitivity analysis
+D. product audit
 ```
 
-These are implemented and tested, but Milestone 3 is not yet formally frozen as complete.
+Implemented modules:
+
+```text
+python/caprm/terrain.py
+python/caprm/scoring.py
+python/caprm/sensitivity.py
+python/caprm/audit.py
+```
+
+Implemented scripts:
+
+```text
+python/scripts/prepare_terrain_raster.py
+python/scripts/build_terrain_evidence.py
+python/scripts/build_exposure_index.py
+python/scripts/summarize_milestone3_results.py
+python/scripts/summarize_scoring_inputs.py
+python/scripts/summarize_component_correlation.py
+python/scripts/analyze_scoring_sensitivity.py
+python/scripts/audit_milestone3_products.py
+```
+
+Tests:
+
+```text
+tests/test_terrain.py
+tests/test_scoring.py
+tests/test_sensitivity.py
+tests/test_audit.py
+```
+
+The scoring methodology is documented in `docs/scoring_methodology.md`.
 
 ---
 
@@ -432,25 +503,29 @@ It should not overwrite the validated Milestone 2 FEMA/water evidence.
 # 12. Terrain Output
 
 Verified from `outputs/validation/property_terrain_evidence_countywide_manifest.json`
-and the generated CSV on 2026-07-15:
+and the generated CSV on 2026-07-16:
 
 ```text
+output sha256:                 e7768c538b41639032af176bd789bec76137c29348bc9be931ca7b4c44e5d3de
 properties:                    267,362
 unique property IDs:           267,362
 null elevation:                0
 null relative elevation:       0
 null slope:                    0
-elevation:                     75.000 – 296.309 m   (mean 143.197, median 146.828)
-relative elevation:            -20.669 – +30.149 m  (mean 0.247, median 0.175)
-slope:                         0.000 – 58.139°      (mean 1.906, median 1.234)
+elevation:                     75.000 - 296.309 m   (mean 143.197, median 146.828)
+relative elevation:            -20.669 - +30.149 m  (mean 0.247, median 0.175)
+slope:                         0.000 - 58.139 deg   (mean 1.906, median 1.234)
 terrain CRS values present:    EPSG:26918 only
 schema:                        7 columns, matches caprm.terrain.OUTPUT_COLUMNS
 ```
 
 Plausibility: the 75.0 m elevation floor is consistent with Lake Ontario
-(~74.2 m). The 1.234° median slope is consistent with a flat lake-plain county.
-These are consistency observations, not independent verification against an
+(~74.2 m). The 1.234 degree median slope is consistent with a flat lake-plain
+county. The 58.139 degree maximum is consistent with the Genesee gorge. These
+are consistency observations, not independent verification against an
 external elevation source.
+
+Slope is preserved as terrain evidence and does not enter the exposure index.
 
 ---
 
@@ -468,101 +543,152 @@ Implemented generation script:
 python/scripts/build_exposure_index.py
 ```
 
-The scoring layer consumes validated evidence and produces a deterministic relative exposure index.
+Scoring policy version:
 
-Current conceptual flow:
+```text
+preliminary_exposure_index_v2
+```
+
+The index has four components, each with one declared weight. No component
+applies an internal sub-weight, so the manifest's weights plus the two
+evidence tables are sufficient to reproduce the index. That property is a
+requirement, and `audit_milestone3_products.py` verifies it against the
+stored artifact on every run.
+
+```text
+component          weight   evidence                        normalization
+fema               0.40     fema_zone, matched_fema_polygon absolute lookup
+water              0.35     nearest_water_distance_m        percentile rank
+terrain_absolute   0.15     terrain_elevation_m             percentile rank
+terrain_relative   0.10     terrain_relative_elevation_m    percentile rank
+```
+
+The v1 policy applied 0.25 to a terrain component split internally 0.60
+absolute / 0.40 relative. Scoring is linear, so the flat and nested forms are
+algebraically identical: 0.25 x 0.60 = 0.15 and 0.25 x 0.40 = 0.10. Verified
+across the countywide workload at a maximum absolute difference of 5.0e-13,
+and locked by `test_flat_weights_reproduce_legacy_nested_policy`.
+
+The nesting was removed because the sub-weights were absent from
+`DEFAULT_WEIGHTS`, unchecked by `validate_weights`, and absent from every
+manifest. The consequence was not cosmetic: the manifest could not reproduce
+the score.
+
+Current flow:
 
 ```text
 validated evidence
-    ↓
+    v
 component normalization
-    ↓
+    v
 component scores
-    ↓
+    v
 explicit weighting
-    ↓
-composite exposure index
-    ↓
-countywide percentile/ranking context
+    v
+composite exposure index, rounded to 9 decimal places
+    v
+countywide percentile ranking
 ```
 
-The scoring product is downstream from the source-family evidence products.
+Weights are configurable through `--weights` on `build_exposure_index.py`.
+`summarize_exposure_index` requires weights as an argument rather than
+defaulting, so an alternative scenario cannot report the baseline
+configuration.
 
-Scoring changes should not modify the underlying FEMA/water or terrain evidence.
+The scoring product is downstream from the source-family evidence products.
+Scoring changes do not modify the underlying FEMA/water or terrain evidence.
 
 ---
 
 # 14. Exposure Index Output
 
-Verified from the index manifest and CSV on 2026-07-15:
+Scoring policy `preliminary_exposure_index_v2`. Verified 2026-07-16:
 
 ```text
+output sha256:             3cae2e830a5867bee4d51a36f1c5c04f05ee0a6a26d64dace27da75d3c4911b0
 properties:                267,362
 unique property IDs:       267,362
-index minimum:             7.914598933281469
-index maximum:             99.92908491109432
-index mean:                34.63218408001137
-index median:              33.72842999379119
+index minimum:             7.914598933
+index maximum:             99.929084911
+index mean:                34.63218408001099
+index median:              33.7284299935
+index standard deviation:  13.063711939924076
 percentile minimum:        0.00037402473051518164
 percentile maximum:        100.0
-mean FEMA component:       11.580179681480539
-mean water component:      50.00018701236526
-mean terrain component:    50.00018701236526
-weights recorded:          fema 0.40, water 0.35, terrain 0.25
+weights:                   fema 0.40, water 0.35, terrain_absolute 0.15, terrain_relative 0.10
 ```
 
-The composite arithmetic reproduces exactly:
+Measured component influence:
 
 ```text
-0.40(11.580179681480539) + 0.35(50.00018701236526) + 0.25(50.00018701236526)
-  = 34.63218408001137 = mean_exposure_index
+component          weight   std      variance share   Spearman vs index
+water              0.35     28.868   0.653            0.893
+fema               0.40     11.391   0.168            0.235
+terrain_absolute   0.15     28.868   0.135            0.431
+terrain_relative   0.10     28.868   0.043            0.167
 ```
 
-The water and terrain component means are identical at 50.00018701236526,
-which equals (n+1)/(2n)·100 for n = 267,362. This is the structural signature of
-percentile normalization and confirms the transform behaves as specified.
+Nominal weight is not influence. Water carries 35% of the weight and 65% of
+the variance; FEMA carries 40% and 17%. The three percentile components are
+uniform by construction, so their standard deviation is pinned at
+100/sqrt(12) = 28.87. The FEMA component is concentrated: 262,297 of 267,362
+properties (98.1%) are tied at 10.0.
 
-These values reflect the preliminary scoring configuration and are not the
-frozen Milestone 3 result.
+This is not a defect. FEMA adds a constant to 98.1% of properties, and
+constants do not affect ranking. Its role is to move the 1.9% it has
+information about decisively: an AE property receives 0.40 x (95 - 10) = +34
+on a composite whose standard deviation is 13.06.
+
+See `docs/scoring_methodology.md` section 12.
+
+The composite is rounded to 9 decimal places before ranking. See section 10
+of the methodology document for the lattice derivation.
+
+---
 
 # 14b. Measured Scoring Input Domain
 
-Generated by `python/scripts/summarize_scoring_inputs.py` →
-`outputs/validation/scoring_inputs_summary.json` on 2026-07-15.
+Generated by `python/scripts/summarize_scoring_inputs.py` ->
+`outputs/validation/scoring_inputs_summary.json`.
 
 Evidence table: 267,362 rows, 267,362 unique IDs, 24 columns, all six
 scoring-required columns present, `distance_crs` = EPSG:26918 only.
 
-FEMA zone × SFHA distribution:
+FEMA zone x SFHA distribution:
 
 ```text
-matched  X    not SFHA   262,297
-matched  AE   SFHA         4,226
-matched  A    SFHA           408
-matched  AO   SFHA           388
-matched  VE   SFHA            39
-unmatched     no zone          4
+matched   X    not SFHA   262,297
+matched   AE   SFHA         4,226
+matched   A    SFHA           408
+matched   AO   SFHA           388
+matched   VE   SFHA            39
+unmatched      no zone          4
                           -------
                           267,362
 ```
 
-Consequences for the current scoring implementation:
+These counts independently match those recorded in `docs/milestone_2.md`.
+
+Consequences for the scoring implementation:
 
 1. Every zone present in the data is explicitly enumerated by
-   `fema_component_score`. No property reaches the 0.0 default except the
-   4 unmatched. The unhandled-zone gap is **latent, not active**.
-2. The `is_sfha & score < 80 → 90` override is **unreachable on this data**.
-   All 5,061 SFHA properties already score 80 or above from their zone alone.
-   The rule is both untested and dead.
-3. `is_sfha` is perfectly collinear with `fema_zone` here and adds no
-   information to the component.
+   `fema_component_score`. No property reaches the unmatched default except
+   the 4 unmatched. The unhandled-zone gap is latent, not active. A matched
+   property in an unenumerated zone now raises rather than scoring 0.0,
+   which would have placed it below zone X.
+2. `is_sfha` is perfectly collinear with `fema_zone` in this workload and
+   adds no information to the component. It is retained as a validation
+   cross-check enforcing that a property cannot be SFHA without matching a
+   flood-hazard polygon.
+3. The v1 `is_sfha & score < 80 -> 90` override was unreachable: all 5,061
+   SFHA properties already score 80 or above from their zone alone. Removed
+   in v2 rather than left as dead, untested code.
 
-Nearest-water distance: 0.0 – 2,630.235 m, mean 506.411, median 325.346,
-0 nulls, 266 properties at exactly zero, 265,773 distinct values
-(1,589 tied distances resolved by average rank).
+Nearest-water distance: 0.0 - 2,630.235 m, mean 506.411, median 325.346,
+0 nulls, 266 properties at exactly zero, 265,773 distinct values.
 
 Terrain slope: 0 nulls confirmed, so no property fell on a raster edge where
-the 3×3 slope window would be unavailable.
+the 3x3 slope window would be unavailable.
 
 Manifest schema inconsistency, measured:
 
@@ -572,46 +698,155 @@ property_terrain_evidence_countywide_manifest.json summary / output
 property_exposure_index_countywide_manifest.json   summary / output
 ```
 
-Three evidence products, two manifest conventions. Any tool reading manifests
-generically must handle both, or the schema should be unified in A4.
+Three evidence products, two manifest conventions. Deliberate decision:
+`caprm.audit.manifest_field` reads both and records which convention each
+artifact uses. Unifying would require regenerating a validated upstream
+Milestone 2 product for a cosmetic gain.
 
 ---
 
-# 15. Milestone 3 Summary Artifact
+# 14c. Sensitivity Result
 
-Implemented script:
+Generated by `python/scripts/analyze_scoring_sensitivity.py` ->
+`outputs/validation/scoring_sensitivity_manifest.json`.
 
 ```text
-python/scripts/summarize_milestone3_results.py
+verdict:                       moderately sensitive
+scenarios:                     40
+plausible scenarios:           36
+reference corners:             4
+minimum Spearman:              0.875  (equal weighting)
+median Spearman:               0.996
+minimum top-decile overlap:    0.761  (equal weighting)
+median top-decile overlap:     0.946
+maximum percentile shift:      47.5
+median of median shift:        1.56
+reference corner Spearman:     0.167 - 0.893
+reference corner overlap:      >= 0.289
 ```
 
-Current generated summary:
+Thresholds were declared in `caprm.sensitivity` before any result was
+measured: stable requires >= 0.95 Spearman and >= 0.80 top-decile overlap;
+moderately sensitive requires >= 0.85 and >= 0.60. They are a judgement call
+with no external standard. The verdict is driven by the worst plausible
+scenario, not the average.
+
+The reference corners calibrate the metric. Three of four components are
+percentile ranks, and reweighting a linear sum of rank variables tends to
+preserve order, so a high correlation could have been an artifact of the
+design rather than a finding. The corners span 0.167 to 0.893, so the metric
+discriminates and the plausible-scenario results can be interpreted.
+
+The verdict hinges on one scenario. Every other plausible scenario sits near
+0.996. `equal` alone falls below the stable bar. This is not general
+instability; it is one specific sensitivity: the index is stable unless you
+stop privileging water.
+
+`water_only` correlates 0.893 with the baseline, higher than `equal` at
+0.875. Putting all weight on water alone reproduces the baseline ranking
+better than weighting all four components equally. The baseline is
+substantially a water-proximity ranking with a decisive FEMA correction on
+the 1.9% of properties FEMA has information about, adjusted by terrain.
+
+Per-property rank variability across the 36 plausible scenarios:
+
+```text
+median percentile range:       18.0
+mean percentile range:         18.9
+p95 percentile range:          39.7
+maximum percentile range:      63.0
+properties moving > 10 points: 207,417  (77.6%)
+properties moving > 25 points:  69,041  (25.8%)
+```
+
+The extremes are immovable and the middle churns. Top-ranked properties vary
+by 0.0004 percentile points across all 36 scenarios. All 20 most-unstable
+properties have a baseline percentile between 59 and 66.
+
+The honest summary: the index reliably identifies the extremes; the middle
+ordering depends on weighting assumptions.
+
+---
+
+# 14d. Product Audit
+
+Generated by `python/scripts/audit_milestone3_products.py` ->
+`outputs/validation/milestone3_audit.json`. Exits nonzero on any failure.
+
+```text
+status: warn
+pass 49   warn 1   fail 0
+```
+
+The single warning is `manifest_schema_consistency`, the documented
+divergence described in section 14b.
+
+Verified: manifest checksums match the files on disk; all four products
+describe the same 267,362 properties; the manifest's weights reproduce the
+stored index; relative elevation reproduces from elevation minus local mean;
+the stored percentile reproduces from the stored index; output is sorted by
+property_id; every component and composite value lies within 0-100.
+
+The audit reads the stored artifacts rather than the code that produced
+them, so it catches drift the unit tests cannot see. Its highest-value check
+is the manifest checksum: nothing else in the pipeline notices an artifact
+regenerated without its manifest, and once that happens every provenance
+claim about the artifact is false.
+
+---
+
+# 15. Milestone 3 Documentation
+
+Generated summary:
 
 ```text
 outputs/validation/milestone3_results_summary.md
 ```
 
-This summary should be regenerated after the final Milestone 3 scoring and validation decisions are fixed.
+Produced by `python/scripts/summarize_milestone3_results.py` from the terrain
+and index manifests. Reads no CSV.
+
+Repository documentation:
+
+```text
+docs/milestone_3.md            Runbook: prerequisites, environment, source
+                               acquisition, pipeline with exact commands,
+                               validation criteria, known asymmetries
+docs/scoring_methodology.md    Component definitions, weights, rounding,
+                               influence, sensitivity verdict
+docs/data_sources.md           Provenance for all five source families
+docs/crs_policy.md             Projections, vertical datum, distortion
+docs/validation.md             Python/C++ agreement contract and results
+docs/benchmark_results.md      Nearest-water benchmark methodology
+docs/milestone_1.md            Milestone 1 method and results
+docs/milestone_2.md            Milestone 2 method and results
+```
 
 ---
 
 # 16. Test Status
 
-Measured on 2026-07-15 at commit `0dd85ab`:
+Measured on 2026-07-16:
 
 ```text
 python -m pytest -q
-69 passed in 3.78s
+181 passed
 ```
 
-No warnings were reported in the summary line.
+Per module:
 
-This supersedes the `55 passed in 1.06s` figure still recorded in `README.md`
-and `docs/milestone_2.md`. The Milestone 2 document's figure is correct as a
-historical Milestone 2 record; the README's is stale and must be corrected.
+```text
+tests/test_scoring.py       44
+tests/test_sensitivity.py   38
+tests/test_audit.py         38
+pre-existing modules        61
+```
 
-The suite must be rerun and this count re-recorded after every remaining
-Milestone 3 change.
+This supersedes `55 passed in 1.06s` in `README.md`, which is stale.
+`docs/milestone_2.md` records the same figure correctly as a Milestone 2
+historical record.
+
+---
 
 # 17. Current Evidence-Product Boundaries
 
@@ -641,156 +876,224 @@ The final index may join multiple source families, but source evidence should re
 
 # 18. Current Validation Position
 
-Current validation strength is highest for:
+Established:
 
 ```text
-FEMA polygon membership
-nearest-water spatial computation
+FEMA polygon membership, Python/C++ exact agreement at every scale
+nearest-water spatial computation, max error 4.658e-10 m countywide
 deterministic fixture behavior
-Python/C++ cross-implementation agreement
+composite arithmetic reproduces the artifact to 5.0e-10
+the four-weight model reproduces the retired nested policy exactly
+the stored percentile reproduces from the stored index
+every component's directionality is tested
+determinism and row-order independence are tested
+non-default weights reach the composite and are reported correctly
+components are near-orthogonal, max pairwise |rho| = 0.152
+rank stability measured across 40 scenarios with declared thresholds
+all four products describe the same 267,362 properties
+manifests agree with the artifacts on disk
 ```
 
-Terrain validation currently includes:
-
-- automated unit tests;
-- successful projected raster preparation;
-- successful countywide property extraction;
-- complete slope coverage in the current countywide output;
-- manifest/provenance capture.
-
-Before Milestone 3 is frozen, terrain validation should be reviewed for whether additional targeted plausibility checks or sampled manual/independent checks are warranted.
-
-The exposure index currently has deterministic implementation tests, but the main remaining validation question is methodological rather than purely computational:
+Not established:
 
 ```text
-How sensitive are rankings and conclusions to scoring normalization and component-weight assumptions?
+whether the weights are defensible
+whether the four components are the right components
+whether the index corresponds to any real-world flood outcome
 ```
 
-That question remains a central unfinished Milestone 3 task.
+No validation against observed flooding has been attempted, and none is
+planned. Sensitivity measures how much the ranking depends on the weights; it
+does not establish that the weights are right.
 
 ---
 
-# 19. Remaining Milestone 3 Work
+# 19. Milestone 3 Work — Complete
 
-Milestone 3 should not yet be declared complete.
+```text
+A1  reconstruct and audit current scoring behavior    COMPLETE
+A2  harden scoring methodology                        COMPLETE
+A3  implement sensitivity analysis                    COMPLETE
+A4  audit terrain and index evidence products         COMPLETE
+A5  regenerate and freeze final Milestone 3 artifacts COMPLETE
+A6  reproducibility and runbook documentation         COMPLETE
+```
 
-Remaining work is expected to include the following major areas.
+Milestone 3 is frozen.
 
-## 19.1 Scoring methodology hardening
+---
 
-Review and finalize:
+# 19b. The Unexploited Result in the Milestone 2 Benchmark
 
-- exact component normalization;
-- directionality of each component;
-- clipping/bound behavior;
-- missing-value policy;
-- component weights;
-- interpretation of the composite index;
-- percentile/rank semantics.
+Derived on 2026-07-16 by arithmetic on counters already recorded in
+`outputs/benchmark/water_cpp_benchmark_countywide_runs.csv` and
+`docs/benchmark_results.md`. No new measurement was taken.
 
-The implementation should remain explicit and deterministic.
+```text
+brute-force segment checks   284,248,316,558 / 267,362 =  1,063,159 per property
+indexed segment checks        18,921,369,157 / 267,362 =     70,771 per property
+BVH candidate features                                          5.498 per property
 
-## 19.2 Sensitivity analysis
+segment checks per candidate feature    70,771 / 5.498 =     12,872
+average water feature      1,063,159 segments / 8,572  =        124 segments
 
-Evaluate how stable countywide rankings are under plausible alternative scoring weights or configurations.
+                                          12,872 / 124 =       104x
+```
 
-The goal is to determine whether the ranking is:
+**The Feature BVH selects features roughly 104 times larger than the average
+water feature.**
 
-- broadly stable;
-- moderately sensitive;
-- highly dependent on one component or one weighting assumption.
+This is structural rather than a defect. Lake Ontario, the Genesee River, and
+the Erie Canal are each one feature, each enormous, and each near almost
+everything in the county. Best-first traversal descends into one of them and
+then checks every segment it contains, because the tree indexes **features,
+not geometry**. The bounding box of Lake Ontario is a poor proxy for the
+distance to Lake Ontario.
 
-The final system should report this honestly.
+This is why pruning stops at 93.34 percent rather than 99.9 percent: the index
+stops discriminating precisely where the work is concentrated.
 
-## 19.3 Terrain/index audit
+It is also why the granularity change is what makes a learned index legitimate
+here. 8,572 features is far below the scale at which learned index structures
+are meaningful; roughly 1,063,159 segments is squarely within it. The project's
+own data forced the granularity, and the granularity is what makes the
+comparison honest rather than contrived.
 
-Audit:
+## Where this leads
 
-- row counts;
-- unique property IDs;
-- null values;
-- field ranges;
-- CRS metadata;
-- manifest content;
-- source checksums;
-- join completeness;
-- deterministic regeneration.
+Segments are small and roughly uniform, so unlike features they can be ordered
+along a space-filling curve by a representative point without the ordering
+becoming meaningless. That is what makes a learned index possible at all — and
+it places the project in a corner of the literature that has not been examined,
+because learned spatial indexes are evaluated almost exclusively on point data
+and several return approximate results.
 
-## 19.4 Final Milestone 3 artifact regeneration
-
-After the scoring policy is finalized:
-
-- regenerate terrain evidence if necessary;
-- regenerate exposure index;
-- regenerate manifests;
-- regenerate milestone summary;
-- rerun the full test suite;
-- record final summary statistics.
-
-## 19.5 Reproducibility/runbook cleanup
-
-Ensure another technically competent person can reproduce the Milestone 3 pipeline from documented commands.
-
-This likely requires:
-
-- confirming script order;
-- documenting required inputs;
-- documenting expected outputs;
-- documenting environment/dependencies;
-- documenting large-file handling;
-- clarifying which outputs are generated versus Git-tracked.
-
-## 19.6 Documentation update
-
-Update current repository documentation so that it no longer presents the project as stopping at Milestone 2.
-
-The new canonical context files should also be added deliberately once complete.
+See Nucleus section 14b for the research question, the citations establishing
+the gap, and the search-radius inflation that representative-point ordering
+imposes on extended objects.
 
 ---
 
 # 20. Not Yet Implemented
 
-As of July 15, 2026, the following major planned work remains outside the completed implementation.
+## Milestone 4 — learned indexing of extended spatial objects
 
-## Precipitation evidence
+```text
+1. brute force              no index                    existing
+2. Feature BVH              2D,  8,572 features         existing
+3. Segment BVH              2D, ~1M segments            not started
+4. Hilbert + binary search  1D, ~1M segments            not started  control
+5. Hilbert + RMI            1D, ~1M segments            not started  learned
+6. + learned radius         seeds the search disk       not started  stretch
+```
 
-A dedicated precipitation evidence family has not yet been completed.
+Supporting work, none started:
 
-Expected future role:
+```text
+maximum segment length L measured
+run-size parameter swept
+disk-to-curve-range decomposition
+search-radius inflation characterized
+neural surrogate, spatial-block split
+```
 
-- add extreme precipitation / precipitation-frequency context;
-- use a defensible public source;
-- preserve provenance;
-- keep the precipitation evidence product separate from the score.
+Nothing in Milestone 4 changes the exposure index, the evidence products, or
+the exact distance kernel. Every implementation that claims exactness must
+reproduce the existing Python reference field-for-field through the existing
+comparison harness.
+
+Implementation 4 is not optional. Without it, comparing a segment index against
+a learned index confounds the dimensionality reduction with the learning.
+
+## Precipitation — gated stretch goal
+
+Permitted only after the Milestone 4 computational work is complete and
+documented. See Nucleus section 14b.
 
 ## Final scoring/index freeze
 
-The preliminary index exists, but the final scoring policy has not yet been frozen.
+The index is frozen at `preliminary_exposure_index_v2` and remains labelled
+preliminary. Under the Milestone 4 scope it is no longer the subject of active
+work; if precipitation lands as a stretch goal, the index would be revisited
+at that point and not before.
 
 ## Final end-to-end reproducibility audit
 
-The project has strong reproducibility mechanisms already, but the full final workflow still needs to be documented and audited as a complete system.
+Not yet performed as one operation. See PHASE D.
 
-## Final report / final presentation completion
+## Runtime instrumentation
 
-These are not the current implementation priority.
+The project has detailed C++ benchmarks and no measurement of the Python
+pipeline that produces every Milestone 3 result. See PHASE D2.
 
 ---
 
 # 21. Immediate Next Task
 
 ```text
-A1 completion: write docs/scoring_methodology.md
+B1. Measure the maximum segment length, then rebuild the index at
+    segment granularity
 ```
 
-Reconstruction is complete. Current scoring behavior has been established from
-source and confirmed against measured artifacts, recorded in §14, §14b, and
-`outputs/validation/scoring_inputs_summary.json`.
+## Measure L first
 
-The remaining A1 deliverable is the written specification. No further terminal
-output or artifact generation is required to produce it.
+Before writing any index code, measure the longest segment in the cached
+hydrography. It is one pass over `data/raw/usgs_3dhp_monroe.gpkg`.
 
-A2 must not begin until that document exists.
+`L` determines whether search-radius inflation is a footnote or the entire
+story. Ordering extended objects by a representative point requires searching
+`disk(r + L/2)` to remain exact, so a single long segment — a straight canal
+reach represented as one segment, for instance — inflates every query in the
+index.
+
+If `L` is small relative to typical nearest-water distances, which have a
+median of 325 m, inflation is cheap and the rest of the phase proceeds as
+planned. If `L` is large, splitting long segments at a maximum length becomes a
+parameter with a cost, and that is a finding rather than an inconvenience.
+
+Do not design around this number before measuring it.
+
+## Then rebuild at segment granularity
+
+The Feature BVH indexes 8,572 features. Rebuild the hierarchy over roughly
+1,063,159 segments, reusing the exact distance kernel, the 1e-6 m tie
+tolerance, and lexicographic tie-breaking on `water_feature_id` without
+modification. Each leaf must retain the parent feature's `water_feature_id`,
+because the tie rule resolves on it.
+
+This is expected to beat the Feature BVH substantially, and it is the honest
+baseline the learned index must then beat. Racing a learned index against the
+Feature BVH rather than against a segment index would be a rigged comparison
+and an examiner would see it immediately.
+
+Doing it first also de-risks the phase: it lands in days, it produces a result
+either way, and it uses only infrastructure that already exists.
+
+## Acceptance
+
+The existing comparison harness reports the same exact agreement it reports
+today, because nothing about the semantics changed. If agreement degrades, the
+kernel was touched and the change is wrong.
+
+See `CAPRM_Flood_Roadmap.md` PHASE B and Nucleus section 14b.
+
+## Deferred to PHASE D
+
+Recorded and not blocking:
+
+- `data/raw/usgs_3dhp_monroe.gpkg` is tracked at 21 MB despite matching
+  `*.gpkg` in `.gitignore`. It is the only large tracked file in the
+  repository.
+- `inventory_repository.py` computes `expected_paths` but never prints it, so
+  the check is silent on the console.
+- Empty tracked files from Milestone 1:
+  `outputs/validation/fema_pip_refresh_stderr.txt` and `_stdout.txt`.
+- Untracked local course files awaiting a decision: `how-ref`,
+  `m2_presentation_script.docx`, `MILESTONE 2 PRESENTATION NOTES.docx`,
+  `report body .docx`, `presentation_assets/`.
+- No runtime instrumentation for the Python pipeline. See PHASE D2.
+- `explain_property.py` remains unbuilt. Tracing one property from coordinates
+  to rank is the strongest available demo.
 
 ---
 
@@ -798,24 +1101,58 @@ A2 must not begin until that document exists.
 
 Use:
 
-> We are continuing CAPRM-Flood from an existing implementation. Read `CAPRM_Flood_Project_Nucleus_2026-07-15.md`, `CAPRM_Flood_Current_Status.md`, `CAPRM_Flood_Roadmap.md`, and the current repository before proposing changes.
+> We are continuing CAPRM-Flood at Milestone 4, chunk B1. Read Nucleus section
+> 14b, this document's sections 19b and 21, and `CAPRM_Flood_Roadmap.md`
+> PHASE B before proposing anything.
 >
-> We are currently finishing Milestone 3.
+> Confirm the commit recorded in this document's section 2 matches
+> `git log -1 --oneline`. If it does not, say so before continuing — you are
+> reading a stale copy.
 >
-> First inspect and summarize the current scoring implementation in:
+> Milestones 1 through 3 are frozen. The exposure index is not under active
+> work and must not be modified.
 >
-> - `python/caprm/scoring.py`
-> - `python/scripts/build_exposure_index.py`
-> - `tests/test_scoring.py`
+> B1 measures the maximum segment length in the cached hydrography, then
+> rebuilds the water spatial index over segments rather than features. Inspect
+> `cpp/spatial_core/src/water_distance_indexed.cpp` and
+> `python/caprm/water_distance.py` and state their current behavior from source
+> before proposing a change.
 >
-> Reconstruct the exact current component scores, normalization rules, weights, missing-value handling, and final ranking behavior.
->
-> Then propose a technically defensible sensitivity-analysis plan for the current index.
->
-> Do not rewrite the scoring architecture yet. First establish the current behavior and identify the smallest set of changes needed to make the methodology defensible and testable.
+> The exact distance kernel, the 1e-6 m tie tolerance, and lexicographic
+> tie-breaking on water_feature_id do not change. Acceptance is that the
+> existing comparison harness reports the same exact agreement it reports
+> today.
 
 ---
 
 # 23. Current Canonical Summary
 
-As of July 15, 2026, CAPRM-Flood has completed and validated Milestones 1 and 2, including FEMA point-in-polygon processing, nearest-water evidence, Python/C++ cross-implementation validation, deterministic fixtures, manifests, benchmarks, and countywide scaling. Milestone 3 has added projected DEM preparation, countywide terrain evidence for 267,362 unique properties, zero missing slope values in the current output, and a preliminary deterministic relative exposure index. The current implementation is committed and synchronized to GitHub at commit `0dd85ab`. The full automated test suite has passed. Milestone 3 remains open primarily for scoring-methodology hardening, sensitivity analysis, final artifact auditing/regeneration, and reproducibility/runbook cleanup before the milestone is frozen as complete.
+As of July 16, 2026, CAPRM-Flood has completed and frozen Milestones 1, 2, and
+3. Three evidence families spanning three different data topologies — FEMA
+vector polygons, hydrography lines and areas, and a terrain raster — produce
+one evidence contract for 267,362 unique Monroe County properties, with exact
+Python/C++ agreement on every compared field at every scale. Milestone 3 added
+a four-component exposure index at scoring policy
+`preliminary_exposure_index_v2`, measured component influence by exact variance
+decomposition, characterized the ranking as moderately sensitive to weight
+choice across 40 configurations with metric calibration, and shipped an
+automated product audit that verifies the stored artifacts against their own
+manifests. The suite passes at 181 tests and the audit reports no failures. The
+index is frozen and remains preliminary; it is the application layer, not the
+claim. Milestone 4 concentrates the project's computer-science contribution on
+a question its own Milestone 2 benchmark raised and did not answer: the Feature
+BVH examines only 5.498 candidate features per property yet still performs
+70,771 segment checks, because it indexes features rather than geometry and the
+largest water features are near everything. Rebuilding at segment granularity
+leads into a corner of the literature that has not been examined — learned
+spatial indexes are evaluated almost exclusively on point data and several
+return approximate results, whereas this project's data is extended objects and
+its query is exact nearest neighbour. Milestone 4 therefore measures the
+maximum segment length, sweeps the run-size parameter that trades pruning
+against search-radius inflation, orders segments along a Hilbert curve,
+validates the resulting query path with a binary-search control that isolates
+the contribution of learning from the contribution of dimensionality reduction,
+trains a recursive model index, and benchmarks the result against an exact
+baseline whose correctness is already proven field-by-field against an
+independent implementation. Precipitation remains a gated stretch goal behind
+that work.
