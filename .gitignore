@@ -24,3 +24,13 @@ cmake-build-*/
 
 .env
 .DS_Store
+
+# Editor state
+.vscode/
+.idea/
+.pytest_cache/
+
+# Regenerable scratch output
+git_log_current.txt
+git_status_current.txt
+repository_tree_current.txt
