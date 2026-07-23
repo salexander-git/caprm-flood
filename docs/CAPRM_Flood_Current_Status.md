@@ -6,7 +6,7 @@ This document records the exact current operational state of CAPRM-Flood as of *
 
 ```text
 Verified at commit:   see section 2
-Test suite:           181 passed
+Test suite:           186 passed  (excluding 2 untracked WIP files)
 Product audit:        49 pass, 1 warn, 0 fail
 Scoring policy:       preliminary_exposure_index_v2
 ```
@@ -827,20 +827,36 @@ docs/milestone_2.md            Milestone 2 method and results
 
 # 16. Test Status
 
-Measured on 2026-07-16:
+Measured on 2026-07-22:
 
 ```text
-python -m pytest -q
-181 passed
+python -m pytest -q --ignore=tests/test_spatial_split.py
+186 passed in 3.07s
 ```
 
 Per module:
 
 ```text
-tests/test_scoring.py       44
-tests/test_sensitivity.py   38
-tests/test_audit.py         38
-pre-existing modules        61
+tests/test_scoring.py             44
+tests/test_sensitivity.py         38
+tests/test_audit.py               38
+tests/test_water_segment_split.py  5   (Milestone 4 B1)
+pre-existing modules              61
+```
+
+**The `--ignore` flag is required and is not a Milestone 4 issue.**
+`tests/test_spatial_split.py` imports `caprm.spatial_split`, which imports
+`scipy.spatial.cKDTree`. scipy is not installed in the venv, so pytest aborts
+during collection and runs zero tests. Both files are untracked (`??`) with no
+commit history and postdate the 2026-07-16 repository inventory; they are
+Phase C spatial-block-split work in progress. When Phase C begins, scipy must
+be installed *and* declared in `requirements.txt` in the same change. Until
+then the tracked suite is green at 186.
+
+A separate C++ unit suite is not counted above:
+
+```text
+tests/cpp/test_water_segment_bvh.cpp     80021 checks, 0 failures
 ```
 
 This supersedes `55 passed in 1.06s` in `README.md`, which is stale.
@@ -982,15 +998,16 @@ imposes on extended objects.
 ```text
 1. brute force              no index                    existing
 2. Feature BVH              2D,  8,572 features         existing
-3. Segment BVH              2D, ~1M segments            implemented, local-run pending
+3. Segment BVH              2D, ~1M segments            implemented and validated
 4. Hilbert + binary search  1D, ~1M segments            not started  control
 5. Hilbert + RMI            1D, ~1M segments            not started  learned
 6. + learned radius         seeds the search disk       not started  stretch
 ```
 
-Implementation 3 (Segment BVH) is authored and locally validated
-(`water_distance_segment_bvh.cpp`; unit + fixture crosscheck byte-identical to
-the brute-force oracle) but not yet run against countywide data or committed.
+Implementation 3 (Segment BVH) is complete and validated countywide
+(`water_distance_segment_bvh.cpp`): field-for-field agreement with the Python
+reference on all 267,362 properties, maximum absolute error 4.658e-10 m. Not
+yet committed. See section 21 for the measured result.
 
 Supporting work:
 
@@ -1037,73 +1054,161 @@ pipeline that produces every Milestone 3 result. See PHASE D2.
 # 21. Immediate Next Task
 
 ```text
-Run the Segment BVH countywide acceptance, then proceed to B2 (run-size sweep)
+B2. Sweep the run-size / cap parameter for the Segment BVH
 ```
 
-## B1 state — implemented, local countywide run pending
+B1 is complete and validated countywide. It is not yet committed.
 
-B1a and B1b/c are authored and locally validated; the remaining B1 step is a
-countywide run on Sterling's machine (the county data is not present in the
-authoring environment).
+## B1 result — Segment BVH, measured 2026-07-22
 
-B1a — measure L. Done. Over the exported `water_vertices_countywide.csv`:
-1,063,159 segments; distribution (EPSG:26918 m) min 0.03, median 5.52, mean
-9.84, p90 21.7, p95 32.1, p99 69.0, p99.9 168.7, max **L = 5,748.24 m**. The
-longest segment is one boundary chord of feature_index 7445 (`waterbody:L1E1P`,
-Lake Ontario). Naive midpoint inflation L/2 = 2,874 m over ~267k queries is
-untenable, so long segments are split before indexing.
+B1a — measure L. Over `outputs/cpp_input/water_vertices_countywide.csv`
+(sha256 `dbdce9b217e55798b6f2db486fb101ea4226c555b1c07994cd800ff2d46dd09a`):
+1,063,159 segments; mean length 9.840 m; **L = 5,748.2396 m**, one boundary
+chord of feature_index 7445 (`waterbody:L1E1P`, Lake Ontario). Naive midpoint
+inflation L/2 = 2,874 m was therefore untenable and long segments are split
+before indexing.
 
-B1b/c — Segment BVH + distance-exact splitting. Done (authoring). Implemented in
-`cpp/spatial_core/src/water_distance_segment_bvh.cpp`: a BVH over length-capped
-sub-segment boxes (default cap 100 m) whose leaves carry the parent
-`water_feature_id`, best-first traversal to collect a candidate feature set,
-then the **unchanged** exact kernel and tie rule over those candidates. The
-reported distance is computed over the original geometry, so the output is
-byte-identical to the reference, not merely within tolerance. Splitting is
-distance-exact: every piece lies on its original segment, so the minimum
-point-to-piece distance equals the point-to-original distance; splitting only
-tightens index boxes. Polygon-interior → 0 is preserved without a separate
-containment index, resting on the USGS 3DHP non-overlap invariant. Output schema
-= the Feature-BVH schema plus one additive instrumentation column
-`cpp_segment_box_tests`; `algorithm=segment_bvh`.
+B1b/c — Segment BVH + distance-exact splitting. Implemented in
+`cpp/spatial_core/src/water_distance_segment_bvh.cpp`. A BVH over length-capped
+sub-segment boxes (cap 100 m), leaves carrying the parent `water_feature_id`,
+best-first traversal to collect candidate features, then the **unchanged** exact
+kernel and tie rule over those candidates. The reported distance is computed
+over original geometry, so output is byte-identical to the reference rather
+than merely within tolerance. The kernel, `water_export.py`, and the tie rule
+were not modified.
 
-Files added, not yet committed:
+### Split cost (manifest: `outputs/validation/water_segment_split_countywide_manifest.json`)
+
+```text
+original segments      1,063,159
+split segments         1,068,510
+added segments             5,351      +0.50%
+max length before      5,748.2396 m
+max length after          99.9975 m   57x reduction
+segments over 100 m        4,333
+segments over 200 m          657
+segments over 500 m           19
+segments over 1000 m           4
+```
+
+Capping is close to free: a 0.50 percent increase in index entries bounds the
+`L/2` inflation term from 2,874 m to 50 m. That is a B3 input, not a B1
+footnote.
+
+### Countywide agreement (`outputs/validation/water_segment_bvh_summary.json`)
+
+```text
+total_union_rows                267,362
+all_fields_agree                267,362      exit code 0
+maximum_absolute_error_m          4.657998431412125e-10
+mean_absolute_error_m             3.731e-11
+median_absolute_error_m           3.411e-13
+```
+
+The maximum error equals the Feature BVH's countywide figure recorded in
+`docs/crs_policy.md`. That is the expected signature: because the distance is
+computed by the unchanged kernel over original geometry, the residual is pure
+Python/C++ floating-point difference with no index contribution.
+
+### Artifact checks on the countywide output
+
+```text
+rows                      267,362
+unique property_ids       267,362
+nulls in required cols          0
+empty feature names       208,340      unnamed 3DHP flowlines, expected
+exact-zero distances          266      all class = waterbody
+distance range            0.0 to 2,630.2349 m   within the 20,000 m buffer
+tie_count minimum               1
+distance_crs             EPSG:26918    single value
+algorithm                segment_bvh   single value
+segment checks total  2,597,922,599    matches the comparator summary
+```
+
+All 266 exact zeros resolve to `waterbody` features, which is the direct test of
+the interior-zero invariant rather than a count alone.
+
+### Measured query behavior (single countywide run, not a benchmark)
+
+```text
+wall clock                       10.135 s
+properties per second            26,379.4
+index node visits per property       28.29
+segment box tests per property        6.49
+candidate features per property       1.497
+segment checks per property       9,716.87
+```
+
+Against the Milestone 2 counters in section 19b:
+
+```text
+                    segment checks/property    candidate features/property
+brute force              1,063,159                        n/a
+Feature BVH                 70,771    93.34% pruned      5.498
+Segment BVH                  9,716.87 99.09% pruned      1.497
+```
+
+**7.28x fewer segment checks than the Feature BVH** and 109.4x fewer than brute
+force. Candidate features fell 3.67x, and the features selected are also
+smaller — 6,490 segments each versus the Feature BVH's 12,872 — because the
+tighter phase-1 threshold stops admitting the enormous features that section
+19b identified as the Feature BVH's failure mode.
+
+**This is a pruning result, not yet a speedup claim.** The 10.135 s is one
+unrepeated run; wall-clock comparison requires `benchmark_water_cpp.py` under
+its repetition protocol, which is B2/B6 work.
+
+### Where the remaining work now sits
+
+Phase-1 search costs roughly 35 box and node operations per property. Phase-2
+verification costs 9,716.87 segment checks, because the exact kernel rescans
+each candidate feature's entire original geometry. Over 99 percent of remaining
+work is verification, not search. The bottleneck has moved from finding the
+answer to proving it, which is the lever B2 and B3 should pull on.
+
+## Files added, not yet committed
 
 ```text
 cpp/spatial_core/src/water_distance_segment_bvh.cpp
-python/scripts/split_water_segments.py        pre-index measurement + manifest
-tests/cpp/test_water_segment_bvh.cpp          80021 checks, 0 failures
-tests/test_water_segment_split.py             5/5 passed
-tests/fixture_crosscheck.py                   0 field mismatches vs brute force
+python/scripts/split_water_segments.py
+tests/cpp/test_water_segment_bvh.cpp
+tests/test_water_segment_split.py
+tests/fixture_crosscheck.py
+outputs/validation/water_segment_split_countywide_manifest.json
+outputs/validation/water_segment_bvh_summary.json
+outputs/validation/water_segment_bvh_agreement.csv
 ```
 
-Local validation performed: `g++ -std=c++17 -O2 -Wall -Wextra` builds the
-program and the unit test with no warnings; the unit suite reports 80021 checks
-/ 0 failures (split-invariance worst 1.18e-9 m; field-for-field 0 mismatches at
-cap=100 and no-split); the end-to-end fixture crosscheck runs both programs
-through the real CSV IO path and reports 0 field mismatches and 0.0 m distance
-error. The kernel, `water_export.py`, and the tie rule were not modified.
+Modified: this document, `CAPRM_Flood_Roadmap.md`,
+`CAPRM_Flood_Project_Nucleus_2026-07-15.md`.
 
-## Next step — countywide acceptance run
+Generated and intentionally not committed (matches the `outputs/` ignore rule):
+`outputs/cpp/cpp_nearest_water_segment_bvh_countywide.csv`.
 
-On the machine holding the county data:
+## Validation performed
 
-```powershell
-g++ -std=c++17 -O2 -o segment_bvh.exe cpp\spatial_core\src\water_distance_segment_bvh.cpp
-python python\scripts\split_water_segments.py --vertices outputs\cpp_input\water_vertices_countywide.csv --max-segment-length-m 100 --manifest-output outputs\validation\water_segment_split_countywide_manifest.json
-.\segment_bvh.exe outputs\cpp_input\water_properties_countywide.csv outputs\cpp_input\water_features_countywide.csv outputs\cpp_input\water_vertices_countywide.csv outputs\cpp\cpp_nearest_water_segment_bvh_countywide.csv EPSG:26918 100
-python compare_python_cpp_water.py --python-reference outputs\baseline\python_nearest_water_countywide.csv --cpp-output outputs\cpp\cpp_nearest_water_segment_bvh_countywide.csv --detail-output outputs\validation\water_segment_bvh_agreement.csv --summary-output outputs\validation\water_segment_bvh_summary.json
+```text
+g++ -std=c++17 -O2 -static -Wall -Wextra          builds clean, no warnings
+tests/cpp/test_water_segment_bvh.exe              80021 checks, 0 failures
+python tests/test_water_segment_split.py          5/5 passed
+python tests/fixture_crosscheck.py                0 field mismatches, 0.0 m error
+python -m pytest -q --ignore=tests/test_spatial_split.py    186 passed
+python/scripts/compare_python_cpp_water.py        exit 0, all fields agree
 ```
 
-Expected acceptance (label expected until run): comparator exit 0 with
-`all_fields_agree == total_union_rows`; max abs distance error ≤ 4.658e-10 m
-(the Feature-BVH countywide figure); the ~266 zero-distance properties stay
-exactly 0; row count 267,362; unique `property_id`; distances in `[0, 20000)`.
-Any `feature_id` disagreement is the completeness invariant to investigate, not
-a tolerance to loosen.
+The C++ unit suite and fixture crosscheck were run on both Linux/g++ 13.3 and
+Windows/MSYS2 UCRT64 and produced identical counters (3,991 segment checks,
+3,685 box tests on the shared fixture), so the implementation is deterministic
+across compiler and platform.
 
-After acceptance passes, commit the five files above plus the split and
-agreement manifests, then proceed to B2 (run-size sweep).
+## Next task — B2, run-size / cap sweep
+
+Extend `water_benchmark.py`, which currently hard-codes `brute_force` and
+`feature_bvh`, to accept `segment_bvh`, then sweep the cap and report the
+tradeoff curve using `cpp_segment_box_tests` as the traversal-cost axis. Given
+that the added-segment cost at 100 m is only 0.50 percent, the interesting
+region is likely *tighter* caps (10, 25, 50 m) where entry counts begin to grow
+materially, not only looser ones.
 
 ## Deferred to PHASE D
 
