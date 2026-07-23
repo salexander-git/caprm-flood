@@ -1,8 +1,8 @@
-# CAPRM-Flood Current Status — 2026-07-16
+# CAPRM-Flood Current Status — 2026-07-22
 
 ## Purpose of This Document
 
-This document records the exact current operational state of CAPRM-Flood as of **July 16, 2026**.
+This document records the exact current operational state of CAPRM-Flood as of **July 22, 2026**.
 
 ```text
 Verified at commit:   see section 2
@@ -40,8 +40,9 @@ Current implementation state:
 Milestone 1: complete and validated
 Milestone 2: complete and validated
 Milestone 3: complete and frozen
-Milestone 4: index structure and learned approximation — starting
-Milestone 4: not yet started as a dedicated implementation phase
+Milestone 4: index structure and learned approximation — in progress
+Milestone 4: chunk B1 (Segment BVH) implemented and locally validated;
+             countywide acceptance run and commit pending
 ```
 
 Milestone 3 is frozen and the exposure index is no longer under active work.
@@ -981,20 +982,25 @@ imposes on extended objects.
 ```text
 1. brute force              no index                    existing
 2. Feature BVH              2D,  8,572 features         existing
-3. Segment BVH              2D, ~1M segments            not started
+3. Segment BVH              2D, ~1M segments            implemented, local-run pending
 4. Hilbert + binary search  1D, ~1M segments            not started  control
 5. Hilbert + RMI            1D, ~1M segments            not started  learned
 6. + learned radius         seeds the search disk       not started  stretch
 ```
 
-Supporting work, none started:
+Implementation 3 (Segment BVH) is authored and locally validated
+(`water_distance_segment_bvh.cpp`; unit + fixture crosscheck byte-identical to
+the brute-force oracle) but not yet run against countywide data or committed.
+
+Supporting work:
 
 ```text
-maximum segment length L measured
-run-size parameter swept
-disk-to-curve-range decomposition
-search-radius inflation characterized
-neural surrogate, spatial-block split
+maximum segment length L measured          done  (B1a: L = 5,748.24 m)
+segment splitting implemented              done  (distance-exact, cap 100 m)
+run-size parameter swept                   not started
+disk-to-curve-range decomposition          not started
+search-radius inflation characterized      not started
+neural surrogate, spatial-block split      not started
 ```
 
 Nothing in Milestone 4 changes the exposure index, the evidence products, or
@@ -1031,51 +1037,73 @@ pipeline that produces every Milestone 3 result. See PHASE D2.
 # 21. Immediate Next Task
 
 ```text
-B1. Measure the maximum segment length, then rebuild the index at
-    segment granularity
+Run the Segment BVH countywide acceptance, then proceed to B2 (run-size sweep)
 ```
 
-## Measure L first
+## B1 state — implemented, local countywide run pending
 
-Before writing any index code, measure the longest segment in the cached
-hydrography. It is one pass over `data/raw/usgs_3dhp_monroe.gpkg`.
+B1a and B1b/c are authored and locally validated; the remaining B1 step is a
+countywide run on Sterling's machine (the county data is not present in the
+authoring environment).
 
-`L` determines whether search-radius inflation is a footnote or the entire
-story. Ordering extended objects by a representative point requires searching
-`disk(r + L/2)` to remain exact, so a single long segment — a straight canal
-reach represented as one segment, for instance — inflates every query in the
-index.
+B1a — measure L. Done. Over the exported `water_vertices_countywide.csv`:
+1,063,159 segments; distribution (EPSG:26918 m) min 0.03, median 5.52, mean
+9.84, p90 21.7, p95 32.1, p99 69.0, p99.9 168.7, max **L = 5,748.24 m**. The
+longest segment is one boundary chord of feature_index 7445 (`waterbody:L1E1P`,
+Lake Ontario). Naive midpoint inflation L/2 = 2,874 m over ~267k queries is
+untenable, so long segments are split before indexing.
 
-If `L` is small relative to typical nearest-water distances, which have a
-median of 325 m, inflation is cheap and the rest of the phase proceeds as
-planned. If `L` is large, splitting long segments at a maximum length becomes a
-parameter with a cost, and that is a finding rather than an inconvenience.
+B1b/c — Segment BVH + distance-exact splitting. Done (authoring). Implemented in
+`cpp/spatial_core/src/water_distance_segment_bvh.cpp`: a BVH over length-capped
+sub-segment boxes (default cap 100 m) whose leaves carry the parent
+`water_feature_id`, best-first traversal to collect a candidate feature set,
+then the **unchanged** exact kernel and tie rule over those candidates. The
+reported distance is computed over the original geometry, so the output is
+byte-identical to the reference, not merely within tolerance. Splitting is
+distance-exact: every piece lies on its original segment, so the minimum
+point-to-piece distance equals the point-to-original distance; splitting only
+tightens index boxes. Polygon-interior → 0 is preserved without a separate
+containment index, resting on the USGS 3DHP non-overlap invariant. Output schema
+= the Feature-BVH schema plus one additive instrumentation column
+`cpp_segment_box_tests`; `algorithm=segment_bvh`.
 
-Do not design around this number before measuring it.
+Files added, not yet committed:
 
-## Then rebuild at segment granularity
+```text
+cpp/spatial_core/src/water_distance_segment_bvh.cpp
+python/scripts/split_water_segments.py        pre-index measurement + manifest
+tests/cpp/test_water_segment_bvh.cpp          80021 checks, 0 failures
+tests/test_water_segment_split.py             5/5 passed
+tests/fixture_crosscheck.py                   0 field mismatches vs brute force
+```
 
-The Feature BVH indexes 8,572 features. Rebuild the hierarchy over roughly
-1,063,159 segments, reusing the exact distance kernel, the 1e-6 m tie
-tolerance, and lexicographic tie-breaking on `water_feature_id` without
-modification. Each leaf must retain the parent feature's `water_feature_id`,
-because the tie rule resolves on it.
+Local validation performed: `g++ -std=c++17 -O2 -Wall -Wextra` builds the
+program and the unit test with no warnings; the unit suite reports 80021 checks
+/ 0 failures (split-invariance worst 1.18e-9 m; field-for-field 0 mismatches at
+cap=100 and no-split); the end-to-end fixture crosscheck runs both programs
+through the real CSV IO path and reports 0 field mismatches and 0.0 m distance
+error. The kernel, `water_export.py`, and the tie rule were not modified.
 
-This is expected to beat the Feature BVH substantially, and it is the honest
-baseline the learned index must then beat. Racing a learned index against the
-Feature BVH rather than against a segment index would be a rigged comparison
-and an examiner would see it immediately.
+## Next step — countywide acceptance run
 
-Doing it first also de-risks the phase: it lands in days, it produces a result
-either way, and it uses only infrastructure that already exists.
+On the machine holding the county data:
 
-## Acceptance
+```powershell
+g++ -std=c++17 -O2 -o segment_bvh.exe cpp\spatial_core\src\water_distance_segment_bvh.cpp
+python python\scripts\split_water_segments.py --vertices outputs\cpp_input\water_vertices_countywide.csv --max-segment-length-m 100 --manifest-output outputs\validation\water_segment_split_countywide_manifest.json
+.\segment_bvh.exe outputs\cpp_input\water_properties_countywide.csv outputs\cpp_input\water_features_countywide.csv outputs\cpp_input\water_vertices_countywide.csv outputs\cpp\cpp_nearest_water_segment_bvh_countywide.csv EPSG:26918 100
+python compare_python_cpp_water.py --python-reference outputs\baseline\python_nearest_water_countywide.csv --cpp-output outputs\cpp\cpp_nearest_water_segment_bvh_countywide.csv --detail-output outputs\validation\water_segment_bvh_agreement.csv --summary-output outputs\validation\water_segment_bvh_summary.json
+```
 
-The existing comparison harness reports the same exact agreement it reports
-today, because nothing about the semantics changed. If agreement degrades, the
-kernel was touched and the change is wrong.
+Expected acceptance (label expected until run): comparator exit 0 with
+`all_fields_agree == total_union_rows`; max abs distance error ≤ 4.658e-10 m
+(the Feature-BVH countywide figure); the ~266 zero-distance properties stay
+exactly 0; row count 267,362; unique `property_id`; distances in `[0, 20000)`.
+Any `feature_id` disagreement is the completeness invariant to investigate, not
+a tolerance to loosen.
 
-See `CAPRM_Flood_Roadmap.md` PHASE B and Nucleus section 14b.
+After acceptance passes, commit the five files above plus the split and
+agreement manifests, then proceed to B2 (run-size sweep).
 
 ## Deferred to PHASE D
 

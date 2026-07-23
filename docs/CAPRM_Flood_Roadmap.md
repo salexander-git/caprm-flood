@@ -35,7 +35,7 @@ As of July 16, 2026:
 Milestone 1: complete and validated
 Milestone 2: complete and validated
 Milestone 3: complete and frozen
-Milestone 4: index structure and learned approximation — starting
+Milestone 4: index structure and learned approximation — in progress (B1 authored)
 ```
 
 Current countywide workload:
@@ -62,8 +62,7 @@ verdict: moderately sensitive to component weights
 Next priority:
 
 ```text
-B1. Measure the maximum segment length, then rebuild the index at
-    segment granularity
+Run the Segment BVH countywide acceptance (B1 authored), then B2 run-size sweep
 ```
 
 **Why the roadmap changed.** Milestone 3's feedback was that the project's
@@ -522,6 +521,16 @@ Phase B is the two weeks. Phase C is roughly three to four days after it.
 
 ## B1. Measure L, Then Rebuild at Segment Granularity
 
+**STATUS: authored and locally validated; countywide acceptance run pending.**
+L is measured (max **5,748.24 m**, a Lake Ontario polygon chord; full
+distribution recorded in Current Status §21 and the B1a locked result). The
+segment index is implemented as `cpp/spatial_core/src/water_distance_segment_bvh.cpp`
+with distance-exact length-capped splitting (default cap 100 m), and it matches
+the brute-force oracle byte-for-byte in unit and end-to-end fixture checks. The
+only remaining B1 step is running the countywide acceptance on the machine that
+holds the data (commands in Current Status §21). The subsections below are the
+original B1 plan, retained for context.
+
 ### Measure L first
 
 Before any index code, measure the **maximum segment length** in the cached
@@ -598,7 +607,12 @@ shape of the curve is the finding.
 
 ### Implementation
 
-Sweep `1, 2, 4, 8, 16, 32, 64, 128`. One loop over the B1 builder.
+Sweep `1, 2, 4, 8, 16, 32, 64, 128`. The B1 builder is
+`water_distance_segment_bvh.cpp`; its split cap already parameterizes entry
+extent (a `run-size` grouping is the analogous knob for consecutive segments).
+Extend `water_benchmark.py` — which currently accepts only `brute_force` and
+`feature_bvh` — to accept `segment_bvh` so the sweep runs through the existing
+harness.
 
 ### Measure per run size
 
@@ -606,11 +620,16 @@ Sweep `1, 2, 4, 8, 16, 32, 64, 128`. One loop over the B1 builder.
 build time
 index size in bytes
 query time
-segment checks per property
-candidate entries per property
+segment checks per property         cpp_segment_checks
+candidate features per property      cpp_candidate_feature_checks
+segment box tests per property       cpp_segment_box_tests  (traversal cost axis)
 maximum entry extent  ->  the inflation radius it implies
 exact agreement       ->  must hold at every run size
 ```
+
+The `cpp_segment_box_tests` column emitted by the B1 program is the
+traversal-cost axis for this curve; it counts sub-segment box lower-bound
+evaluations during best-first descent.
 
 ### Completion gate
 
@@ -1537,9 +1556,9 @@ Milestone 3 is frozen.
 ## PHASE B complete when
 
 ```text
-maximum segment length measured, distribution reported
-segment-granularity index implemented
-exact agreement unchanged from the Feature BVH baseline
+maximum segment length measured, distribution reported   DONE  L = 5,748.24 m
+segment-granularity index implemented                    DONE  segment_bvh (local)
+exact agreement unchanged from the Feature BVH baseline   local checks pass; countywide run pending
 run-size parameter swept, operating point chosen and justified
 segments Hilbert-ordered, resolution and normalization documented
 search-radius inflation implemented and its cost measured
@@ -1603,23 +1622,20 @@ the surrogate's v2 target documented as such
 # 11. Immediate Next Conversation
 
 ```text
-B1. Measure the maximum segment length, then rebuild the index at
-    segment granularity
+Run the Segment BVH countywide acceptance (B1 authored), then start B2.
 ```
 
-Measure `L` before writing index code. It is one pass over the hydrography
-cache and it determines whether search-radius inflation is a footnote or the
-phase's central finding. Do not design around the number before measuring it.
-
-Then rebuild at segment granularity. It lands in days, produces a result either
-way, uses only infrastructure that exists, and is the honest baseline the
-learned index must beat.
+B1 is authored and locally validated. What remains is running the countywide
+acceptance on the machine that holds the data, then — once it passes — B2, the
+run-size sweep. The B1 build/run/compare commands are in
+`CAPRM_Flood_Current_Status.md` §21.
 
 Suggested prompt:
 
-> We are continuing CAPRM-Flood at Milestone 4, chunk B1. Read Nucleus section
-> 14b, `CAPRM_Flood_Current_Status.md` sections 19b and 21, and this document's
-> PHASE B before proposing anything.
+> We are continuing CAPRM-Flood at Milestone 4. B1 (Segment BVH) is authored and
+> locally validated but not yet run countywide or committed. Read Nucleus
+> section 14b, `CAPRM_Flood_Current_Status.md` sections 19b and 21, and this
+> document's PHASE B and B2 before proposing anything.
 >
 > Confirm the commit recorded in Current Status section 2 matches
 > `git log -1 --oneline`. If it does not, say so before continuing — you are
@@ -1628,16 +1644,14 @@ Suggested prompt:
 > Milestones 1 through 3 are frozen. The exposure index is not under active
 > work and must not be modified.
 >
-> B1 has two parts. First, measure the maximum segment length in
-> `data/raw/usgs_3dhp_monroe.gpkg` and report the full length distribution.
-> Second, rebuild the water spatial index over segments rather than features.
->
-> Inspect `cpp/spatial_core/src/water_distance_indexed.cpp` and
-> `python/caprm/water_distance.py` and state their current behavior from source
-> before proposing a change. The exact distance kernel, the 1e-6 m tie
-> tolerance, and lexicographic tie-breaking on water_feature_id do not change.
-> Acceptance is that the existing comparison harness reports the same exact
-> agreement it reports today.
+> First, run the B1 countywide acceptance (commands in Current Status §21) and
+> report the comparator result: max abs distance error, feature_id
+> disagreements, row count, zero-distance count. The exact distance kernel, the
+> 1e-6 m tie tolerance, and lexicographic tie-breaking on water_feature_id do
+> not change; acceptance is field-for-field agreement with the Python reference.
+> Then begin B2: extend `water_benchmark.py` to accept `segment_bvh` and sweep
+> the run-size / cap parameter, using `cpp_segment_box_tests` as the
+> traversal-cost axis.
 
 ---
 

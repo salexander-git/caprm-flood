@@ -819,7 +819,7 @@ does not.
 ```text
 1. brute force              no index                    existing
 2. Feature BVH              2D,  8,572 features         existing
-3. Segment BVH              2D, ~1M segments
+3. Segment BVH              2D, ~1M segments            implemented
 4. Hilbert + binary search  1D, ~1M segments            control
 5. Hilbert + RMI            1D, ~1M segments            learned position
 6. + learned radius         seeds the search disk       stretch
@@ -840,6 +840,45 @@ The comparisons that matter are adjacent, never global:
 **Implementation 4 is not optional.** Without it, comparing a segment index
 against a learned index confounds the dimensionality reduction with the
 learning, and a loss could not be attributed to either.
+
+## The segment index method (implementation 3, implemented)
+
+Implementation 3 is a bounding-volume hierarchy over individual boundary
+segments rather than whole features, built by the same `#include`-the-kernel
+pattern the Feature BVH uses, so the exact point-to-segment kernel and the tie
+rule are reused unchanged. Two design elements make it a durable part of the
+methodology:
+
+**Distance-exact splitting.** Before indexing, any segment longer than a cap
+(default 100 m) is subdivided into equal collinear pieces so no leaf box spans
+more than the cap. This bounds the `L/2` midpoint inflation that the later
+Hilbert phase depends on (uncapped, one Lake Ontario boundary chord of 5,748 m
+would inflate every query by 2,874 m). The subdivision changes no distance: every
+piece lies on its original segment, so the minimum point-to-piece distance equals
+the point-to-original distance. Splitting therefore only tightens index boxes; it
+never alters a reported nearest-water distance. The pieces exist solely as BVH
+leaf boxes — the reported distance is always computed by the unchanged kernel over
+the original geometry, which is why the segment-index output is byte-identical to
+the reference rather than merely within tolerance.
+
+**Two-phase query, and polygon-interior → 0 without a containment index.** A
+best-first traversal collects the set of candidate features whose sub-segment
+boxes can compete at the final threshold; the unchanged exact kernel and tie rule
+then run over those candidates. Polygon-interior → 0 (the ~266 properties inside a
+waterbody, whose exact distance is 0 regardless of the nearest boundary segment)
+is preserved without a separate point-in-polygon index, because the USGS 3DHP
+hydrography partitions water area without overlap: a point inside a polygon has
+that polygon's own boundary as its nearest boundary, so the polygon is always a
+candidate and its interior-zero result is always reached. This invariant is stated
+rather than assumed, and is checked empirically by countywide field-for-field
+agreement and by the interior-zero rows remaining exactly 0. Each leaf carries its
+parent feature's `water_feature_id`, because the tie rule resolves on it.
+
+The measurement half of splitting lives in a Python pre-index pass
+(`split_water_segments.py`) that reports the length distribution and writes a
+provenance manifest; the geometric subdivision itself happens in memory in the C++
+program. The vertex export is not modified, so upstream evidence products and their
+manifests are untouched.
 
 ## The learned radius, and why it unifies the two halves
 
