@@ -1,0 +1,1955 @@
+{
+  "property_count": 267362,
+  "water_feature_count": 8572,
+  "vertex_count": 1072254,
+  "segment_count": 1063159,
+  "swept_parameter": "max_segment_length_cap_m",
+  "swept_parameter_description": "entry extent cap in metres; 0 disables splitting (unlimited extent)",
+  "distinct_entry_counts": [
+    1063159,
+    1063200,
+    1063936,
+    1068510,
+    1092224,
+    1189589,
+    1683537
+  ],
+  "entry_count_varies": true,
+  "points": [
+    {
+      "max_segment_length_cap_m": 0.0,
+      "cap_label": "unlimited",
+      "verification_mode": "original",
+      "run_count": 7,
+      "total_segment_checks": 2576392529,
+      "total_index_node_visits": 7516371,
+      "total_candidate_feature_checks": 390134,
+      "total_segment_box_tests": 1714078,
+      "total_line_segment_checks": 42143066,
+      "total_polygon_segment_checks": 2534249463,
+      "total_containment_ring_checks": 0,
+      "total_containment_parts_tested": 0,
+      "total_containment_parts_skipped": 0,
+      "index_entry_count": 1063159,
+      "index_bytes": 97113388,
+      "bvh_node_count": 291309,
+      "max_entry_extent_m": 5748.239565,
+      "implied_b3_inflation_radius_m": 2874.1197825,
+      "input_loading_seconds": {
+        "minimum": 1.621477,
+        "median": 1.65766,
+        "mean": 1.6568511428571429,
+        "maximum": 1.723055
+      },
+      "index_construction_seconds": {
+        "minimum": 0.157622,
+        "median": 0.161648,
+        "mean": 0.1630404285714286,
+        "maximum": 0.176913
+      },
+      "computation_seconds": {
+        "minimum": 9.582631,
+        "median": 9.753981,
+        "mean": 9.759410857142857,
+        "maximum": 9.895718
+      },
+      "total_process_seconds": {
+        "minimum": 11.387721899998724,
+        "median": 11.597819600006915,
+        "mean": 11.602435442860171,
+        "maximum": 11.749791400005051
+      },
+      "properties_per_second": {
+        "minimum": 27017.948571,
+        "median": 27410.550527,
+        "mean": 27398.180542142858,
+        "maximum": 27900.687361
+      },
+      "average_segment_checks_per_property": {
+        "minimum": 9636.345214,
+        "median": 9636.345214,
+        "mean": 9636.345214,
+        "maximum": 9636.345214
+      },
+      "average_node_visits_per_property": {
+        "minimum": 28.113086,
+        "median": 28.113086,
+        "mean": 28.113086,
+        "maximum": 28.113086
+      },
+      "average_candidate_features_per_property": {
+        "minimum": 1.459198,
+        "median": 1.459198,
+        "mean": 1.459198,
+        "maximum": 1.459198
+      },
+      "average_segment_box_tests_per_property": {
+        "minimum": 6.411076,
+        "median": 6.411076,
+        "mean": 6.411076,
+        "maximum": 6.411076
+      },
+      "average_line_segment_checks_per_property": {
+        "minimum": 157.625489,
+        "median": 157.625489,
+        "mean": 157.625489,
+        "maximum": 157.625489
+      },
+      "average_polygon_segment_checks_per_property": {
+        "minimum": 9478.719725,
+        "median": 9478.719725,
+        "mean": 9478.719725,
+        "maximum": 9478.719725
+      },
+      "average_containment_ring_checks_per_property": {
+        "minimum": 0.0,
+        "median": 0.0,
+        "mean": 0.0,
+        "maximum": 0.0
+      },
+      "per_property": {
+        "segment_checks": 9636.345213605524,
+        "segment_box_tests": 6.411075620320015,
+        "index_node_visits": 28.113086377271266,
+        "candidate_features": 1.4591976421480988,
+        "line_segment_checks": 157.62548903733514,
+        "polygon_segment_checks": 9478.71972456819,
+        "containment_ring_checks": 0.0
+      },
+      "line_share_of_verification": 0.016357393341905627,
+      "polygon_share_of_verification": 0.9836426066580943
+    },
+    {
+      "max_segment_length_cap_m": 0.0,
+      "cap_label": "unlimited",
+      "verification_mode": "split",
+      "run_count": 7,
+      "total_segment_checks": 1796562707,
+      "total_index_node_visits": 7516371,
+      "total_candidate_feature_checks": 390134,
+      "total_segment_box_tests": 1714078,
+      "total_line_segment_checks": 0,
+      "total_polygon_segment_checks": 0,
+      "total_containment_ring_checks": 1796562707,
+      "total_containment_parts_tested": 62078,
+      "total_containment_parts_skipped": 90325,
+      "index_entry_count": 1063159,
+      "index_bytes": 97113388,
+      "bvh_node_count": 291309,
+      "max_entry_extent_m": 5748.239565,
+      "implied_b3_inflation_radius_m": 2874.1197825,
+      "input_loading_seconds": {
+        "minimum": 1.623351,
+        "median": 1.632663,
+        "mean": 1.6419558571428572,
+        "maximum": 1.676794
+      },
+      "index_construction_seconds": {
+        "minimum": 0.155503,
+        "median": 0.160312,
+        "mean": 0.1608285714285714,
+        "maximum": 0.165853
+      },
+      "computation_seconds": {
+        "minimum": 1.612567,
+        "median": 1.617863,
+        "mean": 1.6199187142857145,
+        "maximum": 1.632181
+      },
+      "total_process_seconds": {
+        "minimum": 3.4254747000013595,
+        "median": 3.446987100003753,
+        "mean": 3.446924928569518,
+        "maximum": 3.4755701999965822
+      },
+      "properties_per_second": {
+        "minimum": 163806.617735,
+        "median": 165256.297707,
+        "mean": 165049.38177528573,
+        "maximum": 165799.00246
+      },
+      "average_segment_checks_per_property": {
+        "minimum": 6719.588823,
+        "median": 6719.588823,
+        "mean": 6719.588823,
+        "maximum": 6719.588823
+      },
+      "average_node_visits_per_property": {
+        "minimum": 28.113086,
+        "median": 28.113086,
+        "mean": 28.113086,
+        "maximum": 28.113086
+      },
+      "average_candidate_features_per_property": {
+        "minimum": 1.459198,
+        "median": 1.459198,
+        "mean": 1.459198,
+        "maximum": 1.459198
+      },
+      "average_segment_box_tests_per_property": {
+        "minimum": 6.411076,
+        "median": 6.411076,
+        "mean": 6.411076,
+        "maximum": 6.411076
+      },
+      "average_line_segment_checks_per_property": {
+        "minimum": 0.0,
+        "median": 0.0,
+        "mean": 0.0,
+        "maximum": 0.0
+      },
+      "average_polygon_segment_checks_per_property": {
+        "minimum": 0.0,
+        "median": 0.0,
+        "mean": 0.0,
+        "maximum": 0.0
+      },
+      "average_containment_ring_checks_per_property": {
+        "minimum": 6719.588823,
+        "median": 6719.588823,
+        "mean": 6719.588823,
+        "maximum": 6719.588823
+      },
+      "per_property": {
+        "segment_checks": 6719.588823393003,
+        "segment_box_tests": 6.411075620320015,
+        "index_node_visits": 28.113086377271266,
+        "candidate_features": 1.4591976421480988,
+        "line_segment_checks": 0.0,
+        "polygon_segment_checks": 0.0,
+        "containment_ring_checks": 6719.588823393003
+      },
+      "line_share_of_verification": 0.0,
+      "polygon_share_of_verification": 0.0,
+      "containment_prefilter_skip_rate": 0.5926720602612809
+    },
+    {
+      "max_segment_length_cap_m": 10.0,
+      "cap_label": "10m",
+      "verification_mode": "original",
+      "run_count": 7,
+      "total_segment_checks": 2439595966,
+      "total_index_node_visits": 8252628,
+      "total_candidate_feature_checks": 371116,
+      "total_segment_box_tests": 1995830,
+      "total_line_segment_checks": 40664683,
+      "total_polygon_segment_checks": 2398931283,
+      "total_containment_ring_checks": 0,
+      "total_containment_parts_tested": 0,
+      "total_containment_parts_skipped": 0,
+      "index_entry_count": 1683537,
+      "index_bytes": 157308884,
+      "bvh_node_count": 524287,
+      "max_entry_extent_m": 10.0,
+      "implied_b3_inflation_radius_m": 5.0,
+      "input_loading_seconds": {
+        "minimum": 1.625864,
+        "median": 1.632609,
+        "mean": 1.6389982857142857,
+        "maximum": 1.66192
+      },
+      "index_construction_seconds": {
+        "minimum": 0.245867,
+        "median": 0.25427,
+        "mean": 0.2558825714285714,
+        "maximum": 0.269088
+      },
+      "computation_seconds": {
+        "minimum": 9.446326,
+        "median": 9.712727,
+        "mean": 9.696957571428571,
+        "maximum": 9.990679
+      },
+      "total_process_seconds": {
+        "minimum": 11.348539399994479,
+        "median": 11.64375480000308,
+        "mean": 11.617915385715605,
+        "maximum": 11.915432400004647
+      },
+      "properties_per_second": {
+        "minimum": 26761.144866,
+        "median": 27526.975972,
+        "mean": 27583.43840285714,
+        "maximum": 28303.278968
+      },
+      "average_segment_checks_per_property": {
+        "minimum": 9124.692237,
+        "median": 9124.692237,
+        "mean": 9124.692237,
+        "maximum": 9124.692237
+      },
+      "average_node_visits_per_property": {
+        "minimum": 30.86687,
+        "median": 30.86687,
+        "mean": 30.86687,
+        "maximum": 30.86687
+      },
+      "average_candidate_features_per_property": {
+        "minimum": 1.388066,
+        "median": 1.388066,
+        "mean": 1.388066,
+        "maximum": 1.388066
+      },
+      "average_segment_box_tests_per_property": {
+        "minimum": 7.464898,
+        "median": 7.464898,
+        "mean": 7.464898,
+        "maximum": 7.464898
+      },
+      "average_line_segment_checks_per_property": {
+        "minimum": 152.095971,
+        "median": 152.095971,
+        "mean": 152.095971,
+        "maximum": 152.095971
+      },
+      "average_polygon_segment_checks_per_property": {
+        "minimum": 8972.596266,
+        "median": 8972.596266,
+        "mean": 8972.596266,
+        "maximum": 8972.596266
+      },
+      "average_containment_ring_checks_per_property": {
+        "minimum": 0.0,
+        "median": 0.0,
+        "mean": 0.0,
+        "maximum": 0.0
+      },
+      "per_property": {
+        "segment_checks": 9124.692237490743,
+        "segment_box_tests": 7.46489777904115,
+        "index_node_visits": 30.866869637420425,
+        "candidate_features": 1.3880656188987215,
+        "line_segment_checks": 152.09597100560288,
+        "polygon_segment_checks": 8972.59626648514,
+        "containment_ring_checks": 0.0
+      },
+      "line_share_of_verification": 0.016668613806028895,
+      "polygon_share_of_verification": 0.9833313861939711
+    },
+    {
+      "max_segment_length_cap_m": 10.0,
+      "cap_label": "10m",
+      "verification_mode": "split",
+      "run_count": 7,
+      "total_segment_checks": 1709458684,
+      "total_index_node_visits": 8252628,
+      "total_candidate_feature_checks": 371116,
+      "total_segment_box_tests": 1995830,
+      "total_line_segment_checks": 0,
+      "total_polygon_segment_checks": 0,
+      "total_containment_ring_checks": 1709458684,
+      "total_containment_parts_tested": 58987,
+      "total_containment_parts_skipped": 80270,
+      "index_entry_count": 1683537,
+      "index_bytes": 157308884,
+      "bvh_node_count": 524287,
+      "max_entry_extent_m": 10.0,
+      "implied_b3_inflation_radius_m": 5.0,
+      "input_loading_seconds": {
+        "minimum": 1.611256,
+        "median": 1.629083,
+        "mean": 1.6328848571428571,
+        "maximum": 1.653372
+      },
+      "index_construction_seconds": {
+        "minimum": 0.246825,
+        "median": 0.251787,
+        "mean": 0.25390999999999997,
+        "maximum": 0.262576
+      },
+      "computation_seconds": {
+        "minimum": 1.616976,
+        "median": 1.640875,
+        "mean": 1.6371509999999998,
+        "maximum": 1.653786
+      },
+      "total_process_seconds": {
+        "minimum": 3.515289800001483,
+        "median": 3.5500370000008843,
+        "mean": 3.55033685714339,
+        "maximum": 3.5783756999953766
+      },
+      "properties_per_second": {
+        "minimum": 161666.614564,
+        "median": 162938.715731,
+        "mean": 163320.9416692857,
+        "maximum": 165346.939639
+      },
+      "average_segment_checks_per_property": {
+        "minimum": 6393.798236,
+        "median": 6393.798236,
+        "mean": 6393.798236,
+        "maximum": 6393.798236
+      },
+      "average_node_visits_per_property": {
+        "minimum": 30.86687,
+        "median": 30.86687,
+        "mean": 30.86687,
+        "maximum": 30.86687
+      },
+      "average_candidate_features_per_property": {
+        "minimum": 1.388066,
+        "median": 1.388066,
+        "mean": 1.388066,
+        "maximum": 1.388066
+      },
+      "average_segment_box_tests_per_property": {
+        "minimum": 7.464898,
+        "median": 7.464898,
+        "mean": 7.464898,
+        "maximum": 7.464898
+      },
+      "average_line_segment_checks_per_property": {
+        "minimum": 0.0,
+        "median": 0.0,
+        "mean": 0.0,
+        "maximum": 0.0
+      },
+      "average_polygon_segment_checks_per_property": {
+        "minimum": 0.0,
+        "median": 0.0,
+        "mean": 0.0,
+        "maximum": 0.0
+      },
+      "average_containment_ring_checks_per_property": {
+        "minimum": 6393.798236,
+        "median": 6393.798236,
+        "mean": 6393.798236,
+        "maximum": 6393.798236
+      },
+      "per_property": {
+        "segment_checks": 6393.798236099371,
+        "segment_box_tests": 7.46489777904115,
+        "index_node_visits": 30.866869637420425,
+        "candidate_features": 1.3880656188987215,
+        "line_segment_checks": 0.0,
+        "polygon_segment_checks": 0.0,
+        "containment_ring_checks": 6393.798236099371
+      },
+      "line_share_of_verification": 0.0,
+      "polygon_share_of_verification": 0.0,
+      "containment_prefilter_skip_rate": 0.576416266327725
+    },
+    {
+      "max_segment_length_cap_m": 25.0,
+      "cap_label": "25m",
+      "verification_mode": "original",
+      "run_count": 7,
+      "total_segment_checks": 2515239470,
+      "total_index_node_visits": 8240002,
+      "total_candidate_feature_checks": 392016,
+      "total_segment_box_tests": 1646355,
+      "total_line_segment_checks": 42137936,
+      "total_polygon_segment_checks": 2473101534,
+      "total_containment_ring_checks": 0,
+      "total_containment_parts_tested": 0,
+      "total_containment_parts_skipped": 0,
+      "index_entry_count": 1189589,
+      "index_bytes": 119768836,
+      "bvh_node_count": 524287,
+      "max_entry_extent_m": 24.999998,
+      "implied_b3_inflation_radius_m": 12.499999,
+      "input_loading_seconds": {
+        "minimum": 1.633098,
+        "median": 1.640705,
+        "mean": 1.6469351428571428,
+        "maximum": 1.663914
+      },
+      "index_construction_seconds": {
+        "minimum": 0.184082,
+        "median": 0.187933,
+        "mean": 0.1888254285714286,
+        "maximum": 0.196885
+      },
+      "computation_seconds": {
+        "minimum": 9.241373,
+        "median": 9.596304,
+        "mean": 9.614318142857144,
+        "maximum": 9.973521
+      },
+      "total_process_seconds": {
+        "minimum": 11.089716499998758,
+        "median": 11.443509699995047,
+        "mean": 11.474184671427272,
+        "maximum": 11.820939799996268
+      },
+      "properties_per_second": {
+        "minimum": 26807.18247,
+        "median": 27860.933632,
+        "mean": 27823.77772142857,
+        "maximum": 28930.981189
+      },
+      "average_segment_checks_per_property": {
+        "minimum": 9407.617649,
+        "median": 9407.617649,
+        "mean": 9407.617649000002,
+        "maximum": 9407.617649
+      },
+      "average_node_visits_per_property": {
+        "minimum": 30.819645,
+        "median": 30.819645,
+        "mean": 30.819645,
+        "maximum": 30.819645
+      },
+      "average_candidate_features_per_property": {
+        "minimum": 1.466237,
+        "median": 1.466237,
+        "mean": 1.466237,
+        "maximum": 1.466237
+      },
+      "average_segment_box_tests_per_property": {
+        "minimum": 6.157775,
+        "median": 6.157775,
+        "mean": 6.157775,
+        "maximum": 6.157775
+      },
+      "average_line_segment_checks_per_property": {
+        "minimum": 157.606302,
+        "median": 157.606302,
+        "mean": 157.606302,
+        "maximum": 157.606302
+      },
+      "average_polygon_segment_checks_per_property": {
+        "minimum": 9250.011348,
+        "median": 9250.011348,
+        "mean": 9250.011348,
+        "maximum": 9250.011348
+      },
+      "average_containment_ring_checks_per_property": {
+        "minimum": 0.0,
+        "median": 0.0,
+        "mean": 0.0,
+        "maximum": 0.0
+      },
+      "per_property": {
+        "segment_checks": 9407.617649478983,
+        "segment_box_tests": 6.157774852073219,
+        "index_node_visits": 30.81964527494558,
+        "candidate_features": 1.4662367875763946,
+        "line_segment_checks": 157.60630156865972,
+        "polygon_segment_checks": 9250.011347910324,
+        "containment_ring_checks": 0.0
+      },
+      "line_share_of_verification": 0.016753051350613547,
+      "polygon_share_of_verification": 0.9832469486493864
+    },
+    {
+      "max_segment_length_cap_m": 25.0,
+      "cap_label": "25m",
+      "verification_mode": "split",
+      "run_count": 7,
+      "total_segment_checks": 1725473942,
+      "total_index_node_visits": 8240002,
+      "total_candidate_feature_checks": 392016,
+      "total_segment_box_tests": 1646355,
+      "total_line_segment_checks": 0,
+      "total_polygon_segment_checks": 0,
+      "total_containment_ring_checks": 1725473942,
+      "total_containment_parts_tested": 61822,
+      "total_containment_parts_skipped": 83873,
+      "index_entry_count": 1189589,
+      "index_bytes": 119768836,
+      "bvh_node_count": 524287,
+      "max_entry_extent_m": 24.999998,
+      "implied_b3_inflation_radius_m": 12.499999,
+      "input_loading_seconds": {
+        "minimum": 1.641998,
+        "median": 1.672492,
+        "mean": 1.677352857142857,
+        "maximum": 1.701797
+      },
+      "index_construction_seconds": {
+        "minimum": 0.181629,
+        "median": 0.18841,
+        "mean": 0.19088914285714287,
+        "maximum": 0.20753
+      },
+      "computation_seconds": {
+        "minimum": 1.594932,
+        "median": 1.704883,
+        "mean": 1.6867045714285713,
+        "maximum": 1.721785
+      },
+      "total_process_seconds": {
+        "minimum": 3.449260300003516,
+        "median": 3.5953065999929095,
+        "mean": 3.5821228571408676,
+        "maximum": 3.656561999996484
+      },
+      "properties_per_second": {
+        "minimum": 155281.89121,
+        "median": 156821.300134,
+        "mean": 158612.88948299998,
+        "maximum": 167632.235583
+      },
+      "average_segment_checks_per_property": {
+        "minimum": 6453.699262,
+        "median": 6453.699262,
+        "mean": 6453.699262,
+        "maximum": 6453.699262
+      },
+      "average_node_visits_per_property": {
+        "minimum": 30.819645,
+        "median": 30.819645,
+        "mean": 30.819645,
+        "maximum": 30.819645
+      },
+      "average_candidate_features_per_property": {
+        "minimum": 1.466237,
+        "median": 1.466237,
+        "mean": 1.466237,
+        "maximum": 1.466237
+      },
+      "average_segment_box_tests_per_property": {
+        "minimum": 6.157775,
+        "median": 6.157775,
+        "mean": 6.157775,
+        "maximum": 6.157775
+      },
+      "average_line_segment_checks_per_property": {
+        "minimum": 0.0,
+        "median": 0.0,
+        "mean": 0.0,
+        "maximum": 0.0
+      },
+      "average_polygon_segment_checks_per_property": {
+        "minimum": 0.0,
+        "median": 0.0,
+        "mean": 0.0,
+        "maximum": 0.0
+      },
+      "average_containment_ring_checks_per_property": {
+        "minimum": 6453.699262,
+        "median": 6453.699262,
+        "mean": 6453.699262,
+        "maximum": 6453.699262
+      },
+      "per_property": {
+        "segment_checks": 6453.699261675182,
+        "segment_box_tests": 6.157774852073219,
+        "index_node_visits": 30.81964527494558,
+        "candidate_features": 1.4662367875763946,
+        "line_segment_checks": 0.0,
+        "polygon_segment_checks": 0.0,
+        "containment_ring_checks": 6453.699261675182
+      },
+      "line_share_of_verification": 0.0,
+      "polygon_share_of_verification": 0.0,
+      "containment_prefilter_skip_rate": 0.5756752119153025
+    },
+    {
+      "max_segment_length_cap_m": 50.0,
+      "cap_label": "50m",
+      "verification_mode": "original",
+      "run_count": 7,
+      "total_segment_checks": 2630405944,
+      "total_index_node_visits": 7703116,
+      "total_candidate_feature_checks": 391694,
+      "total_segment_box_tests": 1713356,
+      "total_line_segment_checks": 40333792,
+      "total_polygon_segment_checks": 2590072152,
+      "total_containment_ring_checks": 0,
+      "total_containment_parts_tested": 0,
+      "total_containment_parts_skipped": 0,
+      "index_entry_count": 1092224,
+      "index_bytes": 102577608,
+      "bvh_node_count": 349439,
+      "max_entry_extent_m": 49.999996,
+      "implied_b3_inflation_radius_m": 24.999998,
+      "input_loading_seconds": {
+        "minimum": 1.629044,
+        "median": 1.641676,
+        "mean": 1.656617,
+        "maximum": 1.729613
+      },
+      "index_construction_seconds": {
+        "minimum": 0.162033,
+        "median": 0.167845,
+        "mean": 0.16859285714285716,
+        "maximum": 0.175423
+      },
+      "computation_seconds": {
+        "minimum": 9.602701,
+        "median": 9.983797,
+        "mean": 9.998034571428573,
+        "maximum": 10.718646
+      },
+      "total_process_seconds": {
+        "minimum": 11.438117100005911,
+        "median": 11.911640699996497,
+        "mean": 11.847294814285956,
+        "maximum": 12.551337999997486
+      },
+      "properties_per_second": {
+        "minimum": 24943.634674,
+        "median": 26779.589898,
+        "mean": 26774.124371857142,
+        "maximum": 27842.374185
+      },
+      "average_segment_checks_per_property": {
+        "minimum": 9838.368744,
+        "median": 9838.368744,
+        "mean": 9838.368743999998,
+        "maximum": 9838.368744
+      },
+      "average_node_visits_per_property": {
+        "minimum": 28.811559,
+        "median": 28.811559,
+        "mean": 28.811559,
+        "maximum": 28.811559
+      },
+      "average_candidate_features_per_property": {
+        "minimum": 1.465032,
+        "median": 1.465032,
+        "mean": 1.4650319999999997,
+        "maximum": 1.465032
+      },
+      "average_segment_box_tests_per_property": {
+        "minimum": 6.408375,
+        "median": 6.408375,
+        "mean": 6.408375,
+        "maximum": 6.408375
+      },
+      "average_line_segment_checks_per_property": {
+        "minimum": 150.858357,
+        "median": 150.858357,
+        "mean": 150.858357,
+        "maximum": 150.858357
+      },
+      "average_polygon_segment_checks_per_property": {
+        "minimum": 9687.510387,
+        "median": 9687.510387,
+        "mean": 9687.510387,
+        "maximum": 9687.510387
+      },
+      "average_containment_ring_checks_per_property": {
+        "minimum": 0.0,
+        "median": 0.0,
+        "mean": 0.0,
+        "maximum": 0.0
+      },
+      "per_property": {
+        "segment_checks": 9838.36874350132,
+        "segment_box_tests": 6.408375161765696,
+        "index_node_visits": 28.81155886027184,
+        "candidate_features": 1.4650324279441356,
+        "line_segment_checks": 150.8583568345539,
+        "polygon_segment_checks": 9687.510386666767,
+        "containment_ring_checks": 0.0
+      },
+      "line_share_of_verification": 0.015333675812283672,
+      "polygon_share_of_verification": 0.9846663241877164
+    },
+    {
+      "max_segment_length_cap_m": 50.0,
+      "cap_label": "50m",
+      "verification_mode": "split",
+      "run_count": 7,
+      "total_segment_checks": 1796620780,
+      "total_index_node_visits": 7703116,
+      "total_candidate_feature_checks": 391694,
+      "total_segment_box_tests": 1713356,
+      "total_line_segment_checks": 0,
+      "total_polygon_segment_checks": 0,
+      "total_containment_ring_checks": 1796620780,
+      "total_containment_parts_tested": 62195,
+      "total_containment_parts_skipped": 89758,
+      "index_entry_count": 1092224,
+      "index_bytes": 102577608,
+      "bvh_node_count": 349439,
+      "max_entry_extent_m": 49.999996,
+      "implied_b3_inflation_radius_m": 24.999998,
+      "input_loading_seconds": {
+        "minimum": 1.691411,
+        "median": 1.72275,
+        "mean": 1.7365178571428572,
+        "maximum": 1.796447
+      },
+      "index_construction_seconds": {
+        "minimum": 0.172196,
+        "median": 0.18108,
+        "mean": 0.1810385714285714,
+        "maximum": 0.193573
+      },
+      "computation_seconds": {
+        "minimum": 1.684058,
+        "median": 1.76759,
+        "mean": 1.7598044285714285,
+        "maximum": 1.813246
+      },
+      "total_process_seconds": {
+        "minimum": 3.607530200002657,
+        "median": 3.684404399995401,
+        "mean": 3.7041085428562446,
+        "maximum": 3.8303573000011966
+      },
+      "properties_per_second": {
+        "minimum": 147449.340175,
+        "median": 151257.927461,
+        "mean": 152036.66759042858,
+        "maximum": 158760.565254
+      },
+      "average_segment_checks_per_property": {
+        "minimum": 6719.806031,
+        "median": 6719.806031,
+        "mean": 6719.806031,
+        "maximum": 6719.806031
+      },
+      "average_node_visits_per_property": {
+        "minimum": 28.811559,
+        "median": 28.811559,
+        "mean": 28.811559,
+        "maximum": 28.811559
+      },
+      "average_candidate_features_per_property": {
+        "minimum": 1.465032,
+        "median": 1.465032,
+        "mean": 1.4650319999999997,
+        "maximum": 1.465032
+      },
+      "average_segment_box_tests_per_property": {
+        "minimum": 6.408375,
+        "median": 6.408375,
+        "mean": 6.408375,
+        "maximum": 6.408375
+      },
+      "average_line_segment_checks_per_property": {
+        "minimum": 0.0,
+        "median": 0.0,
+        "mean": 0.0,
+        "maximum": 0.0
+      },
+      "average_polygon_segment_checks_per_property": {
+        "minimum": 0.0,
+        "median": 0.0,
+        "mean": 0.0,
+        "maximum": 0.0
+      },
+      "average_containment_ring_checks_per_property": {
+        "minimum": 6719.806031,
+        "median": 6719.806031,
+        "mean": 6719.806031,
+        "maximum": 6719.806031
+      },
+      "per_property": {
+        "segment_checks": 6719.806030774755,
+        "segment_box_tests": 6.408375161765696,
+        "index_node_visits": 28.81155886027184,
+        "candidate_features": 1.4650324279441356,
+        "line_segment_checks": 0.0,
+        "polygon_segment_checks": 0.0,
+        "containment_ring_checks": 6719.806030774755
+      },
+      "line_share_of_verification": 0.0,
+      "polygon_share_of_verification": 0.0,
+      "containment_prefilter_skip_rate": 0.5906958072561911
+    },
+    {
+      "max_segment_length_cap_m": 100.0,
+      "cap_label": "100m",
+      "verification_mode": "original",
+      "run_count": 7,
+      "total_segment_checks": 2597922599,
+      "total_index_node_visits": 7563037,
+      "total_candidate_feature_checks": 400281,
+      "total_segment_box_tests": 1736031,
+      "total_line_segment_checks": 41515133,
+      "total_polygon_segment_checks": 2556407466,
+      "total_containment_ring_checks": 0,
+      "total_containment_parts_tested": 0,
+      "total_containment_parts_skipped": 0,
+      "index_entry_count": 1068510,
+      "index_bytes": 98119376,
+      "bvh_node_count": 302011,
+      "max_entry_extent_m": 99.997451,
+      "implied_b3_inflation_radius_m": 49.9987255,
+      "input_loading_seconds": {
+        "minimum": 1.617895,
+        "median": 1.64813,
+        "mean": 1.6964817142857143,
+        "maximum": 1.946388
+      },
+      "index_construction_seconds": {
+        "minimum": 0.153721,
+        "median": 0.160393,
+        "mean": 0.16437100000000002,
+        "maximum": 0.191137
+      },
+      "computation_seconds": {
+        "minimum": 9.683288,
+        "median": 9.817352,
+        "mean": 9.822184000000002,
+        "maximum": 10.121883
+      },
+      "total_process_seconds": {
+        "minimum": 11.510106000001542,
+        "median": 11.647778300000937,
+        "mean": 11.706041214287065,
+        "maximum": 12.07656770000176
+      },
+      "properties_per_second": {
+        "minimum": 26414.25409,
+        "median": 27233.617392,
+        "mean": 27225.749206714285,
+        "maximum": 27610.663395
+      },
+      "average_segment_checks_per_property": {
+        "minimum": 9716.873,
+        "median": 9716.873,
+        "mean": 9716.873000000001,
+        "maximum": 9716.873
+      },
+      "average_node_visits_per_property": {
+        "minimum": 28.287629,
+        "median": 28.287629,
+        "mean": 28.287629,
+        "maximum": 28.287629
+      },
+      "average_candidate_features_per_property": {
+        "minimum": 1.49715,
+        "median": 1.49715,
+        "mean": 1.49715,
+        "maximum": 1.49715
+      },
+      "average_segment_box_tests_per_property": {
+        "minimum": 6.493185,
+        "median": 6.493185,
+        "mean": 6.493185000000001,
+        "maximum": 6.493185
+      },
+      "average_line_segment_checks_per_property": {
+        "minimum": 155.276864,
+        "median": 155.276864,
+        "mean": 155.276864,
+        "maximum": 155.276864
+      },
+      "average_polygon_segment_checks_per_property": {
+        "minimum": 9561.596136,
+        "median": 9561.596136,
+        "mean": 9561.596135999998,
+        "maximum": 9561.596136
+      },
+      "average_containment_ring_checks_per_property": {
+        "minimum": 0.0,
+        "median": 0.0,
+        "mean": 0.0,
+        "maximum": 0.0
+      },
+      "per_property": {
+        "segment_checks": 9716.872999902753,
+        "segment_box_tests": 6.493185269410013,
+        "index_node_visits": 28.28762875801348,
+        "candidate_features": 1.4971499315534744,
+        "line_segment_checks": 155.27686432626925,
+        "polygon_segment_checks": 9561.596135576485,
+        "containment_ring_checks": 0.0
+      },
+      "line_share_of_verification": 0.015980126973752076,
+      "polygon_share_of_verification": 0.9840198730262479
+    },
+    {
+      "max_segment_length_cap_m": 100.0,
+      "cap_label": "100m",
+      "verification_mode": "split",
+      "run_count": 7,
+      "total_segment_checks": 1815483036,
+      "total_index_node_visits": 7563037,
+      "total_candidate_feature_checks": 400281,
+      "total_segment_box_tests": 1736031,
+      "total_line_segment_checks": 0,
+      "total_polygon_segment_checks": 0,
+      "total_containment_ring_checks": 1815483036,
+      "total_containment_parts_tested": 63102,
+      "total_containment_parts_skipped": 91802,
+      "index_entry_count": 1068510,
+      "index_bytes": 98119376,
+      "bvh_node_count": 302011,
+      "max_entry_extent_m": 99.997451,
+      "implied_b3_inflation_radius_m": 49.9987255,
+      "input_loading_seconds": {
+        "minimum": 1.614495,
+        "median": 1.639728,
+        "mean": 1.6432414285714285,
+        "maximum": 1.663801
+      },
+      "index_construction_seconds": {
+        "minimum": 0.152912,
+        "median": 0.157406,
+        "mean": 0.15960828571428573,
+        "maximum": 0.167416
+      },
+      "computation_seconds": {
+        "minimum": 1.616323,
+        "median": 1.630194,
+        "mean": 1.6450415714285713,
+        "maximum": 1.688775
+      },
+      "total_process_seconds": {
+        "minimum": 3.434901100001298,
+        "median": 3.4642878000013297,
+        "mean": 3.471474128571572,
+        "maximum": 3.531688100003521
+      },
+      "properties_per_second": {
+        "minimum": 158317.160857,
+        "median": 164006.26723,
+        "mean": 162573.12982585715,
+        "maximum": 165413.771076
+      },
+      "average_segment_checks_per_property": {
+        "minimum": 6790.355533,
+        "median": 6790.355533,
+        "mean": 6790.355533,
+        "maximum": 6790.355533
+      },
+      "average_node_visits_per_property": {
+        "minimum": 28.287629,
+        "median": 28.287629,
+        "mean": 28.287629,
+        "maximum": 28.287629
+      },
+      "average_candidate_features_per_property": {
+        "minimum": 1.49715,
+        "median": 1.49715,
+        "mean": 1.49715,
+        "maximum": 1.49715
+      },
+      "average_segment_box_tests_per_property": {
+        "minimum": 6.493185,
+        "median": 6.493185,
+        "mean": 6.493185000000001,
+        "maximum": 6.493185
+      },
+      "average_line_segment_checks_per_property": {
+        "minimum": 0.0,
+        "median": 0.0,
+        "mean": 0.0,
+        "maximum": 0.0
+      },
+      "average_polygon_segment_checks_per_property": {
+        "minimum": 0.0,
+        "median": 0.0,
+        "mean": 0.0,
+        "maximum": 0.0
+      },
+      "average_containment_ring_checks_per_property": {
+        "minimum": 6790.355533,
+        "median": 6790.355533,
+        "mean": 6790.355533,
+        "maximum": 6790.355533
+      },
+      "per_property": {
+        "segment_checks": 6790.355532947839,
+        "segment_box_tests": 6.493185269410013,
+        "index_node_visits": 28.28762875801348,
+        "candidate_features": 1.4971499315534744,
+        "line_segment_checks": 0.0,
+        "polygon_segment_checks": 0.0,
+        "containment_ring_checks": 6790.355532947839
+      },
+      "line_share_of_verification": 0.0,
+      "polygon_share_of_verification": 0.0,
+      "containment_prefilter_skip_rate": 0.5926380209678253
+    },
+    {
+      "max_segment_length_cap_m": 200.0,
+      "cap_label": "200m",
+      "verification_mode": "original",
+      "run_count": 7,
+      "total_segment_checks": 2774797727,
+      "total_index_node_visits": 7536875,
+      "total_candidate_feature_checks": 395560,
+      "total_segment_box_tests": 1715974,
+      "total_line_segment_checks": 41811005,
+      "total_polygon_segment_checks": 2732986722,
+      "total_containment_ring_checks": 0,
+      "total_containment_parts_tested": 0,
+      "total_containment_parts_skipped": 0,
+      "index_entry_count": 1063936,
+      "index_bytes": 97259464,
+      "bvh_node_count": 292863,
+      "max_entry_extent_m": 199.79596,
+      "implied_b3_inflation_radius_m": 99.89798,
+      "input_loading_seconds": {
+        "minimum": 1.610093,
+        "median": 1.634482,
+        "mean": 1.6353437142857143,
+        "maximum": 1.663635
+      },
+      "index_construction_seconds": {
+        "minimum": 0.155093,
+        "median": 0.159523,
+        "mean": 0.16058814285714287,
+        "maximum": 0.168278
+      },
+      "computation_seconds": {
+        "minimum": 10.194372,
+        "median": 10.259572,
+        "mean": 10.277968857142856,
+        "maximum": 10.37754
+      },
+      "total_process_seconds": {
+        "minimum": 12.012504900005297,
+        "median": 12.071250799999689,
+        "mean": 12.096232271429992,
+        "maximum": 12.200268499997037
+      },
+      "properties_per_second": {
+        "minimum": 25763.524415,
+        "median": 26059.760795,
+        "mean": 26013.92950857143,
+        "maximum": 26226.431604
+      },
+      "average_segment_checks_per_property": {
+        "minimum": 10378.429721,
+        "median": 10378.429721,
+        "mean": 10378.429721000002,
+        "maximum": 10378.429721
+      },
+      "average_node_visits_per_property": {
+        "minimum": 28.189776,
+        "median": 28.189776,
+        "mean": 28.189776,
+        "maximum": 28.189776
+      },
+      "average_candidate_features_per_property": {
+        "minimum": 1.479492,
+        "median": 1.479492,
+        "mean": 1.479492,
+        "maximum": 1.479492
+      },
+      "average_segment_box_tests_per_property": {
+        "minimum": 6.418167,
+        "median": 6.418167,
+        "mean": 6.418167000000001,
+        "maximum": 6.418167
+      },
+      "average_line_segment_checks_per_property": {
+        "minimum": 156.383499,
+        "median": 156.383499,
+        "mean": 156.383499,
+        "maximum": 156.383499
+      },
+      "average_polygon_segment_checks_per_property": {
+        "minimum": 10222.046222,
+        "median": 10222.046222,
+        "mean": 10222.046222,
+        "maximum": 10222.046222
+      },
+      "average_containment_ring_checks_per_property": {
+        "minimum": 0.0,
+        "median": 0.0,
+        "mean": 0.0,
+        "maximum": 0.0
+      },
+      "per_property": {
+        "segment_checks": 10378.429720753136,
+        "segment_box_tests": 6.418167129210583,
+        "index_node_visits": 28.189776408016098,
+        "candidate_features": 1.4794922240258526,
+        "line_segment_checks": 156.38349877693912,
+        "polygon_segment_checks": 10222.046221976198,
+        "containment_ring_checks": 0.0
+      },
+      "line_share_of_verification": 0.015068127162265042,
+      "polygon_share_of_verification": 0.984931872837735
+    },
+    {
+      "max_segment_length_cap_m": 200.0,
+      "cap_label": "200m",
+      "verification_mode": "split",
+      "run_count": 7,
+      "total_segment_checks": 1833713384,
+      "total_index_node_visits": 7536875,
+      "total_candidate_feature_checks": 395560,
+      "total_segment_box_tests": 1715974,
+      "total_line_segment_checks": 0,
+      "total_polygon_segment_checks": 0,
+      "total_containment_ring_checks": 1833713384,
+      "total_containment_parts_tested": 64273,
+      "total_containment_parts_skipped": 92252,
+      "index_entry_count": 1063936,
+      "index_bytes": 97259464,
+      "bvh_node_count": 292863,
+      "max_entry_extent_m": 199.79596,
+      "implied_b3_inflation_radius_m": 99.89798,
+      "input_loading_seconds": {
+        "minimum": 1.625268,
+        "median": 1.636532,
+        "mean": 1.6384958571428572,
+        "maximum": 1.657942
+      },
+      "index_construction_seconds": {
+        "minimum": 0.153438,
+        "median": 0.15625,
+        "mean": 0.1583002857142857,
+        "maximum": 0.168538
+      },
+      "computation_seconds": {
+        "minimum": 1.61008,
+        "median": 1.645453,
+        "mean": 1.6423849999999998,
+        "maximum": 1.672545
+      },
+      "total_process_seconds": {
+        "minimum": 3.4346376999965287,
+        "median": 3.4662377999993623,
+        "mean": 3.4628691571405006,
+        "maximum": 3.495366399998602
+      },
+      "properties_per_second": {
+        "minimum": 159853.425741,
+        "median": 162485.316356,
+        "mean": 162814.17112414286,
+        "maximum": 166055.113166
+      },
+      "average_segment_checks_per_property": {
+        "minimum": 6858.541543,
+        "median": 6858.541543,
+        "mean": 6858.541543,
+        "maximum": 6858.541543
+      },
+      "average_node_visits_per_property": {
+        "minimum": 28.189776,
+        "median": 28.189776,
+        "mean": 28.189776,
+        "maximum": 28.189776
+      },
+      "average_candidate_features_per_property": {
+        "minimum": 1.479492,
+        "median": 1.479492,
+        "mean": 1.479492,
+        "maximum": 1.479492
+      },
+      "average_segment_box_tests_per_property": {
+        "minimum": 6.418167,
+        "median": 6.418167,
+        "mean": 6.418167000000001,
+        "maximum": 6.418167
+      },
+      "average_line_segment_checks_per_property": {
+        "minimum": 0.0,
+        "median": 0.0,
+        "mean": 0.0,
+        "maximum": 0.0
+      },
+      "average_polygon_segment_checks_per_property": {
+        "minimum": 0.0,
+        "median": 0.0,
+        "mean": 0.0,
+        "maximum": 0.0
+      },
+      "average_containment_ring_checks_per_property": {
+        "minimum": 6858.541543,
+        "median": 6858.541543,
+        "mean": 6858.541543,
+        "maximum": 6858.541543
+      },
+      "per_property": {
+        "segment_checks": 6858.541542926819,
+        "segment_box_tests": 6.418167129210583,
+        "index_node_visits": 28.189776408016098,
+        "candidate_features": 1.4794922240258526,
+        "line_segment_checks": 0.0,
+        "polygon_segment_checks": 0.0,
+        "containment_ring_checks": 6858.541542926819
+      },
+      "line_share_of_verification": 0.0,
+      "polygon_share_of_verification": 0.0,
+      "containment_prefilter_skip_rate": 0.5893754991215461
+    },
+    {
+      "max_segment_length_cap_m": 500.0,
+      "cap_label": "500m",
+      "verification_mode": "original",
+      "run_count": 7,
+      "total_segment_checks": 2573968335,
+      "total_index_node_visits": 7513799,
+      "total_candidate_feature_checks": 396085,
+      "total_segment_box_tests": 1728682,
+      "total_line_segment_checks": 42895687,
+      "total_polygon_segment_checks": 2531072648,
+      "total_containment_ring_checks": 0,
+      "total_containment_parts_tested": 0,
+      "total_containment_parts_skipped": 0,
+      "index_entry_count": 1063200,
+      "index_bytes": 97121096,
+      "bvh_node_count": 291391,
+      "max_entry_extent_m": 492.571427,
+      "implied_b3_inflation_radius_m": 246.2857135,
+      "input_loading_seconds": {
+        "minimum": 1.6082,
+        "median": 1.665106,
+        "mean": 1.6804804285714285,
+        "maximum": 1.838538
+      },
+      "index_construction_seconds": {
+        "minimum": 0.154607,
+        "median": 0.155862,
+        "mean": 0.15762357142857142,
+        "maximum": 0.163441
+      },
+      "computation_seconds": {
+        "minimum": 9.604084,
+        "median": 9.751443,
+        "mean": 9.732086285714287,
+        "maximum": 9.844278
+      },
+      "total_process_seconds": {
+        "minimum": 11.390820799999346,
+        "median": 11.617689500002598,
+        "mean": 11.593676200000377,
+        "maximum": 11.854998399998294
+      },
+      "properties_per_second": {
+        "minimum": 27159.127639,
+        "median": 27417.686335,
+        "mean": 27474.73785157143,
+        "maximum": 27838.366588
+      },
+      "average_segment_checks_per_property": {
+        "minimum": 9627.278129,
+        "median": 9627.278129,
+        "mean": 9627.278129,
+        "maximum": 9627.278129
+      },
+      "average_node_visits_per_property": {
+        "minimum": 28.103466,
+        "median": 28.103466,
+        "mean": 28.103466,
+        "maximum": 28.103466
+      },
+      "average_candidate_features_per_property": {
+        "minimum": 1.481456,
+        "median": 1.481456,
+        "mean": 1.481456,
+        "maximum": 1.481456
+      },
+      "average_segment_box_tests_per_property": {
+        "minimum": 6.465698,
+        "median": 6.465698,
+        "mean": 6.465697999999999,
+        "maximum": 6.465698
+      },
+      "average_line_segment_checks_per_property": {
+        "minimum": 160.440478,
+        "median": 160.440478,
+        "mean": 160.440478,
+        "maximum": 160.440478
+      },
+      "average_polygon_segment_checks_per_property": {
+        "minimum": 9466.837651,
+        "median": 9466.837651,
+        "mean": 9466.837651,
+        "maximum": 9466.837651
+      },
+      "average_containment_ring_checks_per_property": {
+        "minimum": 0.0,
+        "median": 0.0,
+        "mean": 0.0,
+        "maximum": 0.0
+      },
+      "per_property": {
+        "segment_checks": 9627.278128529859,
+        "segment_box_tests": 6.465698191964453,
+        "index_node_visits": 28.103466461202416,
+        "candidate_features": 1.4814558538610574,
+        "line_segment_checks": 160.4404777043858,
+        "polygon_segment_checks": 9466.837650825473,
+        "containment_ring_checks": 0.0
+      },
+      "line_share_of_verification": 0.016665196077480106,
+      "polygon_share_of_verification": 0.9833348039225199
+    },
+    {
+      "max_segment_length_cap_m": 500.0,
+      "cap_label": "500m",
+      "verification_mode": "split",
+      "run_count": 7,
+      "total_segment_checks": 1789383082,
+      "total_index_node_visits": 7513799,
+      "total_candidate_feature_checks": 396085,
+      "total_segment_box_tests": 1728682,
+      "total_line_segment_checks": 0,
+      "total_polygon_segment_checks": 0,
+      "total_containment_ring_checks": 1789383082,
+      "total_containment_parts_tested": 61328,
+      "total_containment_parts_skipped": 88280,
+      "index_entry_count": 1063200,
+      "index_bytes": 97121096,
+      "bvh_node_count": 291391,
+      "max_entry_extent_m": 492.571427,
+      "implied_b3_inflation_radius_m": 246.2857135,
+      "input_loading_seconds": {
+        "minimum": 1.648269,
+        "median": 1.666078,
+        "mean": 1.6647839999999998,
+        "maximum": 1.673107
+      },
+      "index_construction_seconds": {
+        "minimum": 0.157989,
+        "median": 0.160573,
+        "mean": 0.16202042857142857,
+        "maximum": 0.172724
+      },
+      "computation_seconds": {
+        "minimum": 1.607691,
+        "median": 1.629475,
+        "mean": 1.6446174285714286,
+        "maximum": 1.703128
+      },
+      "total_process_seconds": {
+        "minimum": 3.463747900001181,
+        "median": 3.4849753999951645,
+        "mean": 3.4974586571437873,
+        "maximum": 3.5609269000051427
+      },
+      "properties_per_second": {
+        "minimum": 156982.91614,
+        "median": 164078.614278,
+        "mean": 162619.2140182857,
+        "maximum": 166301.878446
+      },
+      "average_segment_checks_per_property": {
+        "minimum": 6692.73525,
+        "median": 6692.73525,
+        "mean": 6692.73525,
+        "maximum": 6692.73525
+      },
+      "average_node_visits_per_property": {
+        "minimum": 28.103466,
+        "median": 28.103466,
+        "mean": 28.103466,
+        "maximum": 28.103466
+      },
+      "average_candidate_features_per_property": {
+        "minimum": 1.481456,
+        "median": 1.481456,
+        "mean": 1.481456,
+        "maximum": 1.481456
+      },
+      "average_segment_box_tests_per_property": {
+        "minimum": 6.465698,
+        "median": 6.465698,
+        "mean": 6.465697999999999,
+        "maximum": 6.465698
+      },
+      "average_line_segment_checks_per_property": {
+        "minimum": 0.0,
+        "median": 0.0,
+        "mean": 0.0,
+        "maximum": 0.0
+      },
+      "average_polygon_segment_checks_per_property": {
+        "minimum": 0.0,
+        "median": 0.0,
+        "mean": 0.0,
+        "maximum": 0.0
+      },
+      "average_containment_ring_checks_per_property": {
+        "minimum": 6692.73525,
+        "median": 6692.73525,
+        "mean": 6692.73525,
+        "maximum": 6692.73525
+      },
+      "per_property": {
+        "segment_checks": 6692.735250334752,
+        "segment_box_tests": 6.465698191964453,
+        "index_node_visits": 28.103466461202416,
+        "candidate_features": 1.4814558538610574,
+        "line_segment_checks": 0.0,
+        "polygon_segment_checks": 0.0,
+        "containment_ring_checks": 6692.735250334752
+      },
+      "line_share_of_verification": 0.0,
+      "polygon_share_of_verification": 0.0,
+      "containment_prefilter_skip_rate": 0.5900753970375916
+    }
+  ],
+  "verification_mode_comparisons": [
+    {
+      "max_segment_length_cap_m": 0.0,
+      "cap_label": "unlimited",
+      "verification_check_reduction_rate": 0.30268284557659497,
+      "containment_prefilter_saving_rate": 0.2910868747415021,
+      "median_computation_seconds_speedup": 6.028928901890951,
+      "median_total_process_seconds_speedup": 3.3646251823786306
+    },
+    {
+      "max_segment_length_cap_m": 10.0,
+      "cap_label": "10m",
+      "verification_check_reduction_rate": 0.29928614909014817,
+      "containment_prefilter_saving_rate": 0.2874082321098316,
+      "median_computation_seconds_speedup": 5.919236383027347,
+      "median_total_process_seconds_speedup": 3.279896744738204
+    },
+    {
+      "max_segment_length_cap_m": 25.0,
+      "cap_label": "25m",
+      "verification_check_reduction_rate": 0.31399218142835517,
+      "containment_prefilter_saving_rate": 0.30230363845627695,
+      "median_computation_seconds_speedup": 5.628717043926182,
+      "median_total_process_seconds_speedup": 3.1829023149284725
+    },
+    {
+      "max_segment_length_cap_m": 50.0,
+      "cap_label": "50m",
+      "verification_check_reduction_rate": 0.31697965323636756,
+      "containment_prefilter_saving_rate": 0.306343346994142,
+      "median_computation_seconds_speedup": 5.648253837145491,
+      "median_total_process_seconds_speedup": 3.2329894894304667
+    },
+    {
+      "max_segment_length_cap_m": 100.0,
+      "cap_label": "100m",
+      "verification_check_reduction_rate": 0.30117893554687847,
+      "containment_prefilter_saving_rate": 0.28983033411309866,
+      "median_computation_seconds_speedup": 6.022198584953693,
+      "median_total_process_seconds_speedup": 3.362243258194791
+    },
+    {
+      "max_segment_length_cap_m": 200.0,
+      "cap_label": "200m",
+      "verification_check_reduction_rate": 0.33915421432086246,
+      "containment_prefilter_saving_rate": 0.32904416650144264,
+      "median_computation_seconds_speedup": 6.235104861700699,
+      "median_total_process_seconds_speedup": 3.4825224051280927
+    },
+    {
+      "max_segment_length_cap_m": 500.0,
+      "cap_label": "500m",
+      "verification_check_reduction_rate": 0.30481542540032835,
+      "containment_prefilter_saving_rate": 0.29303369327864504,
+      "median_computation_seconds_speedup": 5.98440786142776,
+      "median_total_process_seconds_speedup": 3.3336503609232704
+    }
+  ],
+  "grouping_scope_note": "This sweep varies entry extent through the split cap only. Run grouping, which would move the axis the other way (fewer entries, larger extent), was measured as out of scope: B1 recorded search at ~35 operations per property against 9,716.87 verification checks, so the pruning side of the tradeoff has almost no headroom, and larger entry extent directly worsens the B3 inflation radius. The fewer-entries half of the axis is therefore UNMEASURED and must not be reported as covered.",
+  "repetitions": 7,
+  "warmups_per_configuration": 1,
+  "caps_m": [
+    10.0,
+    25.0,
+    50.0,
+    100.0,
+    200.0,
+    500.0,
+    0.0
+  ],
+  "verification_modes": [
+    "original",
+    "split"
+  ],
+  "distance_crs": "EPSG:26918",
+  "created_at_utc": "2026-07-23T13:29:46.288649+00:00",
+  "segment_bvh_executable": "cpp/spatial_core/build/water_distance_segment_bvh.exe",
+  "segment_bvh_executable_sha256": "d67bddd354081f9b2ae7c5538b62fca910dba901b4bff3a0eeeb99fd39b60c5a",
+  "properties_input": "outputs/cpp_input/water_properties_projected_countywide.csv",
+  "properties_input_sha256": "fa73b346cd592ec3521c41a1440a07f4d6502dc9fb1859512d4444260b5a6621",
+  "features_input": "outputs/cpp_input/water_features_countywide.csv",
+  "features_input_sha256": "f70cc1a2aa635051f92854ea7893729457349cda842c2074d017a6424d9bc098",
+  "vertices_input": "outputs/cpp_input/water_vertices_countywide.csv",
+  "vertices_input_sha256": "dbdce9b217e55798b6f2db486fb101ea4226c555b1c07994cd800ff2d46dd09a",
+  "python_reference": "outputs/baseline/python_nearest_water_countywide.csv",
+  "python_reference_sha256": "23c717a6f6028a33abbe43b4292379304301e3665e52e433f48f73b52826af66",
+  "distance_tolerance_meters": 1e-06,
+  "frozen_benchmark_summary": "outputs/validation/water_cpp_benchmark_summary.json",
+  "frozen_benchmark_summary_sha256": "c6633e90c90c229f0b3cb9b0ec833ffd15a04c05b44bec6414dc31a93da3410d",
+  "frozen_benchmark_summary_note": "Recorded, never written. This sweep must not add segment_bvh to the frozen Milestone 2/3 summary; build_property_evidence.py requires that file's algorithm set to equal {brute_force, feature_bvh}.",
+  "validations": [
+    {
+      "cap_label": "10m",
+      "max_segment_length_cap_m": 10.0,
+      "verification_mode": "original",
+      "artifact_checks": {
+        "output": "outputs/cpp/segment_bvh_cap_sweep/cpp_nearest_water_segment_bvh_10m_original.csv",
+        "row_count": 267362,
+        "unique_property_ids": 267362,
+        "exact_zero_distances": 266,
+        "exact_zero_feature_classes": [
+          "waterbody"
+        ],
+        "minimum_distance_m": 0.0,
+        "maximum_distance_m": 2630.23485692034,
+        "minimum_nonzero_distance_m": 0.002166405818047,
+        "minimum_tie_count": 1,
+        "failures": []
+      },
+      "agreement_summary": "outputs/validation/segment_bvh_cap_sweep/water_segment_bvh_10m_original_summary.json",
+      "total_union_rows": 267362,
+      "all_fields_agree": 267362,
+      "distance_agreements": 267362,
+      "feature_id_agreements": 267362,
+      "tie_count_agreements": 267362,
+      "maximum_absolute_error_m": 4.657998431412125e-10,
+      "mean_absolute_error_m": 3.7314969885911784e-11,
+      "median_absolute_error_m": 3.410605131648481e-13
+    },
+    {
+      "cap_label": "10m",
+      "max_segment_length_cap_m": 10.0,
+      "verification_mode": "split",
+      "artifact_checks": {
+        "output": "outputs/cpp/segment_bvh_cap_sweep/cpp_nearest_water_segment_bvh_10m_split.csv",
+        "row_count": 267362,
+        "unique_property_ids": 267362,
+        "exact_zero_distances": 266,
+        "exact_zero_feature_classes": [
+          "waterbody"
+        ],
+        "minimum_distance_m": 0.0,
+        "maximum_distance_m": 2630.23485692034,
+        "minimum_nonzero_distance_m": 0.002166405818047,
+        "minimum_tie_count": 1,
+        "failures": []
+      },
+      "agreement_summary": "outputs/validation/segment_bvh_cap_sweep/water_segment_bvh_10m_split_summary.json",
+      "total_union_rows": 267362,
+      "all_fields_agree": 267362,
+      "distance_agreements": 267362,
+      "feature_id_agreements": 267362,
+      "tie_count_agreements": 267362,
+      "maximum_absolute_error_m": 9.117400168179302e-10,
+      "mean_absolute_error_m": 4.301830932514314e-11,
+      "median_absolute_error_m": 3.410605131648481e-13
+    },
+    {
+      "cap_label": "25m",
+      "max_segment_length_cap_m": 25.0,
+      "verification_mode": "original",
+      "artifact_checks": {
+        "output": "outputs/cpp/segment_bvh_cap_sweep/cpp_nearest_water_segment_bvh_25m_original.csv",
+        "row_count": 267362,
+        "unique_property_ids": 267362,
+        "exact_zero_distances": 266,
+        "exact_zero_feature_classes": [
+          "waterbody"
+        ],
+        "minimum_distance_m": 0.0,
+        "maximum_distance_m": 2630.23485692034,
+        "minimum_nonzero_distance_m": 0.002166405818047,
+        "minimum_tie_count": 1,
+        "failures": []
+      },
+      "agreement_summary": "outputs/validation/segment_bvh_cap_sweep/water_segment_bvh_25m_original_summary.json",
+      "total_union_rows": 267362,
+      "all_fields_agree": 267362,
+      "distance_agreements": 267362,
+      "feature_id_agreements": 267362,
+      "tie_count_agreements": 267362,
+      "maximum_absolute_error_m": 4.657998431412125e-10,
+      "mean_absolute_error_m": 3.7314969885911784e-11,
+      "median_absolute_error_m": 3.410605131648481e-13
+    },
+    {
+      "cap_label": "25m",
+      "max_segment_length_cap_m": 25.0,
+      "verification_mode": "split",
+      "artifact_checks": {
+        "output": "outputs/cpp/segment_bvh_cap_sweep/cpp_nearest_water_segment_bvh_25m_split.csv",
+        "row_count": 267362,
+        "unique_property_ids": 267362,
+        "exact_zero_distances": 266,
+        "exact_zero_feature_classes": [
+          "waterbody"
+        ],
+        "minimum_distance_m": 0.0,
+        "maximum_distance_m": 2630.23485692034,
+        "minimum_nonzero_distance_m": 0.002166405818047,
+        "minimum_tie_count": 1,
+        "failures": []
+      },
+      "agreement_summary": "outputs/validation/segment_bvh_cap_sweep/water_segment_bvh_25m_split_summary.json",
+      "total_union_rows": 267362,
+      "all_fields_agree": 267362,
+      "distance_agreements": 267362,
+      "feature_id_agreements": 267362,
+      "tie_count_agreements": 267362,
+      "maximum_absolute_error_m": 9.156906344287563e-10,
+      "mean_absolute_error_m": 4.167421827692307e-11,
+      "median_absolute_error_m": 3.410605131648481e-13
+    },
+    {
+      "cap_label": "50m",
+      "max_segment_length_cap_m": 50.0,
+      "verification_mode": "original",
+      "artifact_checks": {
+        "output": "outputs/cpp/segment_bvh_cap_sweep/cpp_nearest_water_segment_bvh_50m_original.csv",
+        "row_count": 267362,
+        "unique_property_ids": 267362,
+        "exact_zero_distances": 266,
+        "exact_zero_feature_classes": [
+          "waterbody"
+        ],
+        "minimum_distance_m": 0.0,
+        "maximum_distance_m": 2630.23485692034,
+        "minimum_nonzero_distance_m": 0.002166405818047,
+        "minimum_tie_count": 1,
+        "failures": []
+      },
+      "agreement_summary": "outputs/validation/segment_bvh_cap_sweep/water_segment_bvh_50m_original_summary.json",
+      "total_union_rows": 267362,
+      "all_fields_agree": 267362,
+      "distance_agreements": 267362,
+      "feature_id_agreements": 267362,
+      "tie_count_agreements": 267362,
+      "maximum_absolute_error_m": 4.657998431412125e-10,
+      "mean_absolute_error_m": 3.7314969885911784e-11,
+      "median_absolute_error_m": 3.410605131648481e-13
+    },
+    {
+      "cap_label": "50m",
+      "max_segment_length_cap_m": 50.0,
+      "verification_mode": "split",
+      "artifact_checks": {
+        "output": "outputs/cpp/segment_bvh_cap_sweep/cpp_nearest_water_segment_bvh_50m_split.csv",
+        "row_count": 267362,
+        "unique_property_ids": 267362,
+        "exact_zero_distances": 266,
+        "exact_zero_feature_classes": [
+          "waterbody"
+        ],
+        "minimum_distance_m": 0.0,
+        "maximum_distance_m": 2630.23485692034,
+        "minimum_nonzero_distance_m": 0.002166405818047,
+        "minimum_tie_count": 1,
+        "failures": []
+      },
+      "agreement_summary": "outputs/validation/segment_bvh_cap_sweep/water_segment_bvh_50m_split_summary.json",
+      "total_union_rows": 267362,
+      "all_fields_agree": 267362,
+      "distance_agreements": 267362,
+      "feature_id_agreements": 267362,
+      "tie_count_agreements": 267362,
+      "maximum_absolute_error_m": 9.170264547719853e-10,
+      "mean_absolute_error_m": 3.997622431413979e-11,
+      "median_absolute_error_m": 3.410605131648481e-13
+    },
+    {
+      "cap_label": "100m",
+      "max_segment_length_cap_m": 100.0,
+      "verification_mode": "original",
+      "artifact_checks": {
+        "output": "outputs/cpp/segment_bvh_cap_sweep/cpp_nearest_water_segment_bvh_100m_original.csv",
+        "row_count": 267362,
+        "unique_property_ids": 267362,
+        "exact_zero_distances": 266,
+        "exact_zero_feature_classes": [
+          "waterbody"
+        ],
+        "minimum_distance_m": 0.0,
+        "maximum_distance_m": 2630.23485692034,
+        "minimum_nonzero_distance_m": 0.002166405818047,
+        "minimum_tie_count": 1,
+        "failures": []
+      },
+      "agreement_summary": "outputs/validation/segment_bvh_cap_sweep/water_segment_bvh_100m_original_summary.json",
+      "total_union_rows": 267362,
+      "all_fields_agree": 267362,
+      "distance_agreements": 267362,
+      "feature_id_agreements": 267362,
+      "tie_count_agreements": 267362,
+      "maximum_absolute_error_m": 4.657998431412125e-10,
+      "mean_absolute_error_m": 3.7314969885911784e-11,
+      "median_absolute_error_m": 3.410605131648481e-13
+    },
+    {
+      "cap_label": "100m",
+      "max_segment_length_cap_m": 100.0,
+      "verification_mode": "split",
+      "artifact_checks": {
+        "output": "outputs/cpp/segment_bvh_cap_sweep/cpp_nearest_water_segment_bvh_100m_split.csv",
+        "row_count": 267362,
+        "unique_property_ids": 267362,
+        "exact_zero_distances": 266,
+        "exact_zero_feature_classes": [
+          "waterbody"
+        ],
+        "minimum_distance_m": 0.0,
+        "maximum_distance_m": 2630.23485692034,
+        "minimum_nonzero_distance_m": 0.002166405818047,
+        "minimum_tie_count": 1,
+        "failures": []
+      },
+      "agreement_summary": "outputs/validation/segment_bvh_cap_sweep/water_segment_bvh_100m_split_summary.json",
+      "total_union_rows": 267362,
+      "all_fields_agree": 267362,
+      "distance_agreements": 267362,
+      "feature_id_agreements": 267362,
+      "tie_count_agreements": 267362,
+      "maximum_absolute_error_m": 9.060840966412798e-10,
+      "mean_absolute_error_m": 3.8406721494925134e-11,
+      "median_absolute_error_m": 3.410605131648481e-13
+    },
+    {
+      "cap_label": "200m",
+      "max_segment_length_cap_m": 200.0,
+      "verification_mode": "original",
+      "artifact_checks": {
+        "output": "outputs/cpp/segment_bvh_cap_sweep/cpp_nearest_water_segment_bvh_200m_original.csv",
+        "row_count": 267362,
+        "unique_property_ids": 267362,
+        "exact_zero_distances": 266,
+        "exact_zero_feature_classes": [
+          "waterbody"
+        ],
+        "minimum_distance_m": 0.0,
+        "maximum_distance_m": 2630.23485692034,
+        "minimum_nonzero_distance_m": 0.002166405818047,
+        "minimum_tie_count": 1,
+        "failures": []
+      },
+      "agreement_summary": "outputs/validation/segment_bvh_cap_sweep/water_segment_bvh_200m_original_summary.json",
+      "total_union_rows": 267362,
+      "all_fields_agree": 267362,
+      "distance_agreements": 267362,
+      "feature_id_agreements": 267362,
+      "tie_count_agreements": 267362,
+      "maximum_absolute_error_m": 4.657998431412125e-10,
+      "mean_absolute_error_m": 3.7314969885911784e-11,
+      "median_absolute_error_m": 3.410605131648481e-13
+    },
+    {
+      "cap_label": "200m",
+      "max_segment_length_cap_m": 200.0,
+      "verification_mode": "split",
+      "artifact_checks": {
+        "output": "outputs/cpp/segment_bvh_cap_sweep/cpp_nearest_water_segment_bvh_200m_split.csv",
+        "row_count": 267362,
+        "unique_property_ids": 267362,
+        "exact_zero_distances": 266,
+        "exact_zero_feature_classes": [
+          "waterbody"
+        ],
+        "minimum_distance_m": 0.0,
+        "maximum_distance_m": 2630.23485692034,
+        "minimum_nonzero_distance_m": 0.002166405818047,
+        "minimum_tie_count": 1,
+        "failures": []
+      },
+      "agreement_summary": "outputs/validation/segment_bvh_cap_sweep/water_segment_bvh_200m_split_summary.json",
+      "total_union_rows": 267362,
+      "all_fields_agree": 267362,
+      "distance_agreements": 267362,
+      "feature_id_agreements": 267362,
+      "tie_count_agreements": 267362,
+      "maximum_absolute_error_m": 8.824088126857532e-10,
+      "mean_absolute_error_m": 3.763798645994084e-11,
+      "median_absolute_error_m": 3.410605131648481e-13
+    },
+    {
+      "cap_label": "500m",
+      "max_segment_length_cap_m": 500.0,
+      "verification_mode": "original",
+      "artifact_checks": {
+        "output": "outputs/cpp/segment_bvh_cap_sweep/cpp_nearest_water_segment_bvh_500m_original.csv",
+        "row_count": 267362,
+        "unique_property_ids": 267362,
+        "exact_zero_distances": 266,
+        "exact_zero_feature_classes": [
+          "waterbody"
+        ],
+        "minimum_distance_m": 0.0,
+        "maximum_distance_m": 2630.23485692034,
+        "minimum_nonzero_distance_m": 0.002166405818047,
+        "minimum_tie_count": 1,
+        "failures": []
+      },
+      "agreement_summary": "outputs/validation/segment_bvh_cap_sweep/water_segment_bvh_500m_original_summary.json",
+      "total_union_rows": 267362,
+      "all_fields_agree": 267362,
+      "distance_agreements": 267362,
+      "feature_id_agreements": 267362,
+      "tie_count_agreements": 267362,
+      "maximum_absolute_error_m": 4.657998431412125e-10,
+      "mean_absolute_error_m": 3.7314969885911784e-11,
+      "median_absolute_error_m": 3.410605131648481e-13
+    },
+    {
+      "cap_label": "500m",
+      "max_segment_length_cap_m": 500.0,
+      "verification_mode": "split",
+      "artifact_checks": {
+        "output": "outputs/cpp/segment_bvh_cap_sweep/cpp_nearest_water_segment_bvh_500m_split.csv",
+        "row_count": 267362,
+        "unique_property_ids": 267362,
+        "exact_zero_distances": 266,
+        "exact_zero_feature_classes": [
+          "waterbody"
+        ],
+        "minimum_distance_m": 0.0,
+        "maximum_distance_m": 2630.23485692034,
+        "minimum_nonzero_distance_m": 0.002166405818047,
+        "minimum_tie_count": 1,
+        "failures": []
+      },
+      "agreement_summary": "outputs/validation/segment_bvh_cap_sweep/water_segment_bvh_500m_split_summary.json",
+      "total_union_rows": 267362,
+      "all_fields_agree": 267362,
+      "distance_agreements": 267362,
+      "feature_id_agreements": 267362,
+      "tie_count_agreements": 267362,
+      "maximum_absolute_error_m": 4.657998431412125e-10,
+      "mean_absolute_error_m": 3.7314969885911784e-11,
+      "median_absolute_error_m": 3.410605131648481e-13
+    },
+    {
+      "cap_label": "unlimited",
+      "max_segment_length_cap_m": 0.0,
+      "verification_mode": "original",
+      "artifact_checks": {
+        "output": "outputs/cpp/segment_bvh_cap_sweep/cpp_nearest_water_segment_bvh_unlimited_original.csv",
+        "row_count": 267362,
+        "unique_property_ids": 267362,
+        "exact_zero_distances": 266,
+        "exact_zero_feature_classes": [
+          "waterbody"
+        ],
+        "minimum_distance_m": 0.0,
+        "maximum_distance_m": 2630.23485692034,
+        "minimum_nonzero_distance_m": 0.002166405818047,
+        "minimum_tie_count": 1,
+        "failures": []
+      },
+      "agreement_summary": "outputs/validation/segment_bvh_cap_sweep/water_segment_bvh_unlimited_original_summary.json",
+      "total_union_rows": 267362,
+      "all_fields_agree": 267362,
+      "distance_agreements": 267362,
+      "feature_id_agreements": 267362,
+      "tie_count_agreements": 267362,
+      "maximum_absolute_error_m": 4.657998431412125e-10,
+      "mean_absolute_error_m": 3.7314969885911784e-11,
+      "median_absolute_error_m": 3.410605131648481e-13
+    },
+    {
+      "cap_label": "unlimited",
+      "max_segment_length_cap_m": 0.0,
+      "verification_mode": "split",
+      "artifact_checks": {
+        "output": "outputs/cpp/segment_bvh_cap_sweep/cpp_nearest_water_segment_bvh_unlimited_split.csv",
+        "row_count": 267362,
+        "unique_property_ids": 267362,
+        "exact_zero_distances": 266,
+        "exact_zero_feature_classes": [
+          "waterbody"
+        ],
+        "minimum_distance_m": 0.0,
+        "maximum_distance_m": 2630.23485692034,
+        "minimum_nonzero_distance_m": 0.002166405818047,
+        "minimum_tie_count": 1,
+        "failures": []
+      },
+      "agreement_summary": "outputs/validation/segment_bvh_cap_sweep/water_segment_bvh_unlimited_split_summary.json",
+      "total_union_rows": 267362,
+      "all_fields_agree": 267362,
+      "distance_agreements": 267362,
+      "feature_id_agreements": 267362,
+      "tie_count_agreements": 267362,
+      "maximum_absolute_error_m": 4.657998431412125e-10,
+      "mean_absolute_error_m": 3.7314969885911784e-11,
+      "median_absolute_error_m": 3.410605131648481e-13
+    }
+  ],
+  "acceptance_failures": [],
+  "accepted": true
+}

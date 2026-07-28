@@ -33,6 +33,61 @@
 //     always a candidate, and distance_to_feature returns its exact 0.0. The
 //     countywide field-for-field comparison against the Python oracle validates
 //     this on the real data.
+//
+// ---------------------------------------------------------------------------
+// Milestone 4, chunk B2: verification modes
+// ---------------------------------------------------------------------------
+//
+// Phase 1 (index traversal) costs roughly 35 node and box operations per
+// property. Phase 2 (exact verification) costs thousands of segment checks,
+// because distance_to_feature rescans each candidate feature's entire original
+// geometry. B2 exposes the verification strategy as a runtime flag so the cost
+// of exactness over extended objects can be measured rather than asserted:
+//
+//   original  reported distance comes from distance_to_feature over ORIGINAL
+//             geometry. Byte-identical to the reference. This is the B1
+//             behaviour and remains the DEFAULT.
+//
+//   split     reported distance comes from the per-candidate minimum over the
+//             SPLIT sub-segments already examined during phase 1, so no feature
+//             geometry is rescanned for distance.
+//
+// Why "split" does NOT collapse verification for polygons. Interior-zero is not
+// a distance result; it is the parity of a ray-crossing count over the ring
+// vertices (see evaluate_ring in the brute-force translation unit). Split
+// geometry can supply the boundary distance but cannot supply the inside/outside
+// predicate, so polygon candidates still require a ring walk. The saving under
+// "split" is therefore bounded by the LINE-candidate share of verification, and
+// that share is measured directly by the cpp_line_segment_checks /
+// cpp_polygon_segment_checks decomposition emitted under "original".
+//
+// Containment bounding-box pre-filter (exact, not an approximation). A point
+// inside a polygon part must lie inside that part's exterior-ring bounding box.
+// The converse is false, so a point outside the box is definitively outside the
+// part and its ring walk can be skipped entirely. Parts whose box does contain
+// the point still get the full exact crossing test. The filter's hit rate is a
+// measured quantity (cpp_containment_parts_tested vs
+// cpp_containment_parts_skipped), not an assumption.
+//
+// Exactness of the "split" mode, stated so it can be checked rather than
+// trusted. Phase 1 prunes on best_boundary_distance + tie_tolerance, and
+// best_boundary_distance is monotonically nonincreasing. Any feature whose true
+// split-geometry minimum d satisfies d <= best_final + tie_tolerance has a
+// minimizing sub-segment whose box lower bound is <= d, so that box competes at
+// every point during the traversal and its enclosing nodes are popped before the
+// queue terminates. The recorded per-candidate minimum therefore equals the true
+// split minimum for every feature that can win or tie; for features outside the
+// tie window the recorded value may be an overestimate, and an overestimate
+// cannot enter the window. tie_count is preserved on the same argument. This is
+// an argument, not a measurement: the countywide comparison is what validates it.
+//
+// Known hazard, deliberately not hidden. Split endpoints are linear
+// interpolations, so a sub-segment distance differs from the parent segment
+// distance by roughly one ULP at UTM 18N magnitudes (~1e-9 m). That is the same
+// order as BOUNDARY_EPSILON_METERS (1e-9), so a point lying within about a
+// nanometre of a boundary could be classified on-boundary under "original" and
+// not under "split". The sweep harness reports the minimum NONZERO countywide
+// distance so this hazard can be settled with a number instead of an argument.
 
 #define main caprm_bruteforce_program_main
 #include "water_distance_bruteforce.cpp"
@@ -48,6 +103,21 @@ namespace {
 
 constexpr std::size_t SEGMENT_BVH_LEAF_SIZE = 8;
 constexpr double DEFAULT_MAX_SEGMENT_LENGTH_METERS = 100.0;
+
+
+// Which geometry supplies the reported distance during phase-2 verification.
+// OriginalGeometry is the B1 behaviour and the default.
+enum class VerificationMode {
+    OriginalGeometry,
+    SplitGeometry,
+};
+
+
+const char* verification_mode_name(VerificationMode mode) {
+    return mode == VerificationMode::SplitGeometry
+        ? "split"
+        : "original";
+}
 
 
 // ---------------------------------------------------------------------------
@@ -110,6 +180,17 @@ double bounds_center_x(const Bounds& bounds) {
 
 double bounds_center_y(const Bounds& bounds) {
     return (bounds.min_y + bounds.max_y) / 2.0;
+}
+
+
+// Closed containment test. Used only as a NECESSARY condition for polygon
+// membership: a point outside the box is definitively outside the ring, while a
+// point inside the box still requires the exact crossing test.
+bool bounds_contains_point(const Bounds& bounds, const Point& point) {
+    return point.x >= bounds.min_x
+        && point.x <= bounds.max_x
+        && point.y >= bounds.min_y
+        && point.y <= bounds.max_y;
 }
 
 
@@ -343,6 +424,18 @@ public:
         return segments_.size();
     }
 
+    // Resident size of the index payload, computed from container element
+    // counts rather than measured from the process. It counts the leaf array,
+    // the precomputed per-entry bounds, the permutation, and the node array.
+    // It deliberately excludes the WaterFeature geometry, which is input rather
+    // than index.
+    std::size_t index_bytes() const {
+        return segments_.size() * sizeof(SegmentLeaf)
+            + segment_bounds_.size() * sizeof(Bounds)
+            + segment_order_.size() * sizeof(int)
+            + nodes_.size() * sizeof(SegmentBvhNode);
+    }
+
 private:
     const std::vector<SegmentLeaf>& segments_;
     const std::vector<WaterFeature>& features_;
@@ -457,6 +550,176 @@ private:
 
 
 // ---------------------------------------------------------------------------
+// Containment support for the "split" verification mode.
+//
+// Under "original" the crossing test lives inside evaluate_ring and is fused
+// with the distance loop. Under "split" the distance comes from the index, so
+// the crossing test has to be available on its own. The crossing predicate below
+// is character-for-character the same expression evaluate_ring uses, and the
+// exterior / hole / part precedence is the same as distance_to_polygon_feature.
+// The brute-force kernel itself is NOT modified.
+// ---------------------------------------------------------------------------
+
+// feature_index -> part_index -> exterior-ring bounds. Empty for line features.
+using PartExteriorBounds = std::vector<std::map<int, Bounds>>;
+
+
+PartExteriorBounds build_part_exterior_bounds(
+    const std::vector<WaterFeature>& features
+) {
+    PartExteriorBounds all_bounds(features.size());
+
+    for (
+        std::size_t feature_index = 0;
+        feature_index < features.size();
+        ++feature_index
+    ) {
+        const WaterFeature& feature = features[feature_index];
+
+        if (feature.geometry_kind == "line") {
+            continue;
+        }
+
+        for (const auto& part_entry : feature.parts) {
+            const auto& rings = part_entry.second;
+            const auto exterior = rings.find(0);
+
+            if (exterior == rings.end()) {
+                continue;
+            }
+
+            Bounds bounds;
+
+            for (const Point& vertex : exterior->second.vertices) {
+                expand_bounds(bounds, vertex);
+            }
+
+            all_bounds[feature_index][part_entry.first] = bounds;
+        }
+    }
+
+    return all_bounds;
+}
+
+
+struct ContainmentResult {
+    bool inside = false;
+    std::uint64_t ring_checks = 0;
+    std::uint64_t parts_tested = 0;
+    std::uint64_t parts_skipped = 0;
+};
+
+
+// Crossing parity over one ring. Mirrors evaluate_ring's predicate exactly,
+// without the distance arithmetic.
+bool ring_contains_point(
+    const Point& point,
+    const Ring& ring,
+    std::uint64_t& ring_checks
+) {
+    bool inside = false;
+
+    for (
+        std::size_t index = 1;
+        index < ring.vertices.size();
+        ++index
+    ) {
+        const Point& start = ring.vertices[index - 1];
+        const Point& end = ring.vertices[index];
+
+        ++ring_checks;
+
+        const bool crosses =
+            ((start.y > point.y) != (end.y > point.y))
+            && (
+                point.x
+                < (
+                    (end.x - start.x)
+                    * (point.y - start.y)
+                    / (end.y - start.y)
+                    + start.x
+                )
+            );
+
+        if (crosses) {
+            inside = !inside;
+        }
+    }
+
+    return inside;
+}
+
+
+// Exact polygon membership with the bounding-box pre-filter applied per part.
+// A part whose exterior-ring box excludes the point cannot contain it, so its
+// rings are never walked; that rejection is counted, not silently skipped.
+ContainmentResult polygon_contains_point(
+    const Point& point,
+    const WaterFeature& feature,
+    const std::map<int, Bounds>& part_exterior_bounds
+) {
+    ContainmentResult result;
+
+    for (const auto& part_entry : feature.parts) {
+        const auto bounds_entry =
+            part_exterior_bounds.find(part_entry.first);
+
+        if (
+            bounds_entry != part_exterior_bounds.end()
+            && !bounds_contains_point(bounds_entry->second, point)
+        ) {
+            ++result.parts_skipped;
+            continue;
+        }
+
+        ++result.parts_tested;
+
+        const auto& rings = part_entry.second;
+        const auto exterior = rings.find(0);
+
+        if (exterior == rings.end()) {
+            continue;
+        }
+
+        const bool inside_exterior = ring_contains_point(
+            point,
+            exterior->second,
+            result.ring_checks
+        );
+
+        if (!inside_exterior) {
+            continue;
+        }
+
+        bool inside_hole = false;
+
+        for (const auto& ring_entry : rings) {
+            if (ring_entry.first == 0) {
+                continue;
+            }
+
+            if (
+                ring_contains_point(
+                    point,
+                    ring_entry.second,
+                    result.ring_checks
+                )
+            ) {
+                inside_hole = true;
+            }
+        }
+
+        if (!inside_hole) {
+            result.inside = true;
+            return result;
+        }
+    }
+
+    return result;
+}
+
+
+// ---------------------------------------------------------------------------
 // Query.
 // ---------------------------------------------------------------------------
 
@@ -496,10 +759,30 @@ struct SegmentNearestResult {
     double distance = std::numeric_limits<double>::infinity();
     int tie_count = 0;
 
+    // Search side (phase 1).
     std::uint64_t node_visits = 0;
-    std::uint64_t candidate_feature_checks = 0;
-    std::uint64_t segment_checks = 0;
     std::uint64_t segment_box_tests = 0;
+
+    // Verification side (phase 2).
+    std::uint64_t candidate_feature_checks = 0;
+
+    // Total phase-2 per-segment geometry work, whatever its kind. Under
+    // "original" this is the sum of the two decomposition counters below; under
+    // "split" it is the containment ring walk, because no distance work is done
+    // over feature geometry at all.
+    std::uint64_t segment_checks = 0;
+
+    // Decomposition of "original"-mode verification by candidate geometry kind.
+    // This is what bounds the achievable saving of "split" mode, and it is
+    // measured under "original" so the bound precedes the conclusion.
+    std::uint64_t line_segment_checks = 0;
+    std::uint64_t polygon_segment_checks = 0;
+
+    // Ring segments walked purely for the inside/outside predicate. Zero under
+    // "original", where the crossing test is fused into the distance loop.
+    std::uint64_t containment_ring_checks = 0;
+    std::uint64_t containment_parts_tested = 0;
+    std::uint64_t containment_parts_skipped = 0;
 };
 
 
@@ -512,6 +795,7 @@ void collect_candidate_features(
     double tie_tolerance_meters,
     std::vector<int>& candidate_features,
     std::vector<char>& feature_is_candidate,
+    std::vector<double>& feature_best_split_distance,
     SegmentNearestResult& result
 ) {
     std::priority_queue<
@@ -594,7 +878,13 @@ void collect_candidate_features(
 
                 if (!feature_is_candidate[feature_index]) {
                     feature_is_candidate[feature_index] = 1;
+                    feature_best_split_distance[feature_index] = distance;
                     candidate_features.push_back(segment.feature_index);
+                } else if (
+                    distance
+                    < feature_best_split_distance[feature_index]
+                ) {
+                    feature_best_split_distance[feature_index] = distance;
                 }
             }
 
@@ -632,15 +922,26 @@ void collect_candidate_features(
 }
 
 
-// Phase 2: run the exact brute-force tie loop over the candidate features. This
-// is the same selection logic as write_brute_force_results, restricted to the
-// candidate set; distance_to_feature (unchanged) supplies interior-zero and the
-// exact per-feature distance, so the result is byte-identical to the reference.
+// Phase 2: run the exact brute-force tie loop over the candidate features.
+//
+// The SELECTION logic is unchanged from write_brute_force_results, restricted to
+// the candidate set. Only the source of each candidate's distance depends on the
+// verification mode:
+//
+//   OriginalGeometry  distance_to_feature over original geometry (unchanged
+//                     kernel), so the result is byte-identical to the reference.
+//
+//   SplitGeometry     the phase-1 minimum over split sub-segments, plus an exact
+//                     containment test for polygon candidates because a split
+//                     segment cannot express interior-zero.
 SegmentNearestResult find_nearest_segment_bvh(
     const Point& point,
     const std::vector<WaterFeature>& features,
     const SegmentBvh& index,
+    const PartExteriorBounds& part_exterior_bounds,
     std::vector<char>& feature_is_candidate_scratch,
+    std::vector<double>& feature_best_split_distance_scratch,
+    VerificationMode verification_mode,
     double tie_tolerance_meters
 ) {
     SegmentNearestResult result;
@@ -654,6 +955,7 @@ SegmentNearestResult find_nearest_segment_bvh(
         tie_tolerance_meters,
         candidate_features,
         feature_is_candidate_scratch,
+        feature_best_split_distance_scratch,
         result
     );
 
@@ -662,29 +964,80 @@ SegmentNearestResult find_nearest_segment_bvh(
     int tie_count = 0;
 
     for (const int feature_index : candidate_features) {
-        // Reset the scratch flag so the buffer is clean for the next property.
-        feature_is_candidate_scratch[
-            static_cast<std::size_t>(feature_index)
-        ] = 0;
+        const std::size_t feature_position =
+            static_cast<std::size_t>(feature_index);
 
-        const WaterFeature& feature =
-            features[static_cast<std::size_t>(feature_index)];
+        // Reset the scratch buffers so they are clean for the next property.
+        feature_is_candidate_scratch[feature_position] = 0;
 
-        const DistanceResult candidate =
-            distance_to_feature(point, feature);
+        const double split_distance =
+            feature_best_split_distance_scratch[feature_position];
+
+        feature_best_split_distance_scratch[feature_position] =
+            std::numeric_limits<double>::infinity();
+
+        const WaterFeature& feature = features[feature_position];
 
         ++result.candidate_feature_checks;
-        result.segment_checks += candidate.segment_checks;
 
-        if (candidate.distance < best_distance - tie_tolerance_meters) {
-            best_distance = candidate.distance;
+        double candidate_distance =
+            std::numeric_limits<double>::infinity();
+
+        if (verification_mode == VerificationMode::OriginalGeometry) {
+            const DistanceResult candidate =
+                distance_to_feature(point, feature);
+
+            candidate_distance = candidate.distance;
+            result.segment_checks += candidate.segment_checks;
+
+            if (feature.geometry_kind == "line") {
+                result.line_segment_checks += candidate.segment_checks;
+            } else {
+                result.polygon_segment_checks += candidate.segment_checks;
+            }
+        } else {
+            candidate_distance = split_distance;
+
+            if (feature.geometry_kind != "line") {
+                // On-boundary is decided from the split minimum here, because
+                // recomputing it over original geometry would reintroduce the
+                // scan this mode exists to avoid. See the hazard note in the
+                // file header: the split perturbation is the same order as
+                // BOUNDARY_EPSILON_METERS.
+                if (candidate_distance <= BOUNDARY_EPSILON_METERS) {
+                    candidate_distance = 0.0;
+                } else {
+                    const ContainmentResult containment =
+                        polygon_contains_point(
+                            point,
+                            feature,
+                            part_exterior_bounds[feature_position]
+                        );
+
+                    result.containment_ring_checks +=
+                        containment.ring_checks;
+                    result.containment_parts_tested +=
+                        containment.parts_tested;
+                    result.containment_parts_skipped +=
+                        containment.parts_skipped;
+                    result.segment_checks += containment.ring_checks;
+
+                    if (containment.inside) {
+                        candidate_distance = 0.0;
+                    }
+                }
+            }
+        }
+
+        if (candidate_distance < best_distance - tie_tolerance_meters) {
+            best_distance = candidate_distance;
             best_feature_index = feature_index;
             tie_count = 1;
             continue;
         }
 
         if (
-            std::abs(candidate.distance - best_distance)
+            std::abs(candidate_distance - best_distance)
             <= tie_tolerance_meters
         ) {
             ++tie_count;
@@ -696,7 +1049,7 @@ SegmentNearestResult find_nearest_segment_bvh(
                         static_cast<std::size_t>(best_feature_index)
                     ].water_feature_id
             ) {
-                best_distance = candidate.distance;
+                best_distance = candidate_distance;
                 best_feature_index = feature_index;
             }
         }
@@ -721,7 +1074,9 @@ SegmentNearestResult find_nearest_segment_bvh(
     const std::vector<PropertyPoint>& properties,
     const std::vector<WaterFeature>& features,
     const SegmentBvh& index,
+    const PartExteriorBounds& part_exterior_bounds,
     const std::string& distance_crs,
+    VerificationMode verification_mode,
     double tie_tolerance_meters
 ) {
     const std::filesystem::path filesystem_path(output_path);
@@ -752,7 +1107,13 @@ SegmentNearestResult find_nearest_segment_bvh(
         << "cpp_candidate_feature_checks,"
         << "cpp_index_node_visits,"
         << "cpp_segment_box_tests,"
+        << "cpp_line_segment_checks,"
+        << "cpp_polygon_segment_checks,"
+        << "cpp_containment_ring_checks,"
+        << "cpp_containment_parts_tested,"
+        << "cpp_containment_parts_skipped,"
         << "distance_crs,"
+        << "verification_mode,"
         << "algorithm\n";
 
     output << std::setprecision(17);
@@ -761,10 +1122,20 @@ SegmentNearestResult find_nearest_segment_bvh(
     std::uint64_t total_candidate_checks = 0;
     std::uint64_t total_segment_checks = 0;
     std::uint64_t total_segment_box_tests = 0;
+    std::uint64_t total_line_segment_checks = 0;
+    std::uint64_t total_polygon_segment_checks = 0;
+    std::uint64_t total_containment_ring_checks = 0;
+    std::uint64_t total_containment_parts_tested = 0;
+    std::uint64_t total_containment_parts_skipped = 0;
 
-    // One reusable scratch buffer of candidate flags, cleared per property
-    // inside the phase-2 loop. Avoids reallocating per query.
+    // Reusable scratch buffers, cleared per property inside the phase-2 loop.
+    // Avoids reallocating per query.
     std::vector<char> feature_is_candidate(features.size(), 0);
+
+    std::vector<double> feature_best_split_distance(
+        features.size(),
+        std::numeric_limits<double>::infinity()
+    );
 
     const auto computation_start = std::chrono::steady_clock::now();
 
@@ -780,7 +1151,10 @@ SegmentNearestResult find_nearest_segment_bvh(
                 property.point,
                 features,
                 index,
+                part_exterior_bounds,
                 feature_is_candidate,
+                feature_best_split_distance,
+                verification_mode,
                 tie_tolerance_meters
             );
 
@@ -801,12 +1175,26 @@ SegmentNearestResult find_nearest_segment_bvh(
             << nearest.candidate_feature_checks << ","
             << nearest.node_visits << ","
             << nearest.segment_box_tests << ","
-            << csv_escape(distance_crs) << ",segment_bvh\n";
+            << nearest.line_segment_checks << ","
+            << nearest.polygon_segment_checks << ","
+            << nearest.containment_ring_checks << ","
+            << nearest.containment_parts_tested << ","
+            << nearest.containment_parts_skipped << ","
+            << csv_escape(distance_crs) << ","
+            << verification_mode_name(verification_mode)
+            << ",segment_bvh\n";
 
         total_node_visits += nearest.node_visits;
         total_candidate_checks += nearest.candidate_feature_checks;
         total_segment_checks += nearest.segment_checks;
         total_segment_box_tests += nearest.segment_box_tests;
+        total_line_segment_checks += nearest.line_segment_checks;
+        total_polygon_segment_checks += nearest.polygon_segment_checks;
+        total_containment_ring_checks += nearest.containment_ring_checks;
+        total_containment_parts_tested +=
+            nearest.containment_parts_tested;
+        total_containment_parts_skipped +=
+            nearest.containment_parts_skipped;
 
         if (
             (property_index + 1) % 100 == 0
@@ -844,7 +1232,41 @@ SegmentNearestResult find_nearest_segment_bvh(
         << total_segment_checks / property_count << "\n"
         << "Total segment box tests: " << total_segment_box_tests << "\n"
         << "Average segment box tests per property: "
-        << total_segment_box_tests / property_count << "\n";
+        << total_segment_box_tests / property_count << "\n"
+        << "Total line candidate segment checks: "
+        << total_line_segment_checks << "\n"
+        << "Average line candidate segment checks per property: "
+        << total_line_segment_checks / property_count << "\n"
+        << "Total polygon candidate segment checks: "
+        << total_polygon_segment_checks << "\n"
+        << "Average polygon candidate segment checks per property: "
+        << total_polygon_segment_checks / property_count << "\n"
+        << "Total containment ring checks: "
+        << total_containment_ring_checks << "\n"
+        << "Average containment ring checks per property: "
+        << total_containment_ring_checks / property_count << "\n"
+        << "Total containment parts tested: "
+        << total_containment_parts_tested << "\n"
+        << "Total containment parts skipped: "
+        << total_containment_parts_skipped << "\n";
+}
+
+
+[[maybe_unused]] VerificationMode parse_verification_mode(
+    const std::string& raw_value
+) {
+    if (raw_value == "original") {
+        return VerificationMode::OriginalGeometry;
+    }
+
+    if (raw_value == "split") {
+        return VerificationMode::SplitGeometry;
+    }
+
+    throw std::runtime_error(
+        "Invalid verification_mode (expected 'original' or 'split'): "
+        + raw_value
+    );
 }
 
 
@@ -876,7 +1298,7 @@ SegmentNearestResult find_nearest_segment_bvh(
 #ifndef CAPRM_SEGMENT_BVH_NO_MAIN
 
 int main(int argc, char* argv[]) {
-    if (argc < 5 || argc > 7) {
+    if (argc < 5 || argc > 8) {
         std::cerr
             << "Usage:\n"
             << "  water_distance_segment_bvh.exe "
@@ -885,7 +1307,13 @@ int main(int argc, char* argv[]) {
             << "<vertices_csv> "
             << "<output_csv> "
             << "[distance_crs] "
-            << "[max_segment_length_m]\n";
+            << "[max_segment_length_m] "
+            << "[verification_mode]\n"
+            << "\n"
+            << "  max_segment_length_m  entry-extent cap in metres; "
+            << "<= 0 disables splitting (default "
+            << DEFAULT_MAX_SEGMENT_LENGTH_METERS << ")\n"
+            << "  verification_mode     'original' (default) or 'split'\n";
 
         return 1;
     }
@@ -899,8 +1327,15 @@ int main(int argc, char* argv[]) {
 
     double max_segment_length_m = DEFAULT_MAX_SEGMENT_LENGTH_METERS;
 
-    if (argc == 7) {
+    if (argc >= 7) {
         max_segment_length_m = parse_cap_argument(argv[6]);
+    }
+
+    VerificationMode verification_mode =
+        VerificationMode::OriginalGeometry;
+
+    if (argc == 8) {
+        verification_mode = parse_verification_mode(argv[7]);
     }
 
     try {
@@ -931,6 +1366,9 @@ int main(int argc, char* argv[]) {
 
         const SegmentBvh index(segments, features);
 
+        const PartExteriorBounds part_exterior_bounds =
+            build_part_exterior_bounds(features);
+
         const auto index_end = std::chrono::steady_clock::now();
 
         const double load_seconds =
@@ -957,7 +1395,13 @@ int main(int argc, char* argv[]) {
             << split_statistics.max_original_length_m << "\n"
             << "Max split segment length (m): "
             << split_statistics.max_split_length_m << "\n"
+            << "Index entries: " << index.segment_count() << "\n"
+            << "Index bytes: " << index.index_bytes() << "\n"
+            << "Max entry extent (m): "
+            << split_statistics.max_split_length_m << "\n"
             << "BVH nodes: " << index.node_count() << "\n"
+            << "Verification mode: "
+            << verification_mode_name(verification_mode) << "\n"
             << "Input loading seconds: " << load_seconds << "\n"
             << "Index construction seconds: " << index_seconds << "\n";
 
@@ -966,7 +1410,9 @@ int main(int argc, char* argv[]) {
             properties,
             features,
             index,
+            part_exterior_bounds,
             distance_crs,
+            verification_mode,
             DEFAULT_TIE_TOLERANCE_METERS
         );
 
