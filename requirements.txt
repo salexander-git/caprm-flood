@@ -1,18 +1,42 @@
+affine==2.4.0
+attrs==26.1.0
 certifi==2026.5.20
 charset-normalizer==3.4.7
+click==8.4.2
+cligj==0.7.2
+colorama==0.4.6
+contourpy==1.3.3
+cycler==0.12.1
+fonttools==4.63.0
 geopandas==1.1.3
 idna==3.18
+iniconfig==2.3.0
+kiwisolver==1.5.0
+matplotlib==3.11.0
 numpy==2.4.6
 packaging==26.2
 pandas==3.0.3
+pillow==12.2.0
+pluggy==1.6.0
+Pygments==2.20.0
 pyogrio==0.12.1
+pyparsing==3.3.2
 pyproj==3.7.2
 python-dateutil==2.9.0.post0
 PyYAML==6.0.3
-rasterio
+rasterio==1.5.0
 requests==2.34.2
 shapely==2.1.2
 six==1.17.0
 tzdata==2026.2
 urllib3==2.7.0
+
+# Test tooling. Deliberately a range rather than an exact pin; installed
+# version at the 2026-07-22 audit was pytest==8.4.2. Pin exactly at the
+# PHASE D release freeze if bit-identical reproduction is required.
 pytest>=8.0,<9.0
+
+# Phase C, spatial-block split. Required by python/caprm/spatial_split.py
+# (scipy.spatial.cKDTree), which is currently untracked. Uncomment and pin from
+# `pip freeze` in the SAME change that commits spatial_split.py, not before.
+# scipy==
