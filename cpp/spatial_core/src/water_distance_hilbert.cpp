@@ -125,6 +125,7 @@
 #include <algorithm>
 #include <array>
 #include <cstdint>
+#include <cstring>
 #include <map>
 #include <numeric>
 #include <set>
@@ -338,18 +339,96 @@ struct HilbertIndex {
 };
 
 
+// ---------------------------------------------------------------------------
+// B5: the recursive model index (implementation #5), INFERENCE ONLY.
+//
+// Python trains (python/caprm/rmi.py); C++ infers. The model replaces the
+// binary search and nothing else: it returns a start position, the same
+// +/- SEED_WINDOW entries are read around it, and every downstream stage is
+// untouched. By 18.22 a wrong position costs time and cannot cost an answer,
+// so NO error bound is consulted here. The stored-key bound is the academic
+// deliverable and the domain bound is a diagnostic; sizing a search window
+// from either would be machinery imitating a correctness mechanism.
+//
+// The arithmetic mirrors RmiModel.route/predict in rmi.py exactly, INCLUDING
+// the two different rounding orders: the root FLOORS then clamps, the leaf
+// CLAMPS then floors. Property-point keys routinely fall outside
+// [key_min, key_max], so x < 0 and x > 1 are the normal case rather than an
+// error and the clamps are the whole of the out-of-range handling. Swapping
+// either order changes the predicted position for exactly that population.
+// ---------------------------------------------------------------------------
+constexpr std::size_t RMI_HEADER_BYTES = 96;
+constexpr std::uint32_t RMI_FORMAT_VERSION = 1;
+constexpr std::uint32_t RMI_LEAF_STRIDE_BYTES = 32;
+
+
+struct RmiModel {
+    std::uint64_t n_keys = 0;
+    std::uint64_t n_leaves = 0;
+    std::uint64_t key_min = 0;
+    std::uint64_t key_max = 0;
+    double root_a = 0.0;
+    double root_b = 0.0;
+    double key_min_d = 0.0;       // derived from the raw uint64, never from text
+    double inv_span = 0.0;
+    std::vector<double> leaf_a;
+    std::vector<double> leaf_b;
+    std::string keys_sha256_hex;  // carried from the header; see bind_rmi_model
+};
+
+
+struct RmiPrediction {
+    double x = 0.0;
+    std::size_t leaf = 0;
+    std::size_t position = 0;
+};
+
+
+RmiPrediction rmi_predict(const RmiModel& model, std::uint64_t key) {
+    RmiPrediction out;
+    out.x = (static_cast<double>(key) - model.key_min_d) * model.inv_span;
+
+    // Root: floor, THEN clamp (rmi.py RmiModel.route).
+    double j = std::floor(model.root_a + model.root_b * out.x);
+    const double j_max = static_cast<double>(model.n_leaves - 1);
+    if (!(j >= 0.0)) j = 0.0;      // negated form so a NaN would also land at 0
+    if (j > j_max) j = j_max;
+    out.leaf = static_cast<std::size_t>(j);
+
+    // Leaf: clamp, THEN floor (rmi.py RmiModel.predict).
+    double p = model.leaf_a[out.leaf] + model.leaf_b[out.leaf] * out.x;
+    const double p_max = static_cast<double>(model.n_keys - 1);
+    if (!(p >= 0.0)) p = 0.0;
+    if (p > p_max) p = p_max;
+    out.position = static_cast<std::size_t>(std::floor(p));
+    return out;
+}
+
+
 // lower_bound over index.keys, written out so the probe count (the quantity the
 // RMI is supposed to reduce) is measurable. Semantics are identical to
 // std::lower_bound; --verify-counts asserts that equality per query.
+//
+// B5: in `rmi` mode the model returns the position directly and performs ZERO
+// key comparisons, so `probes` stays 0. That is the honest count for the
+// shipped path, which reads one 32-byte leaf record and does four
+// multiply-adds, two clamps and two floors. B4's "6.323 mean last-mile probes"
+// is a MODELLED quantity -- ceil(log2(err_max - err_min + 2)) over index keys,
+// describing a last-mile binary search this path does not perform -- and B6
+// must not report it as a measured probe count against the control's measured
+// 20.2376.
 SeedResult seed_position(
-    const HilbertIndex& index, std::uint64_t key, SeedMode mode
+    const HilbertIndex& index, std::uint64_t key, SeedMode mode,
+    const RmiModel* model
 ) {
     SeedResult out;
     if (mode == SeedMode::Zero) return out;          // position 0, 0 probes
     if (mode == SeedMode::Rmi) {
-        throw std::runtime_error(
-            "--seed rmi requires a trained model (B4) and its C++ inference "
-            "path (B5); neither exists yet. Use --seed binary.");
+        if (model == nullptr) {
+            throw std::runtime_error("--seed rmi reached inference with no model.");
+        }
+        out.position = rmi_predict(*model, key).position;
+        return out;                                  // zero key comparisons
     }
 
     std::size_t low = 0;
@@ -705,6 +784,14 @@ struct HilbertNearestResult {
     std::uint64_t n_true_r = 0;           // entries with d(p, segment) <= d_best + tie_tol
     std::uint64_t n_disk_unc = 0;         // midpoints in disk(d_best + L_unc/2 + tie_tol)
     std::uint64_t seed_probes = 0;        // key comparisons spent finding the start position
+
+    // B5 instrumentation. Never emitted to the CSV -- adding a per-property
+    // seed column would break the byte-identical seam test that is the whole
+    // acceptance criterion. The seed-error report needs the query key and the
+    // position the seeder returned, and recomputing the Hilbert key outside the
+    // query would duplicate the transform.
+    std::uint64_t seed_key = 0;
+    std::size_t seed_position_used = 0;
 };
 
 
@@ -817,7 +904,8 @@ HilbertNearestResult find_nearest_hilbert(
     const HilbertIndex& index, const PartExteriorBounds& part_exterior_bounds,
     double inflation_half, Region::Kind region_kind,
     VerificationMode verification_mode, double tie_tolerance_meters,
-    SeedMode seed_mode, double uncapped_inflation_half, bool verify_counts,
+    SeedMode seed_mode, const RmiModel* rmi_model,
+    double uncapped_inflation_half, bool verify_counts,
     std::vector<int>& candidate_features,
     std::vector<char>& feature_is_candidate,
     std::vector<double>& feature_best_split_distance
@@ -828,10 +916,12 @@ HilbertNearestResult find_nearest_hilbert(
     // The ONLY seam between implementation #4 and #5; correctness-neutral.
     const std::uint64_t key = hilbert_xy2d(
         index.norm.order, index.norm.cell_x(point.x), index.norm.cell_y(point.y));
-    const SeedResult seed = seed_position(index, key, seed_mode);
+    const SeedResult seed = seed_position(index, key, seed_mode, rmi_model);
     out.seed_probes = seed.probes;
     const std::size_t pos = seed.position;
     const std::size_t n = index.keys.size();
+    out.seed_key = key;
+    out.seed_position_used = pos;
 
     if (verify_counts && seed_mode == SeedMode::BinarySearch) {
         const std::size_t reference = static_cast<std::size_t>(
@@ -940,6 +1030,111 @@ HilbertNearestResult find_nearest_hilbert(
 
 
 // ---------------------------------------------------------------------------
+// B5: seed-error report.
+//
+// The measurement Current Status section 21 asks for: predicted-vs-actual
+// position error on the REAL property-point keys. B4's 94.240 percent within
+// +/-64 is an INDEX-key figure and does not carry over, because index keys are
+// the training set and property keys are not.
+//
+// Deliberately NOT in the index manifest: that file describes the index, this
+// describes one run against it, and the two have different provenance. Also
+// deliberately not a CSV column: a per-property seed column would break the
+// byte-identical seam test.
+//
+// A run carrying --seed-error-stats is NOT benchmark-eligible. Computing the
+// reference costs a full lower_bound per property -- in rmi mode that is
+// precisely the ~20 probes the model exists to remove.
+// ---------------------------------------------------------------------------
+
+// numpy's default percentile (method="linear"), so these figures are directly
+// comparable with the p50/p90/p99/p99.9 rmi.py recorded over index keys. A
+// different convention here would silently make the two incomparable, which is
+// the mistake 18.21 warns about.
+double linear_percentile(const std::vector<std::int64_t>& sorted_values,
+                         double quantile) {
+    if (sorted_values.empty()) return 0.0;
+    const double position = (quantile / 100.0)
+        * static_cast<double>(sorted_values.size() - 1);
+    const double lower_index = std::floor(position);
+    const std::size_t lo = static_cast<std::size_t>(lower_index);
+    const std::size_t hi = std::min(lo + 1, sorted_values.size() - 1);
+    const double fraction = position - lower_index;
+    return static_cast<double>(sorted_values[lo])
+        + fraction * (static_cast<double>(sorted_values[hi])
+                      - static_cast<double>(sorted_values[lo]));
+}
+
+
+void write_seed_error_report(
+    const std::string& path, SeedMode seed_mode, std::size_t index_entries,
+    std::vector<std::int64_t> errors
+) {
+    const std::filesystem::path fspath(path);
+    if (!fspath.parent_path().empty()) {
+        std::filesystem::create_directories(fspath.parent_path());
+    }
+    std::ofstream out(path);
+    if (!out) {
+        throw std::runtime_error("Could not open seed-error report: " + path);
+    }
+
+    const std::size_t n = errors.size();
+    std::vector<std::int64_t> absolute(n);
+    std::uint64_t within_window = 0;
+    std::uint64_t exact_zero = 0;
+    long double sum_signed = 0.0L;
+    long double sum_absolute = 0.0L;
+    for (std::size_t i = 0; i < n; ++i) {
+        const std::int64_t value = errors[i];
+        absolute[i] = value < 0 ? -value : value;
+        if (value == 0) ++exact_zero;
+        if (static_cast<std::uint64_t>(absolute[i]) <= SEED_WINDOW) {
+            ++within_window;
+        }
+        sum_signed += static_cast<long double>(value);
+        sum_absolute += static_cast<long double>(absolute[i]);
+    }
+    std::sort(errors.begin(), errors.end());
+    std::sort(absolute.begin(), absolute.end());
+    const double denominator = n ? static_cast<double>(n) : 1.0;
+
+    out << std::setprecision(17)
+        << "{\n"
+        << "  \"chunk\": \"B5\",\n"
+        << "  \"report\": \"seed_position_error_on_property_keys\",\n"
+        << "  \"reference\": \"std::lower_bound over the index key array\",\n"
+        << "  \"benchmark_eligible\": false,\n"
+        << "  \"seed_mode\": \"" << seed_mode_name(seed_mode) << "\",\n"
+        << "  \"properties\": " << n << ",\n"
+        << "  \"index_entries\": " << index_entries << ",\n"
+        << "  \"seed_window_entries\": " << SEED_WINDOW << ",\n"
+        << "  \"exact_zero\": " << exact_zero << ",\n"
+        << "  \"within_seed_window\": " << within_window << ",\n"
+        << "  \"fraction_within_seed_window\": "
+        << static_cast<double>(within_window) / denominator << ",\n"
+        << "  \"signed_error\": {\n"
+        << "    \"min\": " << (n ? errors.front() : 0) << ",\n"
+        << "    \"max\": " << (n ? errors.back() : 0) << ",\n"
+        << "    \"mean\": " << static_cast<double>(sum_signed / denominator) << ",\n"
+        << "    \"p50\": " << linear_percentile(errors, 50.0) << ",\n"
+        << "    \"p90\": " << linear_percentile(errors, 90.0) << ",\n"
+        << "    \"p99\": " << linear_percentile(errors, 99.0) << ",\n"
+        << "    \"p99.9\": " << linear_percentile(errors, 99.9) << "\n"
+        << "  },\n"
+        << "  \"absolute_error\": {\n"
+        << "    \"max\": " << (n ? absolute.back() : 0) << ",\n"
+        << "    \"mean\": " << static_cast<double>(sum_absolute / denominator) << ",\n"
+        << "    \"p50\": " << linear_percentile(absolute, 50.0) << ",\n"
+        << "    \"p90\": " << linear_percentile(absolute, 90.0) << ",\n"
+        << "    \"p99\": " << linear_percentile(absolute, 99.0) << ",\n"
+        << "    \"p99.9\": " << linear_percentile(absolute, 99.9) << "\n"
+        << "  }\n"
+        << "}\n";
+}
+
+
+// ---------------------------------------------------------------------------
 // Output writer.
 // ---------------------------------------------------------------------------
 void write_hilbert_results(
@@ -948,7 +1143,9 @@ void write_hilbert_results(
     const PartExteriorBounds& part_exterior_bounds, double inflation_half,
     Region::Kind region_kind, const std::string& distance_crs,
     VerificationMode verification_mode, double tie_tolerance_meters,
-    SeedMode seed_mode, double uncapped_inflation_half, bool verify_counts
+    SeedMode seed_mode, const RmiModel* rmi_model,
+    double uncapped_inflation_half, bool verify_counts,
+    const std::string& seed_error_stats_path
 ) {
     const std::filesystem::path fspath(output_path);
     if (!fspath.parent_path().empty()) {
@@ -1006,6 +1203,10 @@ void write_hilbert_results(
     std::uint64_t tot_ntrue = 0, tot_nunc = 0, tot_probes = 0;
     std::uint64_t properties_with_ndr = 0;
 
+    const bool collect_seed_errors = !seed_error_stats_path.empty();
+    std::vector<std::int64_t> seed_errors;
+    if (collect_seed_errors) seed_errors.reserve(properties.size());
+
     const auto start = std::chrono::steady_clock::now();
 
     for (std::size_t pi = 0; pi < properties.size(); ++pi) {
@@ -1013,8 +1214,16 @@ void write_hilbert_results(
         const HilbertNearestResult r = find_nearest_hilbert(
             property.point, features, index, part_exterior_bounds,
             inflation_half, region_kind, verification_mode, tie_tolerance_meters,
-            seed_mode, uncapped_inflation_half, verify_counts,
+            seed_mode, rmi_model, uncapped_inflation_half, verify_counts,
             candidate_features, feature_is_candidate, feature_best_split_distance);
+
+        if (collect_seed_errors) {
+            const std::int64_t reference = static_cast<std::int64_t>(
+                std::lower_bound(index.keys.begin(), index.keys.end(),
+                                 r.seed_key) - index.keys.begin());
+            seed_errors.push_back(
+                static_cast<std::int64_t>(r.seed_position_used) - reference);
+        }
 
         const WaterFeature& sel =
             features[static_cast<std::size_t>(r.verify.feature_index)];
@@ -1110,6 +1319,15 @@ void write_hilbert_results(
         << "Degenerate B3a denominator (N_disk_r): total " << tot_ndr
         << ", nonzero on " << properties_with_ndr << " of "
         << properties.size() << " properties\n";
+
+    if (collect_seed_errors) {
+        write_seed_error_report(seed_error_stats_path, seed_mode,
+                                index.keys.size(), seed_errors);
+        std::cout
+            << "Seed-error report: " << seed_error_stats_path << "\n"
+            << "  NOT benchmark-eligible: a reference lower_bound was computed "
+            << "per property.\n";
+    }
 }
 
 
@@ -1141,7 +1359,8 @@ struct CommandLine {
 
 CommandLine parse_command_line(int argc, char* argv[]) {
     static const std::set<std::string> VALUE_OPTIONS = {
-        "seed", "uncapped-half", "dump-keys"};
+        "seed", "uncapped-half", "dump-keys", "rmi-model", "rmi-probes",
+        "seed-error-stats"};
     static const std::set<std::string> FLAG_OPTIONS = {"verify-counts"};
 
     CommandLine parsed;
@@ -1195,6 +1414,262 @@ CommandLine parse_command_line(int argc, char* argv[]) {
     return parsed;
 }
 
+
+[[maybe_unused]] std::uint64_t parse_uint64_argument(
+    const std::string& raw, const char* what
+) {
+    // std::stoull accepts a leading sign and wraps it, so the digits are
+    // screened first rather than trusted.
+    if (raw.empty()
+        || raw.find_first_not_of("0123456789") != std::string::npos) {
+        throw std::runtime_error(std::string("Invalid ") + what + ": " + raw);
+    }
+    std::size_t consumed = 0;
+    std::uint64_t parsed = 0;
+    try { parsed = std::stoull(raw, &consumed); }
+    catch (const std::exception&) {
+        throw std::runtime_error(std::string("Invalid ") + what + ": " + raw);
+    }
+    if (consumed != raw.size()) {
+        throw std::runtime_error(std::string("Invalid ") + what + ": " + raw);
+    }
+    return parsed;
+}
+
+
+std::vector<std::string> split_on(const std::string& raw, char delimiter) {
+    std::vector<std::string> parts;
+    std::size_t start = 0;
+    while (true) {
+        const std::size_t hit = raw.find(delimiter, start);
+        if (hit == std::string::npos) {
+            parts.push_back(raw.substr(start));
+            break;
+        }
+        parts.push_back(raw.substr(start, hit - start));
+        start = hit + 1;
+    }
+    return parts;
+}
+
+
+// One probe record from the B4 model manifest: index, key, the normalized x as
+// a C99 hex float, the routed leaf, and the predicted position.
+struct RmiProbe {
+    std::uint64_t index = 0;
+    std::uint64_t key = 0;
+    double x = 0.0;
+    std::uint64_t leaf = 0;
+    std::uint64_t position = 0;
+};
+
+
+// --rmi-probes "i,k,x,l,p;i,k,x,l,p;..."  -- one option, so the CLI parser is
+// untouched. Python owns JSON (Nucleus section 6); the manifest's probe_records
+// are transcribed into scalars and C++ never learns to parse JSON.
+[[maybe_unused]] std::vector<RmiProbe> parse_rmi_probes(const std::string& raw) {
+    std::vector<RmiProbe> probes;
+    for (const std::string& record : split_on(raw, ';')) {
+        if (record.empty()) continue;              // tolerate a trailing ';'
+        const std::vector<std::string> fields = split_on(record, ',');
+        if (fields.size() != 5) {
+            throw std::runtime_error(
+                "Each --rmi-probes record needs 5 fields "
+                "'index,key,x_hex,leaf,position': " + record);
+        }
+        RmiProbe probe;
+        probe.index = parse_uint64_argument(fields[0], "probe index");
+        probe.key = parse_uint64_argument(fields[1], "probe key");
+        // std::stod -> strtod parses C99 hex-float natively. The endptr check
+        // inside parse_double_argument makes that an assertion rather than an
+        // assumption: this program never calls setlocale, so it stays in the
+        // "C" locale where '.' is the radix point, but a locale-shifted build
+        // would fail loudly here instead of silently truncating at the '.'.
+        probe.x = parse_double_argument(fields[2], "probe x");
+        probe.leaf = parse_uint64_argument(fields[3], "probe leaf");
+        probe.position = parse_uint64_argument(fields[4], "probe position");
+        probes.push_back(probe);
+    }
+    if (probes.empty()) {
+        throw std::runtime_error("--rmi-probes supplied no records.");
+    }
+    return probes;
+}
+
+
+[[maybe_unused]] RmiModel load_rmi_model(const std::string& path) {
+    // Unconditional and independent of whether probes were supplied, so there
+    // is no silent hole on any invocation: the coarsest way the float contract
+    // can fail is a build whose uint64 -> double conversion is not
+    // round-to-nearest-even, which [conv.fpint] permits. (double)(2^53 + 3) is
+    // exactly halfway between 2^53 + 2 and 2^53 + 4; round-half-to-even gives
+    // 2^53 + 4, truncation gives 2^53 + 2. The probe records remain strictly
+    // stronger -- they pin normalization, root, leaf and floor as well -- but
+    // this fires even if someone adds an invocation that omits them.
+    const std::uint64_t rounding_probe = (1ull << 53) + 3ull;
+    if (static_cast<double>(rounding_probe) != 9007199254740996.0) {
+        throw std::runtime_error(
+            "uint64 -> double on this build is not round-to-nearest-even; the "
+            "RMI float contract (Nucleus 18.20) does not hold here.");
+    }
+
+    std::ifstream file(path, std::ios::binary);
+    if (!file) {
+        throw std::runtime_error("Could not open RMI model: " + path);
+    }
+    file.seekg(0, std::ios::end);
+    const std::streamoff file_size = file.tellg();
+    if (file_size < static_cast<std::streamoff>(RMI_HEADER_BYTES)) {
+        throw std::runtime_error("RMI model is shorter than its header: " + path);
+    }
+    std::vector<char> bytes(static_cast<std::size_t>(file_size));
+    file.seekg(0, std::ios::beg);
+    file.read(bytes.data(), file_size);
+    if (!file) {
+        throw std::runtime_error("RMI model read failed: " + path);
+    }
+
+    // Fixed little-endian layout, matching struct.Struct("<8sIIQQQQdd32s") plus
+    // a packed leaf array in rmi.py. Same little-endian assumption --dump-keys
+    // already documents; a big-endian build would need byte swaps here.
+    if (std::memcmp(bytes.data(), "CAPRMRMI", 8) != 0) {
+        throw std::runtime_error("RMI model has bad magic: " + path);
+    }
+    std::uint32_t version = 0;
+    std::uint32_t stride = 0;
+    std::memcpy(&version, bytes.data() + 8, 4);
+    std::memcpy(&stride, bytes.data() + 12, 4);
+    if (version != RMI_FORMAT_VERSION) {
+        throw std::runtime_error(
+            "Unsupported RMI model format version: " + std::to_string(version));
+    }
+    if (stride != RMI_LEAF_STRIDE_BYTES) {
+        throw std::runtime_error(
+            "Unsupported RMI leaf stride: " + std::to_string(stride));
+    }
+
+    RmiModel model;
+    std::memcpy(&model.n_keys, bytes.data() + 16, 8);
+    std::memcpy(&model.n_leaves, bytes.data() + 24, 8);
+    std::memcpy(&model.key_min, bytes.data() + 32, 8);
+    std::memcpy(&model.key_max, bytes.data() + 40, 8);
+    std::memcpy(&model.root_a, bytes.data() + 48, 8);
+    std::memcpy(&model.root_b, bytes.data() + 56, 8);
+
+    static const char HEX_DIGITS[] = "0123456789abcdef";
+    model.keys_sha256_hex.resize(64);
+    for (std::size_t i = 0; i < 32; ++i) {
+        const unsigned char byte =
+            static_cast<unsigned char>(bytes[64 + i]);
+        model.keys_sha256_hex[2 * i] = HEX_DIGITS[byte >> 4];
+        model.keys_sha256_hex[2 * i + 1] = HEX_DIGITS[byte & 0x0f];
+    }
+
+    if (model.n_keys == 0 || model.n_leaves == 0) {
+        throw std::runtime_error("RMI model declares zero keys or zero leaves.");
+    }
+    const std::size_t expected_bytes = RMI_HEADER_BYTES
+        + static_cast<std::size_t>(stride)
+        * static_cast<std::size_t>(model.n_leaves);
+    if (bytes.size() != expected_bytes) {
+        throw std::runtime_error(
+            "RMI model is " + std::to_string(bytes.size())
+            + " bytes; its header implies " + std::to_string(expected_bytes));
+    }
+    if (model.key_max <= model.key_min) {
+        throw std::runtime_error("RMI model key span is not positive.");
+    }
+    model.key_min_d = static_cast<double>(model.key_min);
+    const double span = static_cast<double>(model.key_max) - model.key_min_d;
+    if (!std::isfinite(span) || span <= 0.0) {
+        throw std::runtime_error("RMI model key span is degenerate as a double.");
+    }
+    model.inv_span = 1.0 / span;
+
+    const std::size_t leaves = static_cast<std::size_t>(model.n_leaves);
+    model.leaf_a.resize(leaves);
+    model.leaf_b.resize(leaves);
+    for (std::size_t i = 0; i < leaves; ++i) {
+        const char* leaf = bytes.data() + RMI_HEADER_BYTES + i * stride;
+        std::memcpy(&model.leaf_a[i], leaf, 8);
+        std::memcpy(&model.leaf_b[i], leaf + 8, 8);
+        // The remaining 16 bytes are err_min/err_max/gap_err_min/gap_err_max.
+        // Neither bound gates correctness (Nucleus 18.22) and this query path
+        // reads a fixed +/- SEED_WINDOW window, so they are deliberately not
+        // loaded rather than loaded and ignored.
+    }
+    return model;
+}
+
+
+// The model must be bound to the index it was trained on. C++ does NOT verify
+// the header's training-array SHA-256: nothing in this project implements
+// SHA-256 and adding it inside a chunk scoped as "swap one function" is not a
+// trade worth making. What is checked instead is a fingerprint that costs
+// nothing: the array length, and its content at five fixed positions carried by
+// the probe records -- plus the full inference chain reproducing x, the routed
+// leaf and the predicted position from those keys. The digest is verified by
+// the trainer, which refuses to fit unless the key dump matches the index
+// manifest. This is a documented weakening of Nucleus 18.20 on the C++ side.
+[[maybe_unused]] void bind_rmi_model(
+    const RmiModel& model, const HilbertIndex& index,
+    const std::vector<RmiProbe>& probes
+) {
+    if (index.keys.empty()) {
+        throw std::runtime_error("Cannot bind an RMI model to an empty index.");
+    }
+    if (model.n_keys != index.keys.size()) {
+        throw std::runtime_error(
+            "RMI model was trained on " + std::to_string(model.n_keys)
+            + " keys; this index holds " + std::to_string(index.keys.size()));
+    }
+    if (model.key_min != index.keys.front() || model.key_max != index.keys.back()) {
+        throw std::runtime_error(
+            "RMI model key_min/key_max do not match this index's first/last key.");
+    }
+
+    for (const RmiProbe& probe : probes) {
+        if (probe.index >= index.keys.size()) {
+            throw std::runtime_error(
+                "Probe index " + std::to_string(probe.index)
+                + " is outside this index.");
+        }
+        if (index.keys[static_cast<std::size_t>(probe.index)] != probe.key) {
+            throw std::runtime_error(
+                "Probe key mismatch at index " + std::to_string(probe.index)
+                + ": the model was trained on a different key array.");
+        }
+        const RmiPrediction predicted = rmi_predict(model, probe.key);
+        std::uint64_t observed_bits = 0;
+        std::uint64_t expected_bits = 0;
+        std::memcpy(&observed_bits, &predicted.x, 8);
+        std::memcpy(&expected_bits, &probe.x, 8);
+        if (observed_bits != expected_bits) {
+            throw std::runtime_error(
+                "Normalized x differs from the training platform at probe index "
+                + std::to_string(probe.index) + ": bits "
+                + std::to_string(observed_bits) + " vs "
+                + std::to_string(expected_bits)
+                + ". The uint64 -> double float contract does not hold on this "
+                  "build (Nucleus 18.20).");
+        }
+        if (predicted.leaf != probe.leaf) {
+            throw std::runtime_error(
+                "Routed leaf differs at probe index "
+                + std::to_string(probe.index) + ": "
+                + std::to_string(predicted.leaf) + " vs "
+                + std::to_string(probe.leaf));
+        }
+        if (predicted.position != probe.position) {
+            throw std::runtime_error(
+                "Predicted position differs at probe index "
+                + std::to_string(probe.index) + ": "
+                + std::to_string(predicted.position) + " vs "
+                + std::to_string(probe.position));
+        }
+    }
+}
+
 }  // namespace
 
 
@@ -1221,10 +1696,31 @@ int main(int argc, char* argv[]) {
             << "  Options (order-independent):\n"
             << "    --seed binary|rmi|zero   start-position source; default "
             << "binary (the B3 control).\n"
-            << "                             'rmi' is B5 and errors until the "
-            << "model exists; 'zero'\n"
+            << "                             'rmi' requires --rmi-model and "
+            << "--rmi-probes; 'zero'\n"
             << "                             is a test mode that always "
             << "returns position 0.\n"
+            << "    --rmi-model <path>       B4 model artifact "
+            << "(models/water_hilbert_rmi.bin).\n"
+            << "    --rmi-probes <records>   REQUIRED with --seed rmi. "
+            << "Semicolon-separated\n"
+            << "                             'index,key,x_hex,leaf,position' "
+            << "records copied from\n"
+            << "                             the model manifest's "
+            << "probe_records. Asserted at\n"
+            << "                             load, which is how the "
+            << "uint64->double contract is\n"
+            << "                             checked rather than inherited.\n"
+            << "    --seed-error-stats <p>   write predicted-vs-actual seed "
+            << "position error over\n"
+            << "                             the property keys to <p> as JSON. "
+            << "Works under any\n"
+            << "                             seed mode; under 'binary' the "
+            << "error must be\n"
+            << "                             identically zero, which self-tests "
+            << "the harness.\n"
+            << "                             A run carrying this is NOT "
+            << "benchmark-eligible.\n"
             << "    --uncapped-half <m>      also count midpoints in "
             << "disk(d_best + <m> + tie_tol)\n"
             << "                             per property, the uncapped-L "
@@ -1251,6 +1747,9 @@ int main(int argc, char* argv[]) {
         positional.size() >= 5 ? positional[4] : "EPSG:26918";
 
     SeedMode seed_mode = SeedMode::BinarySearch;
+    std::string rmi_model_path;
+    std::string seed_error_stats_path;
+    std::vector<RmiProbe> rmi_probes;
     double uncapped_inflation_half = 0.0;
     bool verify_counts = false;
     double max_segment_length_m = DEFAULT_MAX_SEGMENT_LENGTH_METERS;
@@ -1286,6 +1785,35 @@ int main(int argc, char* argv[]) {
             if (uncapped_inflation_half < 0.0) {
                 throw std::runtime_error("--uncapped-half must be >= 0.");
             }
+        }
+        if (command_line.options.count("rmi-model")) {
+            rmi_model_path = command_line.options.at("rmi-model");
+        }
+        if (command_line.options.count("rmi-probes")) {
+            rmi_probes = parse_rmi_probes(
+                command_line.options.at("rmi-probes"));
+        }
+        if (command_line.options.count("seed-error-stats")) {
+            seed_error_stats_path =
+                command_line.options.at("seed-error-stats");
+        }
+        // Fail closed. There is no invocation of --seed rmi in this project
+        // that does not have the model manifest to hand, so making the probe
+        // assertion optional would only create a silent hole.
+        if (seed_mode == SeedMode::Rmi) {
+            if (rmi_model_path.empty()) {
+                throw std::runtime_error("--seed rmi requires --rmi-model <path>.");
+            }
+            if (rmi_probes.empty()) {
+                throw std::runtime_error(
+                    "--seed rmi requires --rmi-probes: the model manifest's "
+                    "probe records are how the float contract is checked "
+                    "rather than inherited (Nucleus 18.20).");
+            }
+        } else if (!rmi_model_path.empty() || !rmi_probes.empty()) {
+            throw std::runtime_error(
+                "--rmi-model and --rmi-probes are only meaningful with "
+                "--seed rmi.");
         }
         verify_counts = command_line.options.count("verify-counts") > 0;
     } catch (const std::exception& exception) {
@@ -1362,6 +1890,24 @@ int main(int argc, char* argv[]) {
             << "\n"
             << "Index construction seconds: " << index_seconds << "\n";
 
+        RmiModel rmi_model;
+        const RmiModel* rmi_model_pointer = nullptr;
+        if (seed_mode == SeedMode::Rmi) {
+            rmi_model = load_rmi_model(rmi_model_path);
+            bind_rmi_model(rmi_model, index, rmi_probes);
+            rmi_model_pointer = &rmi_model;
+            std::cout
+                << "RMI model: " << rmi_model_path << "\n"
+                << "RMI second-stage models: " << rmi_model.n_leaves << "\n"
+                << "RMI model bytes: "
+                << (RMI_HEADER_BYTES
+                    + static_cast<std::size_t>(RMI_LEAF_STRIDE_BYTES)
+                    * static_cast<std::size_t>(rmi_model.n_leaves)) << "\n"
+                << "RMI training-array sha256 (from the header; verified by the "
+                << "trainer, not here): " << rmi_model.keys_sha256_hex << "\n"
+                << "RMI probe records asserted: " << rmi_probes.size() << "\n";
+        }
+
         if (!manifest_path.empty()) {
             const std::filesystem::path mp(manifest_path);
             if (!mp.parent_path().empty()) {
@@ -1394,6 +1940,10 @@ int main(int argc, char* argv[]) {
                << index.norm.scale_x << ",\n"
                << "  \"normalization_scale_y_cells_per_m\": "
                << index.norm.scale_y << ",\n"
+               << "  \"rmi_model_leaves\": " << rmi_model.n_leaves << ",\n"
+               << "  \"rmi_probes_asserted\": " << rmi_probes.size() << ",\n"
+               << "  \"rmi_training_array_sha256\": \""
+               << rmi_model.keys_sha256_hex << "\",\n"
                << "  \"index_entries\": " << index.keys.size() << ",\n"
                << "  \"key_array_bytes\": " << key_bytes << ",\n"
                << "  \"distinct_cells_at_order\": " << index.distinct_cells << ",\n"
@@ -1449,8 +1999,8 @@ int main(int argc, char* argv[]) {
         write_hilbert_results(
             output_path, properties, features, index, part_exterior_bounds,
             inflation_half, region_kind, distance_crs, verification_mode,
-            DEFAULT_TIE_TOLERANCE_METERS, seed_mode, uncapped_inflation_half,
-            verify_counts);
+            DEFAULT_TIE_TOLERANCE_METERS, seed_mode, rmi_model_pointer,
+            uncapped_inflation_half, verify_counts, seed_error_stats_path);
 
         std::cout << "Wrote Hilbert C++ output to " << output_path << "\n";
     } catch (const std::exception& exception) {

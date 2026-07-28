@@ -233,6 +233,29 @@ def run_hilbert(out_path, cap, verification_mode, region_mode=None,
     return result.stdout
 
 
+def expect_hilbert_failure(label, extra):
+    """Run the Hilbert binary expecting a non-zero exit.
+
+    B5 fails closed on every model/probe misconfiguration, so each refusal is
+    asserted here rather than trusted. A silent fallback to binary seeding
+    would make `--seed rmi` runs indistinguishable from control runs.
+    """
+    args = [
+        HILBERT,
+        str(WORK / "properties.csv"),
+        str(WORK / "features.csv"),
+        str(WORK / "vertices.csv"),
+        str(WORK / "out_hilbert_negative.csv"),
+        "EPSG:26918", "25", "original", "disk_bbox", "32",
+    ] + list(extra)
+    result = subprocess.run(args, capture_output=True, text=True)
+    assert result.returncode != 0, (
+        f"{label}: expected a non-zero exit, got 0")
+    first = (result.stderr.strip().splitlines() or [""])[0]
+    print(f"  [hilbert] refused ({label}): {first[:88]}")
+    return result.stderr
+
+
 def compare(reference_path, candidate_path, label, dist_tol=0.0):
     ref = pd.read_csv(reference_path, dtype={
         "property_id": "string",
@@ -314,8 +337,14 @@ def main():
     # Hilbert path (B3a): both verification modes, both region predicates,
     # cap 25 so L/2 = 12.5 m matches the chosen operating point.
     hil_manifest = WORK / "hilbert_manifest.json"
+    # B5: --seed-error-stats under `binary` is a self-test of the measurement
+    # harness -- the predicted position IS lower_bound there, so the error must
+    # be identically zero before the same harness is believed on rmi output.
+    binary_seed_error = WORK / "seed_error_binary.json"
     hil_stdout = run_hilbert(WORK / "out_hilbert_orig_bbox.csv", 25.0,
-                             "original", "disk_bbox", 32, hil_manifest)
+                             "original", "disk_bbox", 32, hil_manifest,
+                             extra=["--seed-error-stats",
+                                    str(binary_seed_error)])
     run_hilbert(WORK / "out_hilbert_split_bbox.csv", 25.0,
                 "split", "disk_bbox", 32)
     run_hilbert(WORK / "out_hilbert_orig_disk.csv", 25.0,
@@ -459,6 +488,149 @@ def main():
          f"ceil(log2({entries})) bound {expected_probes}")
     print(f"  [hilbert] seed seam: zero-seed output byte-identical to binary; "
           f"binary probes <= {expected_probes} (log2 of {entries} entries)")
+
+    # ------------------------------------------------------------------
+    # B5: RMI inference in C++.
+    #
+    # The model is trained HERE, on the fixture's own key dump, through the
+    # real trainer CLI. The countywide artifact cannot be used: it is bound to
+    # the countywide array by n_keys and by the probe records, and binding it
+    # to a 523-entry index is one of the failures asserted below.
+    #
+    # This is the same acceptance criterion --seed zero already satisfies, now
+    # exercised by the component it was written for.
+    # ------------------------------------------------------------------
+    fixture_model = WORK / "fixture_rmi.bin"
+    fixture_model_manifest = WORK / "fixture_rmi_manifest.json"
+    trainer = REPOSITORY_ROOT / "python" / "scripts" / "train_hilbert_rmi.py"
+    train = subprocess.run(
+        [sys.executable, str(trainer),
+         "--keys", str(fixture_keys),
+         "--index-manifest", str(keydump_manifest),
+         "--model-output", str(fixture_model),
+         "--manifest-output", str(fixture_model_manifest),
+         # Fixture-scale leaf counts. The countywide sweep starts at 256, which
+         # is meaningless over 523 keys.
+         "--leaf-counts", "4,16,64",
+         "--gap-bound-spot-checks", "20000"],
+        capture_output=True, text=True)
+    if train.returncode != 0:
+        print(train.stdout)
+        print(train.stderr, file=sys.stderr)
+        raise SystemExit("train_hilbert_rmi.py failed on the fixture key dump")
+    model_manifest = json.loads(fixture_model_manifest.read_text())
+    probe_records = model_manifest["probe_records"]
+    probes = ";".join(
+        f"{r['index']},{r['key']},{r['x_hex']},{r['leaf']},"
+        f"{r['predicted_position']}"
+        for r in probe_records
+    )
+
+    rmi_manifest = WORK / "hilbert_manifest_rmi.json"
+    rmi_seed_error = WORK / "seed_error_rmi.json"
+    run_hilbert(WORK / "out_hilbert_seed_rmi.csv", 25.0,
+                "original", "disk_bbox", 32, rmi_manifest,
+                extra=["--seed", "rmi",
+                       "--rmi-model", str(fixture_model),
+                       "--rmi-probes", probes,
+                       "--seed-error-stats", str(rmi_seed_error)])
+
+    rmi_out = pd.read_csv(WORK / "out_hilbert_seed_rmi.csv",
+                          dtype={"property_id": "string"})
+    assert base[seam_columns].equals(rmi_out[seam_columns]), \
+        ("the RMI changed an emitted field: the model is being trusted "
+         "somewhere it decides rather than selects")
+    assert (rmi_out["cpp_seed_probes"] == 0).all(), \
+        "rmi seed reported key comparisons; it performs none"
+    assert set(rmi_out["seed_mode"].unique()) == {"rmi"}, "seed_mode value"
+
+    rmi_man = json.loads(rmi_manifest.read_text())
+    assert rmi_man["seed_mode"] == "rmi"
+    assert rmi_man["rmi_probes_asserted"] == len(probe_records)
+    assert rmi_man["rmi_model_leaves"] == \
+        model_manifest["selection"]["selected_n_leaves"]
+    # Closes the loop the C++ cannot close alone: C++ does not compute
+    # SHA-256, but the digest it read out of the model header must equal the
+    # digest Python took of the key dump the trainer consumed.
+    assert rmi_man["rmi_training_array_sha256"] == \
+        model_manifest["pinned_index"]["key_array_sha256"], \
+        "model header digest != Python's digest of the key dump"
+
+    binary_error = json.loads(binary_seed_error.read_text())
+    assert binary_error["seed_mode"] == "binary"
+    assert binary_error["properties"] == len(props)
+    assert binary_error["exact_zero"] == binary_error["properties"], \
+        ("the binary seed disagreed with std::lower_bound: the seed-error "
+         "harness is wrong, so its rmi figures cannot be believed")
+    assert binary_error["absolute_error"]["max"] == 0
+
+    rmi_error = json.loads(rmi_seed_error.read_text())
+    assert rmi_error["seed_mode"] == "rmi"
+    assert rmi_error["properties"] == len(props)
+    assert rmi_error["benchmark_eligible"] is False
+    assert rmi_error["absolute_error"]["max"] >= 0
+    # The measurement B4 could not take: index keys are the training set,
+    # property-point keys are not, so the hit rates are different populations
+    # and the index-key figure does not carry over.
+    index_key_rate = model_manifest["selected_model"][
+        "fraction_within_seed_window"]
+    print(f"  [hilbert] B5 rmi seam: output byte-identical to binary; "
+          f"0 key probes; binary self-test {binary_error['exact_zero']}/"
+          f"{binary_error['properties']} exact")
+    print(f"  [hilbert] seed error within +/-{rmi_error['seed_window_entries']}: "
+          f"{rmi_error['fraction_within_seed_window']:.4f} on property keys vs "
+          f"{index_key_rate:.4f} on index keys; mean |err| "
+          f"{rmi_error['absolute_error']['mean']:.2f}, max "
+          f"{rmi_error['absolute_error']['max']}")
+
+    # B5 negative cases. Every one of these is a way a run could silently
+    # become a control run or a run against the wrong array.
+    tampered_position = ";".join(
+        f"{r['index']},{r['key']},{r['x_hex']},{r['leaf']},"
+        f"{r['predicted_position'] + 1}" if i == len(probe_records) - 1
+        else f"{r['index']},{r['key']},{r['x_hex']},{r['leaf']},"
+             f"{r['predicted_position']}"
+        for i, r in enumerate(probe_records)
+    )
+    tampered_key = ";".join(
+        f"{r['index']},{r['key'] + 1},{r['x_hex']},{r['leaf']},"
+        f"{r['predicted_position']}" if i == len(probe_records) - 1
+        else f"{r['index']},{r['key']},{r['x_hex']},{r['leaf']},"
+             f"{r['predicted_position']}"
+        for i, r in enumerate(probe_records)
+    )
+    bad_magic = WORK / "fixture_rmi_badmagic.bin"
+    payload = bytearray(fixture_model.read_bytes())
+    payload[0] ^= 0xFF
+    bad_magic.write_bytes(bytes(payload))
+    truncated = WORK / "fixture_rmi_truncated.bin"
+    truncated.write_bytes(fixture_model.read_bytes()[:-8])
+
+    expect_hilbert_failure(
+        "--seed rmi without --rmi-probes",
+        ["--seed", "rmi", "--rmi-model", str(fixture_model)])
+    expect_hilbert_failure(
+        "--seed rmi without --rmi-model",
+        ["--seed", "rmi", "--rmi-probes", probes])
+    expect_hilbert_failure(
+        "--rmi-model under --seed binary",
+        ["--seed", "binary", "--rmi-model", str(fixture_model)])
+    expect_hilbert_failure(
+        "tampered probe position",
+        ["--seed", "rmi", "--rmi-model", str(fixture_model),
+         "--rmi-probes", tampered_position])
+    expect_hilbert_failure(
+        "probe key != index.keys[i]",
+        ["--seed", "rmi", "--rmi-model", str(fixture_model),
+         "--rmi-probes", tampered_key])
+    expect_hilbert_failure(
+        "corrupted model magic",
+        ["--seed", "rmi", "--rmi-model", str(bad_magic),
+         "--rmi-probes", probes])
+    expect_hilbert_failure(
+        "truncated model",
+        ["--seed", "rmi", "--rmi-model", str(truncated),
+         "--rmi-probes", probes])
 
     # B3b: uncapped counterfactual. The larger radius is a superset, so the
     # count cannot fall; --verify-counts already re-derived n_disk_r and
