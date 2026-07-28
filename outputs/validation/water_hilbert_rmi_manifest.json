@@ -1,0 +1,547 @@
+{
+  "generated_utc": "2026-07-28T17:58:03.165585+00:00",
+  "chunk": "B4",
+  "model_format_version": 1,
+  "architecture": "two_stage_rmi_linear_linear",
+  "trainer": "numpy_least_squares",
+  "random_seed": 0,
+  "training_is_deterministic": true,
+  "determinism_check": "refit_bytes_identical",
+  "pinned_index": {
+    "index_manifest": "outputs/validation/water_hilbert_countywide_manifest_b4.json",
+    "index_manifest_sha256": "4c9518e526ae84f6ccbfdc4efbec020787546de608757c445d9c2aeebd587370",
+    "key_array": "outputs/cpp_input/water_hilbert_keys_countywide.bin",
+    "key_array_sha256": "9f118bfc923dbf1a062a13fb7c0a662901ab8fdebbb3fd7ed7e93a497aad02f0",
+    "key_array_producer": "water_distance_hilbert --dump-keys",
+    "note": "The model is valid only for the index build these two digests describe. A key array reconstructed in Python is not an acceptable substitute: its checksum would attest to what Python built, not to what the index holds."
+  },
+  "inherited_from_index_manifest": {
+    "algorithm": "hilbert",
+    "distance_crs": "EPSG:26918",
+    "hilbert_order_bits_per_axis": 32,
+    "normalization_min_x": 110690.62769492628,
+    "normalization_min_y": 4718978.519074164,
+    "normalization_scale_x_cells_per_m": 14101.011597461484,
+    "normalization_scale_y_cells_per_m": 23725.593186389768,
+    "max_segment_length_cap_m": 25,
+    "max_split_segment_length_m": 24.999998220193326,
+    "inflation_half_m": 12.499999110096663,
+    "index_entries": 1189589,
+    "key_array_bytes": 9516712,
+    "distinct_cells_at_order": 1189510
+  },
+  "training_array": {
+    "keys": 1189589,
+    "distinct_keys": 1189510,
+    "duplicate_entries": 79,
+    "longest_run": 2,
+    "runs_longer_than_one": 79,
+    "position_convention": "lower_bound_first_of_run"
+  },
+  "float_contract": {
+    "normalization": "(double(key) - double(key_min)) * (1.0 / (double(key_max) - double(key_min)))",
+    "key_min": 1615038542230693348,
+    "key_max": 17178397593379106537,
+    "prediction_rounding": "clamp_to_[0, n_keys-1]_then_floor",
+    "uint64_to_double": {
+      "assumption": "round_to_nearest_even",
+      "numpy": "guaranteed",
+      "cpp": "NOT guaranteed. [conv.fpint] permits either adjacent representable value when the integer is not exactly representable in double. x86-64/SSE2 rounds to nearest under the default MXCSR mode, which is the target every measurement in this project was taken on.",
+      "how_b5_checks_it": "Assert the probe records below at model load rather than inheriting the assumption."
+    }
+  },
+  "probe_records": [
+    {
+      "index": 0,
+      "key": 1615038542230693348,
+      "x_hex": "0x0.0p+0",
+      "leaf": 3019,
+      "predicted_position": 0
+    },
+    {
+      "index": 297397,
+      "key": 5447904346236346589,
+      "x_hex": "0x1.f85f031d3b9f0p-3",
+      "leaf": 27183,
+      "predicted_position": 297569
+    },
+    {
+      "index": 594794,
+      "key": 15403959710719797021,
+      "x_hex": "0x1.c59ffb5203579p-1",
+      "leaf": 89950,
+      "predicted_position": 594794
+    },
+    {
+      "index": 892191,
+      "key": 15998043542986653445,
+      "x_hex": "0x1.d92b4191b2ed2p-1",
+      "leaf": 93695,
+      "predicted_position": 892190
+    },
+    {
+      "index": 1189588,
+      "key": 17178397593379106537,
+      "x_hex": "0x1.0000000000000p+0",
+      "leaf": 101137,
+      "predicted_position": 1189582
+    }
+  ],
+  "selection": {
+    "declared_max_mean_last_mile_probes": 10.0,
+    "declared_max_model_bytes": 4758356,
+    "leaf_counts_swept": [
+      256,
+      1024,
+      4096,
+      16384,
+      65536,
+      131072
+    ],
+    "selected_n_leaves": 131072,
+    "verdict": "target_met",
+    "rationale": "131072 second-stage models minimise mean last-mile probes (6.323) among swept configurations within the 4758356-byte cap. That clears the declared target of 10.0."
+  },
+  "sweep": [
+    {
+      "keys_verified": 1189589,
+      "exhaustive": true,
+      "bound_holds_asymmetric": true,
+      "bound_holds_symmetric": true,
+      "gap_bound_covers_stored_keys": true,
+      "n_leaves": 256,
+      "leaves_occupied": 104,
+      "leaves_empty": 152,
+      "leaf_load_max": 54347,
+      "leaf_load_p50": 5270.5,
+      "leaf_load_p99": 48845.63,
+      "per_model_max_error": {
+        "max": 13547,
+        "mean": 1600.4134615384614,
+        "p50": 1011.5,
+        "p90": 3808.2000000000007,
+        "p99": 6300.909999999999,
+        "p99.9": 12803.44300000004,
+        "leaves_at_max": 1
+      },
+      "per_key_absolute_error": {
+        "max": 13547,
+        "mean": 1165.288871198372,
+        "p50": 777.0,
+        "p90": 2579.0,
+        "p99": 6634.0,
+        "p99.9": 12400.412000000244
+      },
+      "keys_within_seed_window": 69105,
+      "fraction_within_seed_window": 0.05809149210357527,
+      "seed_window_entries": 64,
+      "last_mile_probes": {
+        "mean": 12.624699791272448,
+        "max": 15,
+        "p50": 13.0,
+        "p99": 15.0
+      },
+      "domain_bound": {
+        "leaves_reachable": 214,
+        "leaves_unreachable": 42,
+        "per_model_max_error": {
+          "max": 362341,
+          "mean": 7955.985981308411,
+          "p50": 1.0,
+          "p90": 6785.100000000011,
+          "p99": 215986.9200000006,
+          "p99.9": 354135.6010000013
+        },
+        "last_mile_probes_mean_on_index_keys": 13.14984923364288
+      },
+      "control_mean_seed_probes": 20.237640352780126,
+      "control_max_seed_probes": 21,
+      "model_bytes": 8288,
+      "equidepth_reference": {
+        "n_leaves": 256,
+        "leaves_occupied": 256,
+        "max_error": 5290,
+        "mean_last_mile_probes": 10.734378007866583
+      }
+    },
+    {
+      "keys_verified": 1189589,
+      "exhaustive": true,
+      "bound_holds_asymmetric": true,
+      "bound_holds_symmetric": true,
+      "gap_bound_covers_stored_keys": true,
+      "n_leaves": 1024,
+      "leaves_occupied": 294,
+      "leaves_empty": 730,
+      "leaf_load_max": 32675,
+      "leaf_load_p50": 2087.5,
+      "leaf_load_p99": 16490.229999999985,
+      "per_model_max_error": {
+        "max": 4448,
+        "mean": 596.5578231292517,
+        "p50": 413.0,
+        "p90": 1432.3999999999994,
+        "p99": 3118.3699999999985,
+        "p99.9": 4132.146000000054,
+        "leaves_at_max": 1
+      },
+      "per_key_absolute_error": {
+        "max": 4448,
+        "mean": 377.4743108754368,
+        "p50": 228.0,
+        "p90": 871.0,
+        "p99": 2424.0,
+        "p99.9": 3854.0
+      },
+      "keys_within_seed_window": 215664,
+      "fraction_within_seed_window": 0.18129286669597652,
+      "seed_window_entries": 64,
+      "last_mile_probes": {
+        "mean": 11.054169129001696,
+        "max": 14,
+        "p50": 11.0,
+        "p99": 14.0
+      },
+      "domain_bound": {
+        "leaves_reachable": 853,
+        "leaves_unreachable": 171,
+        "per_model_max_error": {
+          "max": 135845,
+          "mean": 1448.297772567409,
+          "p50": 0.0,
+          "p90": 2001.8000000000031,
+          "p99": 27779.480000000123,
+          "p99.9": 93947.9000000068
+        },
+        "last_mile_probes_mean_on_index_keys": 11.5967767018693
+      },
+      "control_mean_seed_probes": 20.237640352780126,
+      "control_max_seed_probes": 21,
+      "model_bytes": 32864,
+      "equidepth_reference": {
+        "n_leaves": 1024,
+        "leaves_occupied": 1024,
+        "max_error": 1017,
+        "mean_last_mile_probes": 9.016599010246397
+      }
+    },
+    {
+      "keys_verified": 1189589,
+      "exhaustive": true,
+      "bound_holds_asymmetric": true,
+      "bound_holds_symmetric": true,
+      "gap_bound_covers_stored_keys": true,
+      "n_leaves": 4096,
+      "leaves_occupied": 819,
+      "leaves_empty": 3277,
+      "leaf_load_max": 24076,
+      "leaf_load_p50": 1027.0,
+      "leaf_load_p99": 5382.1399999999985,
+      "per_model_max_error": {
+        "max": 4831,
+        "mean": 237.2991452991453,
+        "p50": 172.0,
+        "p90": 424.8000000000002,
+        "p99": 1392.0399999999859,
+        "p99.9": 3246.534000000252,
+        "leaves_at_max": 1
+      },
+      "per_key_absolute_error": {
+        "max": 4831,
+        "mean": 189.73144926525043,
+        "p50": 88.0,
+        "p90": 355.0,
+        "p99": 2105.0,
+        "p99.9": 3987.412000000244
+      },
+      "keys_within_seed_window": 472646,
+      "fraction_within_seed_window": 0.3973187378161701,
+      "seed_window_entries": 64,
+      "last_mile_probes": {
+        "mean": 9.663596418594993,
+        "max": 14,
+        "p50": 10.0,
+        "p99": 14.0
+      },
+      "domain_bound": {
+        "leaves_reachable": 3411,
+        "leaves_unreachable": 685,
+        "per_model_max_error": {
+          "max": 105358,
+          "mean": 366.5532102022867,
+          "p50": 0.0,
+          "p90": 399.0,
+          "p99": 6325.20000000003,
+          "p99.9": 34699.21000000013
+        },
+        "last_mile_probes_mean_on_index_keys": 10.187450455577515
+      },
+      "control_mean_seed_probes": 20.237640352780126,
+      "control_max_seed_probes": 21,
+      "model_bytes": 131168,
+      "equidepth_reference": {
+        "n_leaves": 4096,
+        "leaves_occupied": 4096,
+        "max_error": 534,
+        "mean_last_mile_probes": 7.364507405498874
+      }
+    },
+    {
+      "keys_verified": 1189589,
+      "exhaustive": true,
+      "bound_holds_asymmetric": true,
+      "bound_holds_symmetric": true,
+      "gap_bound_covers_stored_keys": true,
+      "n_leaves": 16384,
+      "leaves_occupied": 2452,
+      "leaves_empty": 13932,
+      "leaf_load_max": 10873,
+      "leaf_load_p50": 369.5,
+      "leaf_load_p99": 2219.439999999988,
+      "per_model_max_error": {
+        "max": 2744,
+        "mean": 91.5542414355628,
+        "p50": 66.0,
+        "p90": 166.0,
+        "p99": 499.9599999999991,
+        "p99.9": 1840.8580000001048,
+        "leaves_at_max": 1
+      },
+      "per_key_absolute_error": {
+        "max": 2744,
+        "mean": 79.23976516258976,
+        "p50": 34.0,
+        "p90": 148.0,
+        "p99": 966.0,
+        "p99.9": 1697.412000000244
+      },
+      "keys_within_seed_window": 867018,
+      "fraction_within_seed_window": 0.7288382794393694,
+      "seed_window_entries": 64,
+      "last_mile_probes": {
+        "mean": 8.319083313648663,
+        "max": 13,
+        "p50": 8.0,
+        "p99": 12.0
+      },
+      "domain_bound": {
+        "leaves_reachable": 13642,
+        "leaves_unreachable": 2742,
+        "per_model_max_error": {
+          "max": 36376,
+          "mean": 91.96679372526023,
+          "p50": 0.0,
+          "p90": 110.0,
+          "p99": 1742.5400000000009,
+          "p99.9": 9704.29500000111
+        },
+        "last_mile_probes_mean_on_index_keys": 8.926734359514084
+      },
+      "control_mean_seed_probes": 20.237640352780126,
+      "control_max_seed_probes": 21,
+      "model_bytes": 524384,
+      "equidepth_reference": {
+        "n_leaves": 16384,
+        "leaves_occupied": 16384,
+        "max_error": 71,
+        "mean_last_mile_probes": 5.653645082461254
+      }
+    },
+    {
+      "keys_verified": 1189589,
+      "exhaustive": true,
+      "bound_holds_asymmetric": true,
+      "bound_holds_symmetric": true,
+      "gap_bound_covers_stored_keys": true,
+      "n_leaves": 65536,
+      "leaves_occupied": 7441,
+      "leaves_empty": 58095,
+      "leaf_load_max": 5363,
+      "leaf_load_p50": 115.0,
+      "leaf_load_p99": 819.2000000000007,
+      "per_model_max_error": {
+        "max": 2543,
+        "mean": 33.083725305738476,
+        "p50": 24.0,
+        "p90": 62.0,
+        "p99": 179.0,
+        "p99.9": 561.400000000026,
+        "leaves_at_max": 1
+      },
+      "per_key_absolute_error": {
+        "max": 2543,
+        "mean": 28.608695944565728,
+        "p50": 13.0,
+        "p90": 60.0,
+        "p99": 287.0,
+        "p99.9": 511.0
+      },
+      "keys_within_seed_window": 1081355,
+      "fraction_within_seed_window": 0.909015634811687,
+      "seed_window_entries": 64,
+      "last_mile_probes": {
+        "mean": 6.961713667493563,
+        "max": 12,
+        "p50": 7.0,
+        "p99": 11.0
+      },
+      "domain_bound": {
+        "leaves_reachable": 54567,
+        "leaves_unreachable": 10969,
+        "per_model_max_error": {
+          "max": 30797,
+          "mean": 38.26021221617461,
+          "p50": 0.0,
+          "p90": 35.0,
+          "p99": 670.3399999999965,
+          "p99.9": 5190.040000000503
+        },
+        "last_mile_probes_mean_on_index_keys": 7.837313559557124
+      },
+      "control_mean_seed_probes": 20.237640352780126,
+      "control_max_seed_probes": 21,
+      "model_bytes": 2097248,
+      "equidepth_reference": {
+        "n_leaves": 65536,
+        "leaves_occupied": 65536,
+        "max_error": 9,
+        "mean_last_mile_probes": 3.8220923360925494
+      }
+    },
+    {
+      "keys_verified": 1189589,
+      "exhaustive": true,
+      "bound_holds_asymmetric": true,
+      "bound_holds_symmetric": true,
+      "gap_bound_covers_stored_keys": true,
+      "n_leaves": 131072,
+      "leaves_occupied": 12449,
+      "leaves_empty": 118623,
+      "leaf_load_max": 3409,
+      "leaf_load_p50": 67.0,
+      "leaf_load_p99": 524.5200000000004,
+      "per_model_max_error": {
+        "max": 1650,
+        "mean": 19.990601654751387,
+        "p50": 14.0,
+        "p90": 38.0,
+        "p99": 115.0,
+        "p99.9": 320.312000000009,
+        "leaves_at_max": 1
+      },
+      "per_key_absolute_error": {
+        "max": 1650,
+        "mean": 19.014003155711762,
+        "p50": 9.0,
+        "p90": 39.0,
+        "p99": 191.0,
+        "p99.9": 373.0
+      },
+      "keys_within_seed_window": 1121074,
+      "fraction_within_seed_window": 0.9424044775128216,
+      "seed_window_entries": 64,
+      "last_mile_probes": {
+        "mean": 6.322524838410577,
+        "max": 11,
+        "p50": 6.0,
+        "p99": 10.0
+      },
+      "domain_bound": {
+        "leaves_reachable": 109134,
+        "leaves_unreachable": 21938,
+        "per_model_max_error": {
+          "max": 69543,
+          "mean": 25.83206883281104,
+          "p50": 0.0,
+          "p90": 16.0,
+          "p99": 471.0,
+          "p99.9": 3179.3350000000646
+        },
+        "last_mile_probes_mean_on_index_keys": 7.34084461103793
+      },
+      "control_mean_seed_probes": 20.237640352780126,
+      "control_max_seed_probes": 21,
+      "model_bytes": 4194400,
+      "equidepth_reference": {
+        "n_leaves": 131072,
+        "leaves_occupied": 131072,
+        "max_error": 4,
+        "mean_last_mile_probes": 2.9665523134460727
+      }
+    }
+  ],
+  "selected_model": {
+    "keys_verified": 1189589,
+    "exhaustive": true,
+    "bound_holds_asymmetric": true,
+    "bound_holds_symmetric": true,
+    "gap_bound_covers_stored_keys": true,
+    "n_leaves": 131072,
+    "leaves_occupied": 12449,
+    "leaves_empty": 118623,
+    "leaf_load_max": 3409,
+    "leaf_load_p50": 67.0,
+    "leaf_load_p99": 524.5200000000004,
+    "per_model_max_error": {
+      "max": 1650,
+      "mean": 19.990601654751387,
+      "p50": 14.0,
+      "p90": 38.0,
+      "p99": 115.0,
+      "p99.9": 320.312000000009,
+      "leaves_at_max": 1
+    },
+    "per_key_absolute_error": {
+      "max": 1650,
+      "mean": 19.014003155711762,
+      "p50": 9.0,
+      "p90": 39.0,
+      "p99": 191.0,
+      "p99.9": 373.0
+    },
+    "keys_within_seed_window": 1121074,
+    "fraction_within_seed_window": 0.9424044775128216,
+    "seed_window_entries": 64,
+    "last_mile_probes": {
+      "mean": 6.322524838410577,
+      "max": 11,
+      "p50": 6.0,
+      "p99": 10.0
+    },
+    "domain_bound": {
+      "leaves_reachable": 109134,
+      "leaves_unreachable": 21938,
+      "per_model_max_error": {
+        "max": 69543,
+        "mean": 25.83206883281104,
+        "p50": 0.0,
+        "p90": 16.0,
+        "p99": 471.0,
+        "p99.9": 3179.3350000000646
+      },
+      "last_mile_probes_mean_on_index_keys": 7.34084461103793
+    },
+    "control_mean_seed_probes": 20.237640352780126,
+    "control_max_seed_probes": 21,
+    "model_bytes": 4194400
+  },
+  "gap_bound_spot_check": {
+    "samples": 2000000,
+    "seed": 20260728,
+    "violations": 0,
+    "holds": true,
+    "max_absolute_error": 67586
+  },
+  "bound_scope": {
+    "stored_key_bound": "err_min / err_max. Exhaustive over every key in the training array under the lower_bound_first_of_run convention. This is the acceptance criterion and the academic deliverable.",
+    "domain_bound": "gap_err_min / gap_err_max. Measured over the whole 64-bit key domain via the candidate set in domain_candidate_keys and re-tested on random keys. It covers query keys, which are property-point keys and are not index keys.",
+    "neither_gates_correctness": "Nucleus 18.22: the seed seam is correctness-neutral and the current query path uses a fixed +/-64 window with no bound at all. B5 should not build machinery as though these bounds gate anything."
+  },
+  "outputs": [
+    {
+      "path": "models/water_hilbert_rmi.bin",
+      "sha256": "9be3263cd40e8f7edbac762834879f45c769b6f1b1cb26c202c0c1bc3c4ef844",
+      "bytes": 4194400
+    }
+  ]
+}

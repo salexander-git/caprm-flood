@@ -1,0 +1,329 @@
+{
+  "generated_utc": "2026-07-28T16:10:10.521982+00:00",
+  "chunk": "B3b",
+  "inputs": [
+    {
+      "path": "outputs/cpp/cpp_nearest_water_hilbert_countywide_bbox.csv",
+      "sha256": "4e193ee8c7a2a10f54cc8264df3b84ad4f35d87b1a9a4904d6ce64504f9e2645",
+      "rows": 267362
+    },
+    {
+      "path": "outputs/cpp/cpp_nearest_water_hilbert_countywide_disk.csv",
+      "sha256": "8ad41e8391f64e683e67ac253dc4d1e4302da7706f893763d0d32a689d6b7e9e",
+      "rows": 267362
+    },
+    {
+      "path": "outputs/validation/water_hilbert_countywide_manifest.json",
+      "sha256": "3711101d471e7bf19323dbf1c9f179fe4bbae14124ea2b418d55774b614d9bea"
+    }
+  ],
+  "index_manifest": {
+    "algorithm": "hilbert",
+    "distance_crs": "EPSG:26918",
+    "verification_mode": "original",
+    "region_mode": "disk_bbox",
+    "seed_mode": "binary",
+    "seed_window_entries": 64,
+    "uncapped_inflation_half_m": 2874.1198,
+    "count_cross_check": true,
+    "max_segment_length_cap_m": 25,
+    "max_split_segment_length_m": 24.999998220193326,
+    "inflation_half_m": 12.499999110096663,
+    "hilbert_order_bits_per_axis": 32,
+    "normalization_min_x": 110690.62769492628,
+    "normalization_min_y": 4718978.519074164,
+    "normalization_scale_x_cells_per_m": 14101.011597461484,
+    "normalization_scale_y_cells_per_m": 23725.593186389768,
+    "index_entries": 1189589,
+    "key_array_bytes": 9516712,
+    "distinct_cells_at_order": 1189510,
+    "min_order_for_distinct_cells": 32
+  },
+  "disk_bbox": {
+    "table": "disk_bbox",
+    "rows": 267362,
+    "unique_property_ids": 267362,
+    "region_mode": "disk_bbox",
+    "seed_mode": "binary",
+    "verification_mode": "original",
+    "uncapped_counterfactual_measured": true,
+    "totals": {
+      "n_true_r": 429565,
+      "n_disk_infl": 2748032,
+      "n_disk_unc": 1500597631,
+      "n_decomp": 23857367,
+      "n_disk_r": 193,
+      "seed_probes": 5410776
+    },
+    "per_property_means": {
+      "n_true_r": 1.60667933363754,
+      "n_disk_infl": 10.278319282470957,
+      "n_disk_unc": 5612.60624546495,
+      "n_decomp": 89.23245262976788,
+      "seed_probes": 20.237640352780126
+    },
+    "ordering_violations": {
+      "n_disk_r_gt_n_true_r": 0,
+      "n_true_r_lt_1": 0,
+      "n_true_r_gt_n_disk_infl": 0,
+      "n_disk_infl_gt_n_decomp": 0,
+      "n_disk_unc_lt_n_disk_infl": 0
+    },
+    "ordering_holds": true,
+    "geometric_inflation_capped": {
+      "numerator_total": 2748032,
+      "denominator_total": 429565,
+      "aggregate_ratio": 6.39724372330148,
+      "properties_with_zero_denominator": 0,
+      "per_property_mean": 6.599363409908663,
+      "per_property_p50": 5.0,
+      "per_property_p90": 13.0,
+      "per_property_p99": 25.5,
+      "per_property_p99.9": 41.0,
+      "per_property_max": 101.0
+    },
+    "box_vs_disk_inflation": {
+      "numerator_total": 23857367,
+      "denominator_total": 2748032,
+      "aggregate_ratio": 8.681619064115702,
+      "properties_with_zero_denominator": 0,
+      "per_property_mean": 15.457802179508036,
+      "per_property_p50": 6.8,
+      "per_property_p90": 28.0,
+      "per_property_p99": 181.0,
+      "per_property_p99.9": 517.0,
+      "per_property_max": 1015.0
+    },
+    "geometric_inflation_uncapped": {
+      "numerator_total": 1500597631,
+      "denominator_total": 429565,
+      "aggregate_ratio": 3493.295848125429,
+      "properties_with_zero_denominator": 0,
+      "per_property_mean": 3875.2337077944258,
+      "per_property_p50": 3441.0,
+      "per_property_p90": 6789.0,
+      "per_property_p99": 10198.390000000014,
+      "per_property_p99.9": 12388.0,
+      "per_property_max": 14216.0
+    },
+    "split_gain_uncapped_over_capped": {
+      "numerator_total": 1500597631,
+      "denominator_total": 2748032,
+      "aggregate_ratio": 546.06264810599,
+      "properties_with_zero_denominator": 0,
+      "per_property_mean": 1152.8586790734228,
+      "per_property_p50": 630.25,
+      "per_property_p90": 2181.483333333332,
+      "per_property_p99": 9728.0,
+      "per_property_p99.9": 12193.639000000025,
+      "per_property_max": 13197.0
+    },
+    "degenerate_b3a_denominator": {
+      "n_disk_r_total": 193,
+      "properties_with_nonzero_n_disk_r": 193,
+      "fraction_nonzero": 0.0007218677298943007
+    }
+  },
+  "disk": {
+    "table": "disk",
+    "rows": 267362,
+    "unique_property_ids": 267362,
+    "region_mode": "disk",
+    "seed_mode": "binary",
+    "verification_mode": "original",
+    "uncapped_counterfactual_measured": false,
+    "totals": {
+      "n_true_r": 429565,
+      "n_disk_infl": 2748032,
+      "n_disk_unc": 0,
+      "n_decomp": 12724459,
+      "n_disk_r": 193,
+      "seed_probes": 5410776
+    },
+    "per_property_means": {
+      "n_true_r": 1.60667933363754,
+      "n_disk_infl": 10.278319282470957,
+      "n_disk_unc": 0.0,
+      "n_decomp": 47.59262348426478,
+      "seed_probes": 20.237640352780126
+    },
+    "ordering_violations": {
+      "n_disk_r_gt_n_true_r": 0,
+      "n_true_r_lt_1": 0,
+      "n_true_r_gt_n_disk_infl": 0,
+      "n_disk_infl_gt_n_decomp": 0
+    },
+    "ordering_holds": true,
+    "geometric_inflation_capped": {
+      "numerator_total": 2748032,
+      "denominator_total": 429565,
+      "aggregate_ratio": 6.39724372330148,
+      "properties_with_zero_denominator": 0,
+      "per_property_mean": 6.599363409908663,
+      "per_property_p50": 5.0,
+      "per_property_p90": 13.0,
+      "per_property_p99": 25.5,
+      "per_property_p99.9": 41.0,
+      "per_property_max": 101.0
+    },
+    "box_vs_disk_inflation": {
+      "numerator_total": 12724459,
+      "denominator_total": 2748032,
+      "aggregate_ratio": 4.6303896752294005,
+      "properties_with_zero_denominator": 0,
+      "per_property_mean": 7.070412944427836,
+      "per_property_p50": 4.833333333333333,
+      "per_property_p90": 12.5,
+      "per_property_p99": 44.0,
+      "per_property_p99.9": 73.63900000002468,
+      "per_property_max": 170.0
+    },
+    "degenerate_b3a_denominator": {
+      "n_disk_r_total": 193,
+      "properties_with_nonzero_n_disk_r": 193,
+      "fraction_nonzero": 0.0007218677298943007
+    },
+    "region_invariance_violations": {
+      "cpp_n_disk_r": 0,
+      "cpp_n_true_r": 0,
+      "cpp_n_disk_infl": 0,
+      "cpp_entries_scanned_disk_gt_bbox": 0
+    },
+    "region_invariance_holds": true
+  },
+  "box_vs_disk_gate": {
+    "threshold_percentile": 99.0,
+    "threshold_ratio_max": 3.0,
+    "disk_bbox_aggregate_ratio": 8.681619064115702,
+    "disk_bbox_tail_ratio": 181.0,
+    "disk_bbox_max_ratio": 1015.0,
+    "disk_aggregate_ratio": 4.6303896752294005,
+    "disk_tail_ratio": 44.0,
+    "disk_max_ratio": 170.0,
+    "work_reduction_if_enabled": 1.8749219122007468,
+    "verdict": "enable_disk_predicate",
+    "rationale": "Box-vs-disk over-covering at p99 is 181.000x, above the 3x threshold. The disk predicate is the measured target for enabling."
+  },
+  "distance_deciles": [
+    {
+      "decile": 1,
+      "properties": 26737,
+      "distance_min_m": 0.0,
+      "distance_max_m": 69.93384309861938,
+      "mean_n_true_r": 1.3230728952388076,
+      "mean_n_disk_infl": 6.848599319295358,
+      "mean_n_disk_unc": 5277.623817182182,
+      "geometric_inflation_capped": 5.176282685512367,
+      "geometric_inflation_uncapped": 3988.9138657243816,
+      "box_vs_disk_inflation": 3.583378387972323
+    },
+    {
+      "decile": 2,
+      "properties": 26736,
+      "distance_min_m": 69.93409173402067,
+      "distance_max_m": 130.07170784900575,
+      "mean_n_true_r": 1.526892579293836,
+      "mean_n_disk_infl": 9.471873129862358,
+      "mean_n_disk_unc": 5428.349827947337,
+      "geometric_inflation_capped": 6.203365749699924,
+      "geometric_inflation_uncapped": 3555.1615755823923,
+      "box_vs_disk_inflation": 3.9047030484915495
+    },
+    {
+      "decile": 3,
+      "properties": 26736,
+      "distance_min_m": 130.07760504256726,
+      "distance_max_m": 189.2365736066445,
+      "mean_n_true_r": 1.6128067025733095,
+      "mean_n_disk_infl": 10.573010173548774,
+      "mean_n_disk_unc": 5537.773937761819,
+      "geometric_inflation_capped": 6.555658627087198,
+      "geometric_inflation_uncapped": 3433.6253246753245,
+      "box_vs_disk_inflation": 4.407821565020518
+    },
+    {
+      "decile": 4,
+      "properties": 26736,
+      "distance_min_m": 189.23805966155757,
+      "distance_max_m": 252.5213158663963,
+      "mean_n_true_r": 1.6424670855774985,
+      "mean_n_disk_infl": 11.069868342309993,
+      "mean_n_disk_unc": 5632.2513464991025,
+      "geometric_inflation_capped": 6.739780930476169,
+      "geometric_inflation_uncapped": 3429.1410743971032,
+      "box_vs_disk_inflation": 5.014995066967604
+    },
+    {
+      "decile": 5,
+      "properties": 26736,
+      "distance_min_m": 252.52150547795824,
+      "distance_max_m": 325.3419147594455,
+      "mean_n_true_r": 1.666255236385398,
+      "mean_n_disk_infl": 11.249775583482945,
+      "mean_n_disk_unc": 5698.721237283064,
+      "geometric_inflation_capped": 6.751532020920783,
+      "geometric_inflation_uncapped": 3420.077016319109,
+      "box_vs_disk_inflation": 5.768058409303996
+    },
+    {
+      "decile": 6,
+      "properties": 26736,
+      "distance_min_m": 325.34924445778563,
+      "distance_max_m": 416.4821751808281,
+      "mean_n_true_r": 1.6799072411729503,
+      "mean_n_disk_infl": 11.380273788150808,
+      "mean_n_disk_unc": 5731.4621484141235,
+      "geometric_inflation_capped": 6.77434652892194,
+      "geometric_inflation_uncapped": 3411.772988377789,
+      "box_vs_disk_inflation": 6.729237534632867
+    },
+    {
+      "decile": 7,
+      "properties": 26736,
+      "distance_min_m": 416.4824329090022,
+      "distance_max_m": 550.1588577087541,
+      "mean_n_true_r": 1.684807001795332,
+      "mean_n_disk_infl": 11.502505984440456,
+      "mean_n_disk_unc": 5737.672389287852,
+      "geometric_inflation_capped": 6.827195027195027,
+      "geometric_inflation_uncapped": 3405.5368853368855,
+      "box_vs_disk_inflation": 7.8027060686564935
+    },
+    {
+      "decile": 8,
+      "properties": 26736,
+      "distance_min_m": 550.1660560268961,
+      "distance_max_m": 778.7342250710403,
+      "mean_n_true_r": 1.673137342908438,
+      "mean_n_disk_infl": 11.004263913824058,
+      "mean_n_disk_unc": 5628.145234889288,
+      "geometric_inflation_capped": 6.577023673797868,
+      "geometric_inflation_uncapped": 3363.827398117721,
+      "box_vs_disk_inflation": 9.585381190306244
+    },
+    {
+      "decile": 9,
+      "properties": 26736,
+      "distance_min_m": 778.7503294921952,
+      "distance_max_m": 1277.5069859166176,
+      "mean_n_true_r": 1.655632854578097,
+      "mean_n_disk_infl": 10.485861759425493,
+      "mean_n_disk_unc": 4987.760285757032,
+      "geometric_inflation_capped": 6.333446289393426,
+      "geometric_inflation_uncapped": 3012.6004518242403,
+      "box_vs_disk_inflation": 13.205150704476548
+    },
+    {
+      "decile": 10,
+      "properties": 26737,
+      "distance_min_m": 1277.5477671878818,
+      "distance_max_m": 2630.23485692034,
+      "mean_n_true_r": 1.6018251860717359,
+      "mean_n_disk_infl": 9.197329543329468,
+      "mean_n_disk_unc": 6466.282829038411,
+      "geometric_inflation_capped": 5.741781077799571,
+      "geometric_inflation_uncapped": 4036.8217988232,
+      "box_vs_disk_inflation": 27.563163609302627
+    }
+  ]
+}

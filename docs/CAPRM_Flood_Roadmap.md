@@ -1,8 +1,8 @@
-# CAPRM-Flood Roadmap — 2026-07-16
+# CAPRM-Flood Roadmap — 2026-07-28
 
 ## Purpose
 
-This document defines the ordered implementation roadmap for CAPRM-Flood from the current state on **July 15, 2026** through project completion.
+This document defines the ordered implementation roadmap for CAPRM-Flood from the current state on **July 28, 2026** through project completion.
 
 It should be read together with:
 
@@ -35,7 +35,7 @@ As of July 16, 2026:
 Milestone 1: complete and validated
 Milestone 2: complete and validated
 Milestone 3: complete and frozen
-Milestone 4: index structure and learned approximation — in progress (B1 authored)
+Milestone 4: index structure and learned approximation — in progress (B1 complete)
 ```
 
 Current countywide workload:
@@ -62,8 +62,10 @@ verdict: moderately sensitive to component weights
 Next priority:
 
 ```text
-Run the Segment BVH countywide acceptance (B1 authored), then B2 run-size sweep
+B2. Sweep the run-size / cap parameter for the Segment BVH
 ```
+
+B1 is complete and validated countywide (see PHASE B, B1).
 
 **Why the roadmap changed.** Milestone 3's feedback was that the project's
 statistics were sound and its computer-science contribution had stalled after
@@ -499,7 +501,7 @@ reference field-for-field through the existing comparison harness.
 2. Feature BVH              2D,  8,572 features         existing
 3. Segment BVH              2D, ~1M segments            B1
 4. Hilbert + binary search  1D, ~1M segments            B3   control
-5. Hilbert + RMI            1D, ~1M segments            B4/B5
+5. Hilbert + RMI            1D, ~1M segments            B4 trained, B5 ports
 6. + learned radius         seeds the search disk       B7   stretch
 ```
 
@@ -508,9 +510,9 @@ reference field-for-field through the existing comparison harness.
 ```text
 B1  measure L, segment BVH            2-3 days
 B2  run-size sweep                    1 day
-B3  Hilbert, inflation, control       3-4 days   <- the hard one
-B4  train the RMI                     2 days
-B5  port inference                    1 day
+B3  Hilbert, inflation, control       3-4 days   <- DONE 2026-07-28
+B4  train the RMI                     2 days     <- DONE 2026-07-28
+B5  port inference                    1 day      <- next
 B6  benchmark                         1 day
 B7  learned radius                    2 days     stretch
 ```
@@ -521,15 +523,24 @@ Phase B is the two weeks. Phase C is roughly three to four days after it.
 
 ## B1. Measure L, Then Rebuild at Segment Granularity
 
-**STATUS: authored and locally validated; countywide acceptance run pending.**
-L is measured (max **5,748.24 m**, a Lake Ontario polygon chord; full
-distribution recorded in Current Status §21 and the B1a locked result). The
-segment index is implemented as `cpp/spatial_core/src/water_distance_segment_bvh.cpp`
-with distance-exact length-capped splitting (default cap 100 m), and it matches
-the brute-force oracle byte-for-byte in unit and end-to-end fixture checks. The
-only remaining B1 step is running the countywide acceptance on the machine that
-holds the data (commands in Current Status §21). The subsections below are the
-original B1 plan, retained for context.
+**STATUS: COMPLETE, validated countywide 2026-07-22. Not yet committed.**
+
+L = **5,748.2396 m** (a Lake Ontario boundary chord) over 1,063,159 segments.
+Splitting at a 100 m cap costs **+0.50%** entries (1,063,159 -> 1,068,510) and
+reduces maximum entry extent 57x, bounding the `L/2` inflation term from 2,874 m
+to 50 m — a direct B3 input.
+
+`cpp/spatial_core/src/water_distance_segment_bvh.cpp` reproduces the Python
+reference field-for-field on all 267,362 properties (`all_fields_agree` =
+267,362, max abs error 4.658e-10 m — identical to the Feature BVH figure, since
+the distance path is the unchanged kernel over original geometry).
+
+Measured: **9,716.87 segment checks per property, 99.09% pruned — 7.28x better
+than the Feature BVH's 70,771**, with candidate features down 5.498 -> 1.497.
+Search is now ~35 box/node operations per property; over 99% of remaining work
+is phase-2 exact verification. Full numbers in Current Status §21.
+
+The subsections below are the original B1 plan, retained for context.
 
 ### Measure L first
 
@@ -687,16 +698,35 @@ buried as an implementation detail.
 Record the measured inflation cost: how many additional entries the inflated
 disk admits, as a fraction of the uninflated disk.
 
-### The range decomposition
+### The range decomposition  (B3a: implemented and fixture-validated)
 
 Given a query point and a radius, determine every curve interval intersecting
-the disk of that radius. This is the hardest geometry in the phase and the
-likeliest place to lose a week. It is a solved problem in the spatial-index
-literature; it is simply not solved in this repository yet.
+the disk of that radius. Implemented as recursive quadrant descent over the
+Hilbert grid with a swappable region predicate. The aligned-square key range is
+`[min-over-4-corner-cells, +4^k)` — an orientation-free identity verified
+exhaustively for p=1..8 and against brute cell enumeration
+(`tests/cpp/hilbert_probe.cpp`), so no curve-orientation bookkeeping is needed.
+Descent prunes a node when the region reports it disjoint from the node's
+coordinate bounds; soundness ("disjoint => no contained midpoint within r") is
+proved once at the region interface and discharged by each concrete predicate.
+The admission radius folds in the tie tolerance, `R = d_best + L/2 + tie_tol`,
+so the tie counter matches the brute-force reference.
 
-**Simplification if it proves expensive.** Expand the candidate window until its
-bounding box covers the inflated query disk. Cruder, still exact, far less code.
-Take this path if the phase runs long; the exactness argument is unaffected.
+The crude "expand the candidate window to the disk's bounding box" fallback is
+retired: at any usable curve order the box spans 10^6-10^9 cells, so cell
+enumeration is infeasible and recursive decomposition is the only viable exact
+method, not a fallback.
+
+**Box vs disk, and the B3b gate.** B3a decomposes the disk's bounding box
+(DiskBBox region); the tighter disk-overlap region is present and validated but
+deferred to B3b as a one-predicate swap on the same recursion. The query records
+three admitted-entry counts per property — `disk(r + tie_tol)`,
+`disk(r + L/2 + tie_tol)`, and the box decomposition — yielding two stacked
+inflations: geometric L/2 (`disk_infl / disk_r`) and box-vs-disk indexing
+(`N_decomp / disk_infl`). B3b measures the box-vs-disk ratio on the countywide
+tail: if it stays under ~2-3x the disk predicate is never switched on (a clean
+negative result); if it blows up, B3b enables the disk region against that
+measured target.
 
 ### The control implementation
 
@@ -726,52 +756,98 @@ the exact kernel decides. Document it rather than working around it.
 
 ### Completion gate
 
-Hilbert + binary search reproduces the Python reference field-for-field at
-countywide scale, and the inflation cost is measured.
+B3a (done, 2026-07-28): the Hilbert path reproduces the brute-force reference
+field-for-field on the fixture cross-check in original mode (0 mismatches, both
+region predicates) and within the documented ~1e-9 m split-mode perturbation
+(non-distance fields exact); the collision check holds (distinct cells ==
+entries at p=32, min order 10); the three-count inflation instrument is
+validated and correctly ordered. The binary-search query is delivered here: the
+start position is found by `std::lower_bound` over the sorted keys, and that
+seed is the only seam the B5 RMI replaces.
+
+B3b (done, 2026-07-28): countywide field-for-field agreement at 267,362
+properties in all three configurations, exit 0, at the unmodified 1e-6 m
+tolerance. Original mode reproduces B1's entire error distribution — max
+4.657998431412125e-10 m, mean 3.7315e-11, median 3.4106e-13 — so the Hilbert path
+returns the same feature and the same distance for every property while examining
+a different candidate set. Split mode 9.157e-10 m with zero feature_id
+disagreements. 266 exact zeros, all waterbody; 0 nulls in required columns.
+
+Inflation measured: 6.397x capped at L/2 = 12.5 m, 3,493.3x uncapped at
+L/2 = 2,874.12 m, so segment splitting bought a **546x reduction in admitted
+entries per query** for 11.89 percent more index entries. B3a's intended
+denominator was degenerate (nonzero on 193 of 267,362 properties) and was
+replaced by `n_true_r` before measurement rather than after.
+
+Box-vs-disk gate: **enable**. Aggregate over-covering 8.68x against a 3.0x
+threshold declared in advance; the tighter disk predicate cuts phase-1 entries
+1.875x and phase-2 segment checks 7.55 percent, and is answer-identical
+bit-for-bit. The p99 of 181x that triggered the gate overstates the payoff, being
+driven by small denominators in the far-from-water deciles. `disk` becomes the
+default predicate from B4 onward; B6 must run the whole ladder under one
+predicate.
+
+The binary-search control is delivered and characterized: 20.2376 probes mean, 21
+max, exactly `ceil(log2 1,189,589)`. The seed seam is isolated behind
+`--seed binary|rmi|zero` and proved correctness-neutral, so B5 changes one
+function and nothing else.
+
+Early 4-vs-3 signal, counters only: the Hilbert query performs 11,922 phase-2
+segment checks per property against the segment BVH's 9,717 (+22.7 percent), or
+11,022 with the disk predicate (+13.4 percent). Leaving the tree costs phase-2
+work. B6 owns the wall-clock verdict.
 
 ---
 
 ## B4. Train the Recursive Model Index
 
-### This is the machine learning
+**STATUS: COMPLETE, validated countywide 2026-07-28. Not yet committed.**
 
-Supervised regression: fit a function from key to array position, which is the
-CDF of the key distribution.
+Two-stage RMI after Kraska et al., *The Case for Learned Index Structures*,
+SIGMOD 2018. Linear at both stages, numpy least squares, no framework.
+Inference is four multiply-adds, two clamps and two floors.
 
-### What this is
+Trained over the 1,189,589 sorted Hilbert keys exported by
+`water_distance_hilbert --dump-keys` — the index's own array, not a Python
+reconstruction, because a reconstruction's checksum would attest to what Python
+built and the two can differ by a floating-point ULP in the segment split with
+no way to tell which case you are in.
 
-A hierarchy of simple regressions approximating that CDF — Kraska et al.,
-*The Case for Learned Index Structures*, SIGMOD 2018. A two-stage RMI suffices:
-a root model routes to a second-stage model, and the second-stage model
-predicts a position.
-
-Linear models at both stages. Resist anything larger. Inference must be a
-handful of multiply-adds on the query path, or the speed argument evaporates.
-
-### Required output
+Selected **131,072 linear second-stage models**, 4,194,400 bytes, by a rule
+declared before training: lowest mean last-mile probes within a cap of half the
+key array. Acceptance met — the recorded per-model bound contains the true
+position for **every** key, exhaustively, under the `lower_bound_first_of_run`
+convention forced by the 79 duplicate keys.
 
 ```text
-the model parameters
-a maximum prediction error per second-stage model
-a recorded seed
-a checksum of the training array
-a manifest
+mean last-mile probes    6.323  vs the 20.2376 control      3.20x
+max error per model      1,650
+mean |error|             19.01
+within the +/-64 window  94.240% of index keys
+model bytes          4,194,400   44.07% of the key array
 ```
 
-The error bound is **not optional**. It defines the search window, and the
-window is what makes the query exact. A model without a proven error bound
-cannot be used, because there would be no principled window size.
+**The finding is the equi-depth diagnostic.** With a perfect router the same
+leaf models have a maximum error of **4 positions**; the fitted model's is
+**1,650**. The root costs 3.356 of the 6.323 probes — 53 percent of the last
+mile. One line per leaf models the local CDF nearly exactly; one line for the
+whole distribution cannot route to those leaves. See Nucleus 18.23.
 
-### Implementation
+The B3b ceiling holds and was stated first: 13.91 saved probes against
+11,021.83 phase-2 segment checks per property is about 0.13 percent of counted
+query work, for 44 percent more memory. B6 reports the end-to-end number
+against this.
 
-Python, numpy. No framework. Training is least-squares on sorted keys, and
-importing a framework to fit a line would obscure what is happening.
+A second bound over the whole 64-bit key domain was measured as an additional
+quantity (the acceptance criterion is unchanged). It is non-monotone in leaf
+count and reaches 69,543 at the selected point, which would cost about 18
+probes — not a usable window. Recorded as a diagnostic with a stated,
+unimplemented mitigation: clamping each occupied leaf's prediction to that
+leaf's observed target range.
 
-### Completion gate
-
-Predicted position plus the recorded error bound provably contains the true
-position for **every** key in the training array. Verify exhaustively — the
-array is about a million entries, so there is no reason to sample.
+Also in this chunk: `region_kind` now defaults to `disk` per the B3b gate, and
+`fixture_crosscheck.py` tests that default by omitting the positional rather
+than restating it.
 
 ---
 
@@ -1556,15 +1632,17 @@ Milestone 3 is frozen.
 ## PHASE B complete when
 
 ```text
-maximum segment length measured, distribution reported   DONE  L = 5,748.24 m
-segment-granularity index implemented                    DONE  segment_bvh (local)
-exact agreement unchanged from the Feature BVH baseline   local checks pass; countywide run pending
-run-size parameter swept, operating point chosen and justified
-segments Hilbert-ordered, resolution and normalization documented
-search-radius inflation implemented and its cost measured
-disk-to-curve-range decomposition proven exact
-Hilbert + binary search control reproduces the Python reference
-RMI trained, with a proven per-model error bound
+maximum segment length measured, distribution reported   DONE  L = 5,748.2396 m
+segment-granularity index implemented                    DONE  segment_bvh
+exact agreement unchanged from the Feature BVH baseline  DONE  267,362 / 267,362
+run-size parameter swept, operating point chosen and justified  DONE  cap 25 m
+segments Hilbert-ordered, resolution and normalization documented DONE order 32
+search-radius inflation implemented and its cost measured        DONE  6.397x
+disk-to-curve-range decomposition proven exact                   DONE
+Hilbert + binary search control reproduces the Python reference  DONE  267,362
+RMI trained, with a proven per-model error bound                 DONE  131,072
+                                                                   models,
+                                                                   exhaustive
 RMI inference ported to C++
 five-implementation benchmark at countywide scale
 reported as three adjacent comparisons, not one global one
@@ -1622,36 +1700,30 @@ the surrogate's v2 target documented as such
 # 11. Immediate Next Conversation
 
 ```text
-Run the Segment BVH countywide acceptance (B1 authored), then start B2.
+B2. Sweep the run-size / cap parameter for the Segment BVH
 ```
 
-B1 is authored and locally validated. What remains is running the countywide
-acceptance on the machine that holds the data, then — once it passes — B2, the
-run-size sweep. The B1 build/run/compare commands are in
-`CAPRM_Flood_Current_Status.md` §21.
+B1 is complete and validated countywide; it remains uncommitted. B2 extends
+`water_benchmark.py` (currently hard-coding `brute_force` and `feature_bvh`) to
+accept `segment_bvh`, then sweeps the cap and reports the tradeoff curve.
 
-Suggested prompt:
+Because the added-segment cost at a 100 m cap is only 0.50 percent, the
+interesting region of the curve is likely at *tighter* caps, where entry counts
+begin to grow materially, rather than only at looser ones. B1 also relocated the
+bottleneck: search costs ~35 box/node operations per property while phase-2
+exact verification costs 9,716.87 segment checks, so the sweep should report
+both axes rather than segment checks alone.
 
-> We are continuing CAPRM-Flood at Milestone 4. B1 (Segment BVH) is authored and
-> locally validated but not yet run countywide or committed. Read Nucleus
-> section 14b, `CAPRM_Flood_Current_Status.md` sections 19b and 21, and this
-> document's PHASE B and B2 before proposing anything.
->
-> Confirm the commit recorded in Current Status section 2 matches
-> `git log -1 --oneline`. If it does not, say so before continuing — you are
-> reading a stale copy.
->
-> Milestones 1 through 3 are frozen. The exposure index is not under active
-> work and must not be modified.
->
-> First, run the B1 countywide acceptance (commands in Current Status §21) and
-> report the comparator result: max abs distance error, feature_id
-> disagreements, row count, zero-distance count. The exact distance kernel, the
-> 1e-6 m tie tolerance, and lexicographic tie-breaking on water_feature_id do
-> not change; acceptance is field-for-field agreement with the Python reference.
-> Then begin B2: extend `water_benchmark.py` to accept `segment_bvh` and sweep
-> the run-size / cap parameter, using `cpp_segment_box_tests` as the
-> traversal-cost axis.
+Suggested prompt (superseded — the current chunk prompt lives in
+`CAPRM_Flood_Current_Status.md` section 22, which is kept in step with the
+active chunk. This B2-era text is retained only as a record of the form these
+prompts take):
+
+> We are continuing CAPRM-Flood at Milestone 4, chunk B2. B1 (Segment BVH) is
+> complete and validated countywide — 267,362/267,362 field-for-field
+> agreement, max abs error 4.658e-10 m, 9,716.87 segment checks per property.
+> Read Nucleus section 14b, `CAPRM_Flood_Current_Status.md` sections 19b and
+> 21, and this document's PHASE B and B2 before proposing anything.
 
 ---
 
@@ -1677,8 +1749,10 @@ inflation that representative-point ordering imposes on extended objects,
 orders the entries along a Hilbert curve, validates the resulting query path
 with a binary-search control that isolates the contribution of learning from the
 contribution of dimensionality reduction, trains a recursive model index with a
-proven error bound, ports inference to C++, and benchmarks five implementations
-under one exactness standard — an index may change what is examined, never what
+proven error bound (done at B4: 131,072 linear leaf models, 3.20x fewer seed
+probes, and an equi-depth diagnostic locating the residual error in the router
+rather than the leaves), ports inference to C++, and benchmarks five
+implementations under one exactness standard — an index may change what is examined, never what
 is computed, which is what makes a learned index safe here. Phase C abandons
 exactness deliberately and trains a neural surrogate of the pipeline's own
 deterministic output, split by spatial block rather than randomly, where the

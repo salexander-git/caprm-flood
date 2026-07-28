@@ -1,8 +1,8 @@
-# CAPRM-Flood Project Nucleus — 2026-07-15
+# CAPRM-Flood Project Nucleus — 2026-07-28
 
 ## Purpose of This Document
 
-This document is the canonical context-restoration source for **CAPRM-Flood** as of **July 15, 2026**. It exists so that a new AI assistant, collaborator, reviewer, or future project conversation can reconstruct the project's purpose, architecture, technical history, standards, and current implementation state without relying on stale proposal-era assumptions or raw chat transcripts.
+This document is the canonical context-restoration source for **CAPRM-Flood** as of **July 28, 2026**. It exists so that a new AI assistant, collaborator, reviewer, or future project conversation can reconstruct the project's purpose, architecture, technical history, standards, and current implementation state without relying on stale proposal-era assumptions or raw chat transcripts.
 
 This nucleus should be treated as the durable description of the project. More time-sensitive operational detail will be maintained separately in:
 
@@ -880,6 +880,83 @@ provenance manifest; the geometric subdivision itself happens in memory in the C
 program. The vertex export is not modified, so upstream evidence products and their
 manifests are untouched.
 
+**Measured result (2026-07-22, countywide).** The granularity hypothesis in
+section 14b held. Segment checks per property fell from the Feature BVH's 70,771
+to 9,716.87 — 99.09 percent pruned, 7.28 times better — with candidate features
+per property falling from 5.498 to 1.497, and the features selected also being
+smaller (6,490 segments each versus 12,872). Exactness was preserved: 267,362 of
+267,362 properties agree field-for-field with the Python reference at a maximum
+absolute error of 4.658e-10 m, the same figure the Feature BVH reports, and all
+266 interior-zero properties resolve to `waterbody` features at exactly 0.
+Capping segment length at 100 m cost 0.50 percent additional index entries while
+reducing maximum entry extent 57-fold.
+
+Two durable consequences follow. First, the `L/2` search-radius inflation that
+section 18.19 identifies as the price of representative-point ordering is
+**tunable to near-zero cost** on this data — 2,874 m becomes 50 m for half a
+percent more entries — so inflation need not dominate the later one-dimensional
+implementations. Second, the bottleneck has moved: phase-1 search costs roughly
+35 box and node operations per property, while phase-2 exact verification costs
+9,716.87 segment checks, because the kernel rescans each candidate feature's
+entire original geometry. Over 99 percent of the remaining work is proving the
+answer rather than finding it, which is where further index work must aim.
+
+**Measured result (2026-07-23, countywide).** B2 swept the entry-extent cap
+under both verification strategies. Two findings are durable beyond the numbers.
+
+First, treating the entry-extent cap as a performance dial is a category error
+on this data. Across a 575-fold range of maximum entry extent — a 10 m cap up to
+no split at all — median query time varies 6.9 percent under original-geometry
+verification and 9.3 percent under split-geometry verification, and verification
+checks vary 13.7 percent and non-monotonically. Every repetition of a given
+configuration was bit-identical, so the variation is deterministic tree-topology
+behaviour, not scatter. The cap therefore cannot be chosen on query performance;
+it is chosen for its only downstream consumer, the `L/2` inflation radius the
+one-dimensional implementations inherit. The chosen operating point is a 25 m
+cap, giving `L/2` = 12.5 m — a 1.08x area inflation at the county's 325 m median
+nearest-water distance — for 11.9 percent more entries than the uncapped index.
+
+Second, and binding on every later implementation: a segment check is not a
+mode-invariant unit of cost. Split-geometry verification removes 30 percent of
+segment checks yet runs 6.0 times faster, because the two count different work.
+An original-mode check is a full point-to-segment projection fused with the
+ring-crossing parity inside `evaluate_ring`; a split-mode check is the crossing
+parity alone in `ring_contains_point`, whose y-straddle clause short-circuits
+before the division on most segments. The decomposition is exact at the 100 m
+cap: 1.43x fewer checks times 4.21x cheaper per check equals the 6.02x
+wall-clock ratio, and the per-check ratio is stable (3.86x-4.21x) across the
+whole sweep. **Segment-check counts are comparable within a verification mode
+and not across modes**, and by extension not across implementations that verify
+differently. The five-implementation benchmark must therefore report wall clock
+beside counts and never infer a speedup from counts — doing the latter would
+have understated B2's measured 6.0x as an implied 1.43x, a four-fold error.
+
+This also answers the second half of the section 14b research question, "what
+does exactness cost over extended objects." Under original-mode verification,
+98.4 percent of per-property segment checks fall on polygon candidates and 1.6
+percent on line candidates, so the cost of exactness is the inside/outside
+predicate, not the distance. A point inside a polygon part must lie inside that
+part's exterior-ring bounding box, so a bounding-box pre-filter skips the ring
+walk for parts that cannot contain the point — exact, not approximate. Countywide
+that filter skips 57.6 to 59.3 percent of polygon parts and accounts for 94.7
+percent of split mode's saving. The predicate cost is thus roughly halved by an
+exact spatial pre-filter but not eliminable without a dedicated containment
+structure, which is a target for later work rather than for the index itself.
+
+The boundary-epsilon hazard the split strategy could in principle introduce is
+closed with a number: the kernel snaps a point to a boundary below
+`BOUNDARY_EPSILON_METERS` = 1e-9 m, and the split interpolation perturbs
+distances by up to 1.18e-9 m, the same order. The minimum nonzero countywide
+distance is 0.002166 m — about 1.8 million times the snapping band — so no
+property can be classified differently by the two strategies, and the
+on-boundary branch never fires countywide; all 266 interior zeros come from
+ray-crossing parity over genuine interiors. Original-geometry verification
+remains the default because split verification raises maximum absolute error
+from 4.658e-10 m to 9.06e-10 m, forfeiting byte-identical reproduction of the
+Python reference for a speedup the frozen Milestone 2/3 evidence does not need.
+Split is carried forward as a validated flag and a first-class row in the
+benchmark.
+
 ## The learned radius, and why it unifies the two halves
 
 The RLR-Tree authors note that kNN performance "largely depends on the size of
@@ -1255,12 +1332,181 @@ learned-index literature has stayed on point data, and it is tunable rather
 than fixed. It must be measured before it is designed around: a single long
 segment inflates every query in the index.
 
+Measured update (B2, 2026-07-23): with segments capped at 25 m the inflation
+term is 12.5 m, a 1.08x area correction at the county median distance, so on this
+data the inflation is a small correction rather than the dominant cost. The
+principle stands; its magnitude on capped extended objects does not dominate.
+
+Mechanism (B3a, 2026-07-28): the inflation is realized by an exact query over a
+Hilbert ordering of entry midpoints. The admission radius is
+`R = d_best + L/2 + tie_tol` (the tie term is required for the tie counter to
+match the reference); candidate curve intervals are found by recursive quadrant
+decomposition with a swappable region predicate, using the orientation-free
+aligned-square key-range identity `[min-over-4-corners, +4^k)`. Any 1D index in
+this phase — binary search, B-tree, or RMI — sits on this same query path; the
+model only predicts where in the sorted array to start. The box-primary predicate
+over-covers the disk; whether the tighter disk predicate is worth building is a
+B3b decision gated on a measured countywide over-covering ratio, not assumed.
+The capped-versus-uncapped inflation contrast (L = 5,748.24 m uncapped) is the
+phase's quantitative answer to what exactness costs over extended objects.
+
+Instrument correction (B3b, 2026-07-28): the ratio's denominator had to be
+replaced before it could be measured. B3a instrumented `n_disk_r` — midpoints in
+`disk(d_best + tie_tol)` — as the uninflated disk. That counter is degenerate by
+construction, not by sparsity: `d_best` is a distance to the nearest POINT ON A
+SEGMENT while the counter tests MIDPOINTS, and `|p - m_i| >= d(p, s_i) >= d_best`
+for every entry, so an entry is counted only when its perpendicular foot happens
+to land within `tie_tol` of its own midpoint. Measured: nonzero on 0 of 1,093
+fixture properties and 193 of 267,362 countywide. The denominator is now
+`n_true_r = |{entries : d(p, s_i) <= d_best + tie_tol}|` — the entries that
+genuinely satisfy the range predicate at the answer radius, which is what an
+exact index would admit if its entries had zero extent. It is `>= 1` always and
+exact from the tight descent alone. Durable rule: when a ratio is defined over an
+index of extended objects, check that its denominator counts a population and not
+a coincidence.
+
+Measured countywide (B3b, 2026-07-28): capped at 25 m the exact query admits
+10.28 entries per property against the 1.61 that actually satisfy the range
+predicate — a 6.40x geometric inflation. Uncapped, the same queries would admit
+5,612.61, a 3,493.30x inflation, because one Lake Ontario boundary chord of
+5,748.24 m sets L for the entire index. Splitting therefore bought a **546x
+reduction in admitted entries per query** for 11.89 percent more index entries.
+
+The durable claim: on extended-object data the inflation penalty that has kept
+the learned-index literature on point data is not intrinsic to extended objects.
+It is a function of the longest object in the index, and it is removable by a
+distance-exact preprocessing step costing a fraction of a percent of index size.
+What remains after capping — 6.4x — is a modest constant, not a barrier. The
+barrier is real only if the index is built over the geometry as given.
+
+Second durable claim from the same measurement: the inflation is no longer where
+the cost is. At 10.28 admitted entries against 11,922 phase-2 segment checks per
+property, phase-1 admission is a rounding error in the query's total work. B2
+reached the same conclusion about the segment BVH by a different route. Further
+work on this query belongs in verification, not in search — and that bounds what
+any learned index can achieve here.
+
 ## 18.20 A model is an artifact
 
 Reason:
 
 Weights, a seed, a training-set checksum, and a manifest, or the result is not
 reproducible. A model is held to the same provenance standard as a CSV.
+
+Practice established (B4, 2026-07-28): the training array must be exported by
+the implementation that built it, not reconstructed by the consumer. B4's keys
+come from `water_distance_hilbert --dump-keys` because a Python rebuild of the
+split, the normalization and the Hilbert transform would (a) duplicate the C++
+splitter's logic, so a future change to it fails silently rather than loudly,
+and (b) yield a checksum attesting to what Python built. The two can differ by
+one floating-point ULP in the segment split, and the difference is undetectable
+without the array being reconstructed. Exporting an array already in memory is
+not a migration of functionality across the Python/C++ boundary; reconstructing
+it would be.
+
+The model header therefore carries the training-array SHA-256, and the manifest
+carries probe keys with their normalized inputs as hex bit patterns, so the
+consumer asserts the correspondence at load rather than inheriting it. Where a
+numerical contract cannot be proved — `uint64` to `double` conversion is
+implementation-defined in C++ under [conv.fpint], while numpy guarantees
+round-to-nearest-even — it is recorded as a stated assumption with a runtime
+check, not asserted as a proof.
+
+## 18.21 Every phase update records interpretation, not only metrics
+
+Reason:
+
+A chunk is not closed when its numbers exist; it is closed when the durable
+meaning of those numbers is written where the next chunk will read it. The
+meaning of a result — the mechanism behind it, what it proves or refutes, what
+cost model or validity boundary it establishes — is a Nucleus edit. The measured
+values, artifacts, and next task are a Current Status edit. A metric recorded
+without its meaning is technical debt: the next chunk either re-derives it or
+misuses it, as a segment-check count would be misused if carried across
+verification modes (B2).
+
+## 18.22 An unsound predictor may cost time; it may never cost correctness
+
+Reason:
+
+18.16 says an index changes what is examined, never what is computed. B3b makes
+that concrete and testable at the one seam a learned index occupies. The Hilbert
+query finds a start position, reads a window around it to obtain `d_seed`, and
+descends at `R_seed = d_seed + L/2 + tie_tol`. Because `d_seed` is the minimum
+over a window of REAL segments of an ACHIEVED point-to-segment distance,
+`d_seed >= d_true` holds for any window at any position, however that position
+was obtained. `R_seed` therefore always covers the true answer, `d_best` is
+exact, and the final candidate set is rebuilt by an independent descent that
+never references the seed. A mispredicting model widens the first descent and
+slows the query; it cannot change an emitted field.
+
+The argument is not left as prose. `--seed zero` returns position 0 for every
+query — the worst legal hint — and the fixture asserts its output is identical to
+`--seed binary` on every column except the seed instrumentation. That is B5's
+acceptance criterion, exercised before the model exists. The general rule: when a
+component is claimed to be correctness-neutral, ship a degenerate implementation
+of it and assert the outputs match, rather than arguing from the design.
+
+Measured (B3b, 2026-07-28): the binary-search control performs 20.2376 key
+comparisons per query on average and 21 at worst over 1,189,589 entries, exactly
+`ceil(log2 N)`. The seam is therefore characterized before the model exists. B5's
+RMI must beat about 20 dependent, cache-missing probes with a handful of
+multiply-adds plus a bounded window scan, and any deviation in the emitted
+evidence is attributable to the model alone.
+
+Measured (B4, 2026-07-28): the model exists and beats the control on the seam it
+occupies — 6.323 mean last-mile probes against 20.2376, a 3.20x reduction, with
+a per-model error bound verified exhaustively over all 1,189,589 keys and
+re-verified on the artifact as reloaded from disk. The ceiling recorded before
+training also held: 13.91 saved probes against 11,021.83 phase-2 segment checks
+per property is about 0.13 percent of counted query work, bought with a model 44
+percent the size of the key array it augments. Both halves of that sentence are
+the result. Stating the ceiling in advance is what makes the second half a
+confirmed prediction rather than an excuse.
+
+A corollary for any future bound in this project: the exhaustive bound covers the
+keys IN the index, and the queries are not index keys. A bound measured over the
+training set is an academic deliverable; it is not automatically a window. B4
+measured the domain-wide bound separately and found it non-monotone in model
+count and an order of magnitude too wide to size a window with — a fact invisible
+from the training-set bound, which was +/-12 on the same leaf where the domain
+bound was 341,353 during authoring. Correctness was never at stake either way,
+which is the point of this section: the bounds are performance contracts, and a
+performance contract that does not cover the inputs is a measurement, not a
+guarantee.
+
+## 18.23 A two-stage linear RMI binds at the router, not at the leaves
+
+Reason:
+
+B4 fitted 131,072 linear second-stage models over 1,189,589 Hilbert keys and
+measured, as a diagnostic, what the same leaf models achieve under a perfect
+equi-depth router — routing that cannot be shipped, because it needs stored
+boundaries and is therefore a lookup table rather than a linear stage.
+
+```text
+                     max error per model    mean last-mile probes
+fitted linear root              1,650                      6.323
+perfect router                      4                      2.967
+```
+
+One line per leaf models the local CDF of this distribution to within a handful
+of positions. One line for the whole distribution cannot route to those leaves.
+The router accounts for 53 percent of the remaining probe cost and a factor of
+412 in maximum error.
+
+The durable rule: when a hierarchical model underperforms, measure the stages
+separately before adding capacity. Reporting only the end-to-end error leaves the
+two causes confounded, and the obvious response — more leaves — attacks the half
+that was already nearly exact. Leaf occupancy in B4 fell from 40.6 percent to
+9.50 percent across the sweep precisely because added capacity went where it was
+not needed.
+
+This also bounds what the architecture can reach here without changing what
+"linear at both stages" means. The remaining error is routing error, and removing
+it requires either a nonlinear root or a stored boundary table — both of which
+leave the design the phase committed to. That is a statement about where the
+capacity binds, not a defect.
 
 ---
 
@@ -1291,6 +1537,8 @@ Library modules:
 
 ```text
 python/caprm/audit.py            Product structure and provenance auditing
+python/caprm/rmi.py              Recursive model index: fit, exhaustive bound,
+                                 domain bound, serialization (Milestone 4 B4)
 python/caprm/baseline.py         FEMA point-in-polygon reference
 python/caprm/crs.py              CRS normalization
 python/caprm/evidence.py         Integrated FEMA + water evidence
