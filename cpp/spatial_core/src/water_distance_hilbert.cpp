@@ -792,6 +792,18 @@ struct HilbertNearestResult {
     // query would duplicate the transform.
     std::uint64_t seed_key = 0;
     std::size_t seed_position_used = 0;
+
+    // B5c: the RESOLVE descent -- the one the seed actually drives, and the one
+    // nothing counted through B5. Every counter above comes from the TIGHT
+    // descent at R = d_best + L/2 + tie_tol, which is seed-invariant by
+    // construction, so B5's measured 3.85 percent slowdown was invisible to all
+    // ten of them. These are aggregated per run, never emitted per property:
+    // a new CSV column would break the byte-identity criterion B5 was accepted
+    // against.
+    std::uint64_t resolve_nodes_visited = 0;
+    std::uint64_t resolve_entries_scanned = 0;
+    double d_seed = 0.0;   // achieved distance over the +/-SEED_WINDOW window
+    double d_best = 0.0;   // exact nearest split distance, from the resolve descent
 };
 
 
@@ -959,6 +971,13 @@ HilbertNearestResult find_nearest_hilbert(
     resolve.feature_best_split_distance = &feature_best_split_distance;
     descend_and_scan(resolve, make_region(region_kind, point, R_seed));
     const double d_best = resolve.d_best;
+
+    // B5c. The ScanContext already accumulated these; through B5 they were
+    // simply discarded when `resolve` went out of scope.
+    out.resolve_nodes_visited = resolve.nodes_visited;
+    out.resolve_entries_scanned = resolve.entries_scanned;
+    out.d_seed = d_seed;
+    out.d_best = d_best;
 
     // --- Tight: R = d_best + L/2 + tie_tol (<= R_seed). The final candidate set
     // and the honest box-vs-disk counters must reflect the tight radius, so the
@@ -1135,6 +1154,100 @@ void write_seed_error_report(
 
 
 // ---------------------------------------------------------------------------
+// B5c: query-cost report.
+//
+// Separate from the index manifest for the reason the seed-error report is:
+// the manifest describes the INDEX and is written before any query runs, while
+// this describes one RUN against it. Writing run aggregates into the manifest
+// would require either reordering that write -- losing the property that a
+// manifest still lands if the query throws -- or writing the file twice.
+//
+// Unlike --seed-error-stats this costs NOTHING: the counters are already
+// accumulated by the resolve descent and were merely discarded. A run carrying
+// --query-stats is therefore benchmark-eligible, which matters because B6 needs
+// these numbers on the same runs it times.
+// ---------------------------------------------------------------------------
+struct ResolveStats {
+    std::uint64_t properties = 0;
+    std::uint64_t nodes = 0;
+    std::uint64_t entries = 0;
+    std::uint64_t window_missed = 0;   // d_seed > d_best: the window did not
+                                       // contain the nearest split segment
+    std::uint64_t ratio_samples = 0;   // properties with d_best > 0
+    long double ratio_sum = 0.0L;
+    double ratio_max = 1.0;
+};
+
+
+void write_query_stats_report(
+    const std::string& path, SeedMode seed_mode, Region::Kind region_kind,
+    VerificationMode verification_mode, std::size_t index_entries,
+    const ResolveStats& resolve, std::uint64_t tight_entries,
+    std::uint64_t tight_nodes, std::uint64_t segment_checks, double seconds
+) {
+    const std::filesystem::path fspath(path);
+    if (!fspath.parent_path().empty()) {
+        std::filesystem::create_directories(fspath.parent_path());
+    }
+    std::ofstream out(path);
+    if (!out) {
+        throw std::runtime_error("Could not open query-stats report: " + path);
+    }
+    const double pc = resolve.properties
+        ? static_cast<double>(resolve.properties) : 1.0;
+    const double rs = resolve.ratio_samples
+        ? static_cast<double>(resolve.ratio_samples) : 1.0;
+
+    out << std::setprecision(17)
+        << "{\n"
+        << "  \"chunk\": \"B5c\",\n"
+        << "  \"report\": \"query_cost_by_descent\",\n"
+        << "  \"benchmark_eligible\": true,\n"
+        << "  \"seed_mode\": \"" << seed_mode_name(seed_mode) << "\",\n"
+        << "  \"region_mode\": \""
+        << (region_kind == Region::Kind::Disk ? "disk" : "disk_bbox") << "\",\n"
+        << "  \"verification_mode\": \""
+        << verification_mode_name(verification_mode) << "\",\n"
+        << "  \"properties\": " << resolve.properties << ",\n"
+        << "  \"index_entries\": " << index_entries << ",\n"
+        << "  \"seed_window_entries\": " << SEED_WINDOW << ",\n"
+        << "  \"query_seconds\": " << seconds << ",\n"
+        << "  \"resolve_descent\": {\n"
+        << "    \"note\": \"seed-dependent; the descent a predicted position "
+        << "actually affects\",\n"
+        << "    \"nodes_total\": " << resolve.nodes << ",\n"
+        << "    \"entries_total\": " << resolve.entries << ",\n"
+        << "    \"nodes_per_property\": "
+        << static_cast<double>(resolve.nodes) / pc << ",\n"
+        << "    \"entries_per_property\": "
+        << static_cast<double>(resolve.entries) / pc << "\n"
+        << "  },\n"
+        << "  \"tight_descent\": {\n"
+        << "    \"note\": \"seed-invariant; every emitted CSV counter comes "
+        << "from here\",\n"
+        << "    \"nodes_per_property\": "
+        << static_cast<double>(tight_nodes) / pc << ",\n"
+        << "    \"entries_per_property\": "
+        << static_cast<double>(tight_entries) / pc << "\n"
+        << "  },\n"
+        << "  \"seed_quality\": {\n"
+        << "    \"note\": \"d_seed >= d_best always, by the lemma; equality "
+        << "means the window held the nearest split segment\",\n"
+        << "    \"window_missed\": " << resolve.window_missed << ",\n"
+        << "    \"fraction_window_missed\": "
+        << static_cast<double>(resolve.window_missed) / pc << ",\n"
+        << "    \"ratio_samples\": " << resolve.ratio_samples << ",\n"
+        << "    \"mean_d_seed_over_d_best\": "
+        << static_cast<double>(resolve.ratio_sum / rs) << ",\n"
+        << "    \"max_d_seed_over_d_best\": " << resolve.ratio_max << "\n"
+        << "  },\n"
+        << "  \"phase2_segment_checks_per_property\": "
+        << static_cast<double>(segment_checks) / pc << "\n"
+        << "}\n";
+}
+
+
+// ---------------------------------------------------------------------------
 // Output writer.
 // ---------------------------------------------------------------------------
 void write_hilbert_results(
@@ -1145,7 +1258,8 @@ void write_hilbert_results(
     VerificationMode verification_mode, double tie_tolerance_meters,
     SeedMode seed_mode, const RmiModel* rmi_model,
     double uncapped_inflation_half, bool verify_counts,
-    const std::string& seed_error_stats_path
+    const std::string& seed_error_stats_path,
+    const std::string& query_stats_path
 ) {
     const std::filesystem::path fspath(output_path);
     if (!fspath.parent_path().empty()) {
@@ -1206,6 +1320,8 @@ void write_hilbert_results(
     const bool collect_seed_errors = !seed_error_stats_path.empty();
     std::vector<std::int64_t> seed_errors;
     if (collect_seed_errors) seed_errors.reserve(properties.size());
+
+    ResolveStats resolve_stats;   // B5c, always accumulated: it is free
 
     const auto start = std::chrono::steady_clock::now();
 
@@ -1269,6 +1385,17 @@ void write_hilbert_results(
         tot_ranges += r.range_ranges_emitted;
         tot_seg_checks += r.verify.segment_checks;
 
+        ++resolve_stats.properties;
+        resolve_stats.nodes += r.resolve_nodes_visited;
+        resolve_stats.entries += r.resolve_entries_scanned;
+        if (r.d_seed > r.d_best) ++resolve_stats.window_missed;
+        if (r.d_best > 0.0 && std::isfinite(r.d_seed)) {
+            const double ratio = r.d_seed / r.d_best;
+            resolve_stats.ratio_sum += static_cast<long double>(ratio);
+            ++resolve_stats.ratio_samples;
+            if (ratio > resolve_stats.ratio_max) resolve_stats.ratio_max = ratio;
+        }
+
         if ((pi + 1) % 100 == 0 || pi + 1 == properties.size()) {
             std::cout << "Processed " << (pi + 1) << "/"
                       << properties.size() << " properties\n";
@@ -1320,6 +1447,32 @@ void write_hilbert_results(
         << ", nonzero on " << properties_with_ndr << " of "
         << properties.size() << " properties\n";
 
+    // B5c. Printed unconditionally: these cost nothing and they are the only
+    // counted quantity in which the two seeders can differ.
+    const double rsamples = resolve_stats.ratio_samples
+        ? static_cast<double>(resolve_stats.ratio_samples) : 1.0;
+    std::cout
+        << "Average RESOLVE descent nodes per property: "
+        << static_cast<double>(resolve_stats.nodes) / pc << "\n"
+        << "Average RESOLVE descent entries per property: "
+        << static_cast<double>(resolve_stats.entries) / pc << "\n"
+        << "Seed window missed the nearest split segment (d_seed > d_best): "
+        << resolve_stats.window_missed << " of " << properties.size()
+        << " properties\n"
+        << "Mean d_seed / d_best: "
+        << static_cast<double>(resolve_stats.ratio_sum / rsamples)
+        << " (max " << resolve_stats.ratio_max << ", over "
+        << resolve_stats.ratio_samples << " properties with d_best > 0)\n";
+
+    if (!query_stats_path.empty()) {
+        write_query_stats_report(
+            query_stats_path, seed_mode, region_kind, verification_mode,
+            index.keys.size(), resolve_stats, tot_scanned, tot_nodes,
+            tot_seg_checks, seconds);
+        std::cout << "Query-stats report: " << query_stats_path
+                  << " (benchmark-eligible; these counters are free)\n";
+    }
+
     if (collect_seed_errors) {
         write_seed_error_report(seed_error_stats_path, seed_mode,
                                 index.keys.size(), seed_errors);
@@ -1360,7 +1513,7 @@ struct CommandLine {
 CommandLine parse_command_line(int argc, char* argv[]) {
     static const std::set<std::string> VALUE_OPTIONS = {
         "seed", "uncapped-half", "dump-keys", "rmi-model", "rmi-probes",
-        "seed-error-stats"};
+        "seed-error-stats", "query-stats"};
     static const std::set<std::string> FLAG_OPTIONS = {"verify-counts"};
 
     CommandLine parsed;
@@ -1711,6 +1864,12 @@ int main(int argc, char* argv[]) {
             << "                             load, which is how the "
             << "uint64->double contract is\n"
             << "                             checked rather than inherited.\n"
+            << "    --query-stats <path>     write per-descent query cost to "
+            << "<path> as JSON:\n"
+            << "                             resolve vs tight descent work, and "
+            << "d_seed/d_best.\n"
+            << "                             Costs nothing and IS "
+            << "benchmark-eligible.\n"
             << "    --seed-error-stats <p>   write predicted-vs-actual seed "
             << "position error over\n"
             << "                             the property keys to <p> as JSON. "
@@ -1749,6 +1908,7 @@ int main(int argc, char* argv[]) {
     SeedMode seed_mode = SeedMode::BinarySearch;
     std::string rmi_model_path;
     std::string seed_error_stats_path;
+    std::string query_stats_path;
     std::vector<RmiProbe> rmi_probes;
     double uncapped_inflation_half = 0.0;
     bool verify_counts = false;
@@ -1796,6 +1956,9 @@ int main(int argc, char* argv[]) {
         if (command_line.options.count("seed-error-stats")) {
             seed_error_stats_path =
                 command_line.options.at("seed-error-stats");
+        }
+        if (command_line.options.count("query-stats")) {
+            query_stats_path = command_line.options.at("query-stats");
         }
         // Fail closed. There is no invocation of --seed rmi in this project
         // that does not have the model manifest to hand, so making the probe
@@ -2000,7 +2163,8 @@ int main(int argc, char* argv[]) {
             output_path, properties, features, index, part_exterior_bounds,
             inflation_half, region_kind, distance_crs, verification_mode,
             DEFAULT_TIE_TOLERANCE_METERS, seed_mode, rmi_model_pointer,
-            uncapped_inflation_half, verify_counts, seed_error_stats_path);
+            uncapped_inflation_half, verify_counts, seed_error_stats_path,
+            query_stats_path);
 
         std::cout << "Wrote Hilbert C++ output to " << output_path << "\n";
     } catch (const std::exception& exception) {

@@ -1412,6 +1412,22 @@ implementation-defined in C++ under [conv.fpint], while numpy guarantees
 round-to-nearest-even — it is recorded as a stated assumption with a runtime
 check, not asserted as a proof.
 
+Recorded weakening (B5, 2026-07-28): the C++ inference path does NOT verify the
+training-array SHA-256. Nothing in this project implements SHA-256, and adding
+roughly a hundred lines of it inside a chunk scoped as "swap one function" was
+judged the wrong trade. What C++ checks instead, at no cost: the array length,
+the array's content at five fixed positions carried by the probe records, and
+the full inference chain — normalization, root, leaf, floor — reproducing `x`
+bit-for-bit at each of those keys. The digest is verified by the trainer, which
+refuses to fit unless the key dump matches the index manifest, and the fixture
+asserts that the digest C++ reads out of the model header equals hashlib's
+digest of the dump the trainer consumed. The provenance chain is therefore
+closed across the two languages but not inside either one alone. This is a real
+weakening of the principle above, and it is written here rather than left for
+someone to discover by grepping for a check that is not there. Implementing
+SHA-256 in C++ remains available as a separate chunk; it is well specified and
+has published test vectors, so it would be genuinely testable.
+
 ## 18.21 Every phase update records interpretation, not only metrics
 
 Reason:
@@ -1475,6 +1491,101 @@ which is the point of this section: the bounds are performance contracts, and a
 performance contract that does not cover the inputs is a measurement, not a
 guarantee.
 
+Measured (B5, 2026-07-28): the ported model returns a position in zero key
+comparisons, and its output is byte-identical to the binary control on every
+column except the seed instrumentation over all 267,362 properties. The seam is
+therefore correctness-neutral in practice as well as in argument. On the real
+property-point keys the model lands within the +/-64 window on 86.630 percent of
+queries against 94.240 percent on index keys, predicts 37.20 percent of them
+exactly, and has a tail an order of magnitude worse than the training-set tail:
+p99.9 absolute error 5,389 against 373, maximum 17,995 against 1,650. The
+corollary above is thus confirmed on operational inputs, and the shape of the
+failure is specific — the model is SHARPER at the centre (median absolute error
+5 against 9) and far worse in the tail, which is what extrapolation outside a
+leaf's training keys produces.
+
+The query got SLOWER: 21.439 s against the binary control's 20.645 s under
+identical instrumentation, +3.85 percent, on single unrepeated runs. Two durable
+consequences follow.
+
+First: an exact seed position is worth more than the probes it costs. The
+Hilbert query runs two descents — resolve at `R_seed = d_seed + L/2 + tie_tol`,
+then tight at `R = d_best + L/2 + tie_tol`. A mispredicted position centres the
++/-64 window away from the true neighbourhood, which worsens `d_seed`, which
+widens the resolve descent. The seam's value on this query shape is the QUALITY
+of the `d_seed` it yields, not the lookup cost it saves. Lookup-cost accounting —
+which is what the learned-index literature reports — cannot see that tradeoff at
+all, and on this workload it has the wrong sign.
+
+Second, and methodologically the more useful: instrumentation chosen for one
+chunk's question can blind the next chunk's. B3b counted the tight descent
+because the inflation ratios are defined at the tight radius, which was correct
+for B3b and left the resolve descent — the only thing a seed position can affect
+— entirely uncounted. So B5's regression appears in wall clock and in nothing
+else: all ten emitted counters reproduce B3b digit for digit while the run is
+four percent slower. The durable rule: when a component has been proved
+correctness-neutral, check before comparing implementations that differ only in
+it that the component is also COUNTER-VISIBLE. Correctness-neutral and
+cost-neutral are different claims, and only the first was tested.
+
+This also explains the sign disagreement between the two cost models. The
+ceiling recorded in advance said the model could save at most 0.13 percent of
+counted work; measurement says it cost 3.85 percent of time. Both follow from
+the counted work never having included the descent the seed drives. The ceiling
+was not wrong about what it measured; it was measuring the wrong thing. B2's
+warning that "a segment check is not a mode-invariant unit of cost" therefore
+generalizes: a counter is not a unit of time, and a ceiling expressed in counts
+bounds nothing about duration.
+
+Counted (B5c, 2026-07-28). Instrumenting the resolve descent converted the
+hypothesis above into a measurement, countywide:
+
+```text
+                              binary        rmi        ratio
+resolve entries / property   141.1742   352.5154      2.497x
+resolve nodes / property      70.9135    83.1684      1.173x
+window missed                103,242    123,011      38.62% -> 46.01%
+mean d_seed / d_best          1.1717     1.5388
+max  d_seed / d_best         32.2332   517.3435
+tight entries / property      47.5926    47.5926      identical
+phase-2 segment checks     11,021.8259 11,021.8259   identical
+```
+
+**The exchange rate is the result: the model saves about 20 key probes per
+property and spends about 211 extra point-to-segment distance computations to
+do it — roughly 10 to 1 in the wrong direction.** The seed-invariant half of the
+query is identical to the last digit, which is the counter-side statement of the
+byte-identity the CSV comparison already established.
+
+The mechanism is convexity, not miss frequency. Admitted area grows as
+`R_seed^2 = (d_seed + L/2 + tie_tol)^2`, so cost is convex in `d_seed / d_best`.
+Moving the MEAN ratio from 1.1717 to 1.5388 predicts about 1.72x more entries
+under a uniform-density reading; the measured factor is 2.497x, and the excess is
+Jensen's inequality plus a heavy tail — the maximum ratio moves from 32.2 to
+517.3 while the miss RATE moves only 1.19x. The model does not miss much more
+often than binary search; when it misses, it misses far worse, and the cost of a
+miss is quadratic. A durable corollary for any predictor feeding a radius: the
+mean prediction error is the wrong summary statistic, because the cost function
+is convex in it.
+
+An independent finding from the same run, and not about the model: **the exact
+binary-search control misses the +/-64 seed window on 38.62 percent of queries.**
+A perfect `lower_bound` position still does not put the nearest split segment
+within 64 entries on more than a third of properties. That is a statement about
+Hilbert locality over extended objects on this data, and it means the seed window
+is a live query-design parameter for BOTH rungs rather than a tuning knob for the
+learned one. B6 must sweep it upward as well as downward and for both seeders,
+and if the best operating point turns out to owe nothing to learning, that
+belongs in the benchmark table stated as what it is.
+
+Recorded against over-claiming: the wall-clock difference here is 1.1529 s,
+5.92 percent, while two runs of the SAME binary configuration in different chunks
+differ by 0.7503 s, 3.85 percent. The timing is therefore consistent with the
+counted difference and does not by itself establish it. The counters carry the
+claim, because they are deterministic and reproduce exactly across compiler and
+platform; B6 still owes a repetition protocol before any wall-clock figure is
+asserted.
+
 ## 18.23 A two-stage linear RMI binds at the router, not at the leaves
 
 Reason:
@@ -1520,12 +1631,16 @@ caprm-flood/
 ├── configs/                 Workload YAML (1K, 10K, 100K, countywide)
 ├── cpp/spatial_core/
 │   └── src/                 fema_pip_dev, water_distance_bruteforce,
-│                            water_distance_indexed
+│                            water_distance_indexed, water_distance_segment_bvh,
+│                            water_distance_hilbert
 ├── docs/                    Methods, policy, milestone, and source documentation
+├── models/                  Trained model artifacts (TRACKED, not ignored;
+│                            Milestone 4 B4 onward)
 ├── python/
 │   ├── caprm/               Library modules
 │   └── scripts/             CLI entry points
 ├── tests/                   Python test suite
+│   └── cpp/                 C++ unit suites (Milestone 4 B1/B2)
 ├── data/                    Cached source and derived data (Git-ignored)
 ├── outputs/                 Generated artifacts (Git-ignored)
 ├── .gitignore
@@ -1560,9 +1675,17 @@ Key C++ sources:
 
 ```text
 cpp/spatial_core/src/fema_pip_dev.cpp
-cpp/spatial_core/src/water_distance_bruteforce.cpp
-cpp/spatial_core/src/water_distance_indexed.cpp
+cpp/spatial_core/src/water_distance_bruteforce.cpp        implementation 1
+cpp/spatial_core/src/water_distance_indexed.cpp           implementation 2
+cpp/spatial_core/src/water_distance_segment_bvh.cpp       implementation 3 (B1)
+cpp/spatial_core/src/water_distance_hilbert.cpp           implementations 4/5
+                                                          (B3/B4/B5)
 ```
+
+Implementations 3, 4 and 5 are built by `#include`-ing the file below them, so
+the exact point-to-segment kernel, the tie tolerance and the tie rule are reused
+unchanged rather than reimplemented. `water_distance_hilbert.cpp` is one binary
+covering both rungs 4 and 5; they differ only at the seed seam behind `--seed`.
 
 Current `docs/` contents:
 
@@ -1577,12 +1700,18 @@ docs/validation.md             Validation contract and agreement results
 docs/report/                   In-progress report sections
 ```
 
-There are no C++ unit tests. Every C++ correctness claim rests on
-field-by-field comparison against the Python reference over the full
-property-ID union. This is a deliberate consequence of the validation
-architecture: comparison against an independent implementation is a stronger
-check than self-authored unit assertions. It should be stated plainly rather
-than implied.
+The primary C++ correctness claim rests on field-by-field comparison against the
+Python reference over the full property-ID union, not on self-authored unit
+assertions. This is a deliberate consequence of the validation architecture:
+comparison against an independent implementation is a stronger check. It should
+be stated plainly rather than implied.
+
+Superseded at B1/B2 (2026-07-28): the project now also carries two C++ unit
+suites, `tests/cpp/test_water_segment_bvh.cpp` (80,021 checks) and
+`tests/cpp/test_water_segment_bvh_verify_modes.cpp` (607 checks), for geometric
+invariants that have no Python counterpart to compare against. They supplement
+the comparison harness; they do not replace it. Earlier statements in this
+document that there are no C++ unit tests were true before B1 and are not now.
 
 The repository should be understood by reading the code and current
 documentation together. Historical nucleus/proposal documents may contain
@@ -1611,6 +1740,11 @@ change with every completed task and this document records durable facts.
 Some local presentation, Word-document, editor, and temporary inventory files
 remain intentionally untracked and are not part of the canonical source
 repository.
+
+`models/` is an exception to the "generated artifacts are ignored" rule and is
+tracked deliberately: `outputs/` is Git-ignored, and the C++ query path must
+load the trained model at run time, so the artifact cannot live there. Verified
+at B5 (2026-07-28) that no ignore rule matches it, so no force-add is required.
 
 ---
 
@@ -1740,16 +1874,21 @@ document
 
 # 25. Current Project Phase
 
-As of July 16, 2026:
+As of July 28, 2026:
 
 - Milestones 1, 2, and 3 are complete, validated, and frozen.
 - Milestone 3 delivered countywide terrain evidence, a four-component exposure
   index at scoring policy `preliminary_exposure_index_v2`, measured component
   influence, rank-based sensitivity analysis, an automated product audit, and
   a reproducibility runbook. The measured sensitivity verdict is moderately
-  sensitive. The suite passes at 181 tests.
+  sensitive. The suite passed at 181 tests then and passes at 257 now, the
+  growth being Milestone 4's own tests.
 - **Milestone 4 is index structure and learned approximation.** See section
-  14b. It adds no evidence family.
+  14b. It adds no evidence family. PHASE B chunks B1 through B5 are complete
+  and validated countywide: the five-rung ladder is built and every rung that
+  claims exactness has been shown to produce byte-identical evidence. The
+  learned rung is measured SLOWER than its control, for a reason recorded in
+  18.22, and the benchmark that reports it is B6.
 - **Precipitation is a gated stretch goal**, permitted only after the Milestone 4
   computational work is complete and documented. See section 14b.
 - The exposure index is frozen as-is and remains preliminary. It is no longer
@@ -1815,11 +1954,11 @@ produces relative exposure scores and regional rankings. The project's central
 engineering values are correct spatial computation, CRS discipline,
 deterministic outputs, source-family evidence separation, independent
 validation, manifests that can reproduce the results they describe,
-benchmarkable implementations, and reproducible workflows. As of July 16, 2026,
+benchmarkable implementations, and reproducible workflows. As of July 28, 2026,
 Milestones 1 through 3 are complete and frozen: three evidence families
 spanning three different data topologies produce one evidence contract for
 267,362 properties, the exposure index is characterized as moderately sensitive
-to weight choice with immovable extremes, the test suite passes at 181 tests,
+to weight choice with immovable extremes, the test suite passes at 257 tests,
 and the product audit reports no failures. Milestone 4 concentrates the
 project's computer-science contribution on a question the project's own
 Milestone 2 benchmark raised: the Feature BVH examines only 5.498 candidate
@@ -1831,6 +1970,10 @@ evaluated almost exclusively on point data and several return approximate
 results, whereas this project's data is extended objects and its query is exact
 nearest neighbour. Milestone 4 therefore asks whether learned indexing extends
 to exact nearest-neighbour search over line segments and polygon boundaries,
+and as of B5 its answer on this workload is a measured negative — the ported
+model reproduces its control's evidence byte for byte and runs the countywide
+query 3.85 percent slower, because the value of an exact seed position here is
+the quality of the search bound it yields rather than the lookups it saves —
 characterizes the search-radius inflation that representative-point ordering
 imposes on extended objects, isolates the contribution of learning from the
 contribution of dimensionality reduction using a binary-search control, and

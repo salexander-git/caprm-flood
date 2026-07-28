@@ -29,13 +29,15 @@ The project should proceed by completing and validating one chunk at a time rath
 
 # 1. Current Starting Point
 
-As of July 16, 2026:
+As of July 28, 2026:
 
 ```text
 Milestone 1: complete and validated
 Milestone 2: complete and validated
 Milestone 3: complete and frozen
-Milestone 4: index structure and learned approximation — in progress (B1 complete)
+Milestone 4: index structure and learned approximation — in progress
+             (PHASE B chunks B1-B5c complete and validated countywide,
+              committed through f2e2e00 with B5c pending; next chunk B6)
 ```
 
 Current countywide workload:
@@ -62,10 +64,15 @@ verdict: moderately sensitive to component weights
 Next priority:
 
 ```text
-B2. Sweep the run-size / cap parameter for the Segment BVH
+B6. Benchmark the five-implementation ladder, reported as three adjacent
+    comparisons, with a repetition protocol and a scaling curve
 ```
 
-B1 is complete and validated countywide (see PHASE B, B1).
+B1 through B5c are complete and validated countywide (see PHASE B). The
+five-rung ladder is built, every rung claiming exactness produces byte-identical
+evidence, and the learned rung's measured slowdown is attributed to a counted
+quantity: 20.2376 key probes saved against 211.34 extra distance computations
+spent per property.
 
 **Why the roadmap changed.** Milestone 3's feedback was that the project's
 statistics were sound and its computer-science contribution had stalled after
@@ -501,7 +508,7 @@ reference field-for-field through the existing comparison harness.
 2. Feature BVH              2D,  8,572 features         existing
 3. Segment BVH              2D, ~1M segments            B1
 4. Hilbert + binary search  1D, ~1M segments            B3   control
-5. Hilbert + RMI            1D, ~1M segments            B4 trained, B5 ports
+5. Hilbert + RMI            1D, ~1M segments            B4 trained, B5 ported
 6. + learned radius         seeds the search disk       B7   stretch
 ```
 
@@ -512,8 +519,10 @@ B1  measure L, segment BVH            2-3 days
 B2  run-size sweep                    1 day
 B3  Hilbert, inflation, control       3-4 days   <- DONE 2026-07-28
 B4  train the RMI                     2 days     <- DONE 2026-07-28
-B5  port inference                    1 day      <- next
-B6  benchmark                         1 day
+B5  port inference                    1 day      <- DONE 2026-07-28
+B5c instrument the resolve descent    0.5 day    <- DONE 2026-07-28
+B6  benchmark                         2 days     <- next (scaling + window
+                                                 sweeps added by B5c)
 B7  learned radius                    2 days     stretch
 ```
 
@@ -523,7 +532,7 @@ Phase B is the two weeks. Phase C is roughly three to four days after it.
 
 ## B1. Measure L, Then Rebuild at Segment Granularity
 
-**STATUS: COMPLETE, validated countywide 2026-07-22. Not yet committed.**
+**STATUS: COMPLETE, validated countywide 2026-07-22. Committed at 998c859.**
 
 L = **5,748.2396 m** (a Lake Ontario boundary chord) over 1,063,159 segments.
 Splitting at a 100 m cap costs **+0.50%** entries (1,063,159 -> 1,068,510) and
@@ -801,7 +810,7 @@ work. B6 owns the wall-clock verdict.
 
 ## B4. Train the Recursive Model Index
 
-**STATUS: COMPLETE, validated countywide 2026-07-28. Not yet committed.**
+**STATUS: COMPLETE, validated countywide 2026-07-28. Committed at 97bfb1e.**
 
 Two-stage RMI after Kraska et al., *The Case for Learned Index Structures*,
 SIGMOD 2018. Linear at both stages, numpy least squares, no framework.
@@ -853,45 +862,126 @@ than restating it.
 
 ## B5. Port RMI Inference to C++
 
-### Goal
+**STATUS: COMPLETE, validated countywide 2026-07-28. Committed at f2e2e00.**
 
-Replace B3's binary search with B4's model.
+`--seed rmi` became a model loader plus inference. One function changed. The
+exact distance kernel, the 1e-6 m tie tolerance, lexicographic tie-breaking on
+`water_feature_id`, the region predicate and every emitted field are untouched.
 
-### Why this is now small
-
-B3 already built and validated everything except position lookup. This step
-swaps one function.
-
-```text
-normalize the key
-evaluate the root model      -> select a second-stage model
-evaluate that model          -> a predicted position
-clamp to the array bounds
-search the window defined by the recorded error bound
-```
-
-Roughly fifty lines. Python trains; C++ infers. This follows the existing
-boundary rather than bending it.
-
-### The full query, for reference
+### Completion gate — met
 
 ```text
-1. predict a curve position for the property point            [B4/B5]
-2. search the bounded window around it for a first candidate  [B5]
-3. exact distance to that candidate -> an upper-bound radius  [existing]
-4. inflate to r + L/2                                         [B3]
-5. expand to every curve range intersecting that disk          [B3]
-6. exact kernel on all entries in those ranges                 [existing]
-7. resolve ties by water_feature_id                            [existing]
+rmi vs binary, countywide     267,362 rows, identical on 27 of 29 columns
+                              (all but cpp_seed_probes and seed_mode)
+b5 binary vs b4 vs B3b disk   sha256 8ad41e83...7e9e, all three identical
+binary seed-error self-test   267,362 / 267,362 exact zero
+fixture + 7 negative cases    pass on Linux g++ 13.3 and Windows MSYS2 UCRT64
+pytest                        257 passed
 ```
 
-Only steps 1 and 2 are new here.
+The model selects candidates; it never decides. That is now tested rather than
+argued, on the full workload.
+
+### The measurement B4 could not take
+
+```text
+                          index keys (B4)   property keys (B5)
+within +/-64                    94.240%            86.630%
+exact zero                          n/a    99,453  (37.20%)
+mean |error|                      19.01             55.77
+p50 / p90 / p99 / p99.9      9/39/191/373    5/100/731/5,389
+max |error|                    1,650            17,995
+```
+
+Sharper at the centre, an order of magnitude worse in the tail. That is
+extrapolation outside a leaf's training keys — the same mechanism behind B4's
+non-monotone domain bound.
+
+### The result is negative, and it is the interesting part
+
+```text
+B4 clean binary,      no flags      20.227759 s
+B5 run 1  binary + seed-error       20.644707 s
+B5 run 2  rmi    + seed-error       21.439414 s     +3.85%
+```
+
+B6's "the result may be negative" clause was written before any of this and has
+now cashed. The RMI wins the search it replaces — zero key comparisons against
+20.2376 probes — and appears to lose more than it wins on the descent that
+search was feeding: a mispredicted position centres the +/-64 window away from
+the true neighbourhood, which worsens `d_seed`, which widens the resolve descent.
+The seam's value on this query shape is the QUALITY of the `d_seed` it yields,
+not the lookup cost it saves, and lookup-cost accounting — what the learned-index
+literature reports — cannot see that.
+
+An advance prediction that the rmi run would land near 20.23 s was made before
+run 2 and was wrong by 1.21 s. Recorded rather than dropped.
+
+The attribution is provisional. Every emitted counter comes from the tight
+descent, so the resolve descent is uncounted and the slowdown is currently
+visible only in wall clock, on single unrepeated runs. B5c fixes that before B6
+reports anything.
+
+---
+
+## B5c. Instrument the Resolve Descent
+
+**STATUS: COMPLETE, validated countywide 2026-07-28. Commit pending.**
+Discovered by B5's measurement, not planned.
+
+```text
+                              binary        rmi        ratio
+resolve entries / property   141.1742   352.5154      2.497x
+window missed                103,242    123,011      38.62% -> 46.01%
+mean d_seed / d_best          1.1717     1.5388
+max  d_seed / d_best         32.2332   517.3435
+tight entries / property      47.5926    47.5926      identical
+```
+
+The exchange rate is the finding: 20.2376 key probes saved per property against
+211.34 extra distance computations spent, 10.44 to 1 against. The mechanism is
+convexity rather than miss frequency — cost grows as `R_seed^2`, the miss rate
+moves only 1.19x, and the worst overestimate moves 32x -> 517x. The
+seed-invariant half of the query is identical to the last digit.
+
+A second finding, not about the model: the exact binary control misses the
++/-64 window on 38.62 percent of queries, which makes `SEED_WINDOW` a
+query-design parameter for both rungs and changes B6's sweep design.
+
+Also closed here: B5's outstanding determinism check, and the countywide input
+paths, which existed only in shell history.
+
+### Why this exists
+
+The Hilbert query runs two descents: resolve at `R_seed = d_seed + L/2 + tie_tol`
+to obtain `d_best`, then tight at `R = d_best + L/2 + tie_tol` to build the final
+candidate set. Every emitted counter comes from the tight descent, because that
+is where the inflation ratios B3b measured are defined. The resolve descent is
+the only thing a seed position can affect, and it is uncounted.
+
+Consequence: B5's learned rung is 3.85 percent slower than its control while all
+ten emitted counters reproduce B3b digit for digit. The two cost models disagree
+in sign — a recorded ceiling of 0.13 percent saved in counts against 3.85 percent
+lost in time — and B6 cannot attribute the 5-vs-4 comparison until the difference
+appears in something countable.
+
+### Scope
+
+```text
+add       resolve_nodes_visited, resolve_entries_scanned   per property, summed
+add       mean d_seed / d_best, and the count of properties where d_seed > d_best
+emit to   stdout and the manifest -- NEVER the CSV. A per-property seed column
+          would break the byte-identity test that is B5's acceptance criterion.
+unchanged kernel, tie tolerance, tie rule, region predicate, emitted fields
+```
 
 ### Completion gate
 
-The learned index returns byte-identical evidence to the B3 control. If it does
-not, the model is being trusted somewhere it should not be. The model selects
-candidates; it never decides.
+Rerun both seed modes countywide. The new counters must differ between them
+while every existing counter and every emitted field stays byte-identical. Then
+state plainly whether the counted resolve-descent difference explains the
+wall-clock difference or does not. Either answer closes the chunk; "does not"
+means the slowdown is elsewhere and needs a further hypothesis before B6 runs.
 
 ---
 
@@ -926,6 +1016,31 @@ model size in bytes                        implementations 5, 6
 average search window                      implementations 5, 6
 window expansion rate                      implementations 5, 6
 inflation cost as a fraction of the disk   implementations 4, 5, 6
+resolve-descent entries and nodes          implementations 4, 5, 6   (B5c)
+mean d_seed / d_best                       implementations 4, 5, 6   (B5c)
+seam microbenchmark, seeding only          implementations 4, 5
+SEED_WINDOW sweep, matched across seeders  implementations 4, 5
+```
+
+Two notes on the last two rows, both forced by B5's result.
+
+The **seam microbenchmark** — N repetitions of seeding alone over all 267,362
+property keys, with no query — is the only clean way to isolate the two seeders,
+because the seam is the sole difference between rungs 4 and 5 and per-query clock
+reads would cost more than the quantity being measured.
+
+The **SEED_WINDOW sweep is asymmetric between the seeders.** For binary search
+the window is always centred at the true rank, so only smaller windows are worth
+testing: {8, 16, 32, 64}. For the RMI the window should also go LARGER, because
+B5 measured p90 absolute error at 100 and 13.37 percent of queries landing
+outside +/-64; +/-128 and +/-256 would convert misses into hits, trading cheap
+extra distance computations against expensive wide resolve descents. The
+comparison must still be made at matched window size or it confounds window with
+seeder. Two properties make the sweep cheap: every emitted counter comes from the
+tight descent, so window size is byte-neutral and byte-identity is a free check
+at every point; and correctness is untouched at any window size by 18.22.
+
+```text
 ```
 
 **Inflation is a first-class axis**, not a footnote. It is the cost of extended
@@ -1643,7 +1758,12 @@ Hilbert + binary search control reproduces the Python reference  DONE  267,362
 RMI trained, with a proven per-model error bound                 DONE  131,072
                                                                    models,
                                                                    exhaustive
-RMI inference ported to C++
+RMI inference ported to C++                              DONE  B5, byte-identical
+                                                               countywide, and
+                                                               measured slower
+resolve descent instrumented so the seam is attributable  DONE  B5c, 141.17
+                                                               vs 352.52
+                                                               entries/property
 five-implementation benchmark at countywide scale
 reported as three adjacent comparisons, not one global one
 inflation reported as a first-class axis
@@ -1700,24 +1820,25 @@ the surrogate's v2 target documented as such
 # 11. Immediate Next Conversation
 
 ```text
-B2. Sweep the run-size / cap parameter for the Segment BVH
+B6. Benchmark the five-implementation ladder
 ```
 
-B1 is complete and validated countywide; it remains uncommitted. B2 extends
-`water_benchmark.py` (currently hard-coding `brute_force` and `feature_bvh`) to
-accept `segment_bvh`, then sweeps the cap and reports the tradeoff curve.
+B1 through B5c are complete and validated countywide; B5c's commit is pending.
+The five-rung ladder is built and every rung claiming exactness produces
+byte-identical evidence at countywide scale.
 
-Because the added-segment cost at a 100 m cap is only 0.50 percent, the
-interesting region of the curve is likely at *tighter* caps, where entry counts
-begin to grow materially, rather than only at looser ones. B1 also relocated the
-bottleneck: search costs ~35 box/node operations per property while phase-2
-exact verification costs 9,716.87 segment checks, so the sweep should report
-both axes rather than segment checks alone.
+The ladder is built and the learned rung's cost is now attributable: it saves
+20.2376 key probes per property and spends 211.34 extra point-to-segment
+distance computations, about ten to one against. B6 measures and builds nothing.
+Two axes B5c forced are not optional — the `_10000`/`_100000`/`_countywide`
+scaling curve, because learned indexes are argued to win as N grows, and a
+`SEED_WINDOW` sweep upward as well as downward for BOTH seeders, because the
+exact binary control misses the +/-64 window on 38.62 percent of queries and the
+window is therefore a query-design parameter rather than an RMI tuning knob.
 
-Suggested prompt (superseded — the current chunk prompt lives in
-`CAPRM_Flood_Current_Status.md` section 22, which is kept in step with the
-active chunk. This B2-era text is retained only as a record of the form these
-prompts take):
+The current chunk prompt lives in `CAPRM_Flood_Current_Status.md` section 22,
+which is kept in step with the active chunk. The B2-era text below is retained
+only as a record of the form these prompts take:
 
 > We are continuing CAPRM-Flood at Milestone 4, chunk B2. B1 (Segment BVH) is
 > complete and validated countywide — 267,362/267,362 field-for-field
@@ -1751,8 +1872,11 @@ with a binary-search control that isolates the contribution of learning from the
 contribution of dimensionality reduction, trains a recursive model index with a
 proven error bound (done at B4: 131,072 linear leaf models, 3.20x fewer seed
 probes, and an equi-depth diagnostic locating the residual error in the router
-rather than the leaves), ports inference to C++, and benchmarks five
-implementations under one exactness standard — an index may change what is examined, never what
+rather than the leaves), ports inference to C++ (done at B5: byte-identical
+evidence on all 267,362 properties, and 3.85 percent SLOWER than the control,
+because a mispredicted seed widens a descent that nothing counts — the negative
+result this phase said in advance it would report whichever way it fell), and
+benchmarks five implementations under one exactness standard — an index may change what is examined, never what
 is computed, which is what makes a learned index safe here. Phase C abandons
 exactness deliberately and trains a neural surrogate of the pipeline's own
 deterministic output, split by spatial block rather than randomly, where the

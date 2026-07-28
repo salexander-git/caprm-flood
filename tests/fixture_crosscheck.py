@@ -528,12 +528,18 @@ def main():
 
     rmi_manifest = WORK / "hilbert_manifest_rmi.json"
     rmi_seed_error = WORK / "seed_error_rmi.json"
+    rmi_query_stats = WORK / "query_stats_rmi.json"
+    binary_query_stats = WORK / "query_stats_binary.json"
     run_hilbert(WORK / "out_hilbert_seed_rmi.csv", 25.0,
                 "original", "disk_bbox", 32, rmi_manifest,
                 extra=["--seed", "rmi",
                        "--rmi-model", str(fixture_model),
                        "--rmi-probes", probes,
-                       "--seed-error-stats", str(rmi_seed_error)])
+                       "--seed-error-stats", str(rmi_seed_error),
+                       "--query-stats", str(rmi_query_stats)])
+    run_hilbert(WORK / "out_hilbert_seed_binary_qs.csv", 25.0,
+                "original", "disk_bbox", 32,
+                extra=["--query-stats", str(binary_query_stats)])
 
     rmi_out = pd.read_csv(WORK / "out_hilbert_seed_rmi.csv",
                           dtype={"property_id": "string"})
@@ -582,6 +588,50 @@ def main():
           f"{index_key_rate:.4f} on index keys; mean |err| "
           f"{rmi_error['absolute_error']['mean']:.2f}, max "
           f"{rmi_error['absolute_error']['max']}")
+
+    # ------------------------------------------------------------------
+    # B5c: the resolve descent, which B5 could not attribute.
+    #
+    # Every counter emitted to the CSV comes from the TIGHT descent at
+    # R = d_best + L/2 + tie_tol, which is seed-invariant by construction.
+    # The RESOLVE descent at R_seed = d_seed + L/2 + tie_tol is the only one
+    # a predicted position affects, and through B5 nothing counted it -- so a
+    # measured slowdown was invisible to all ten emitted counters.
+    #
+    # The gate: the two seeders must differ in a COUNTED quantity, not only in
+    # wall clock.
+    # ------------------------------------------------------------------
+    qs_binary = json.loads(binary_query_stats.read_text())
+    qs_rmi = json.loads(rmi_query_stats.read_text())
+    for label, stats in (("binary", qs_binary), ("rmi", qs_rmi)):
+        assert stats["benchmark_eligible"] is True, label
+        assert stats["properties"] == len(props), label
+        assert stats["resolve_descent"]["entries_per_property"] > 0.0, label
+        # d_seed is the minimum over a window of REAL segments of an ACHIEVED
+        # point-to-segment distance, and d_best is the minimum over a superset,
+        # so d_seed >= d_best is a lemma rather than an observation. It is the
+        # reason the seam cannot cost correctness (Nucleus 18.22), and a
+        # violation would mean the resolve descent had missed the true nearest
+        # segment -- i.e. the exactness argument had failed.
+        assert stats["seed_quality"]["mean_d_seed_over_d_best"] >= 1.0, \
+            f"{label}: mean d_seed/d_best < 1, the seed lemma is violated"
+        assert stats["seed_quality"]["max_d_seed_over_d_best"] >= 1.0, label
+    # The tight descent must NOT move: it is seed-invariant, and this is the
+    # counter-side statement of the byte-identity asserted above.
+    assert (qs_binary["tight_descent"]["entries_per_property"]
+            == qs_rmi["tight_descent"]["entries_per_property"]), \
+        "tight descent differs between seed modes; it must be seed-invariant"
+    print(f"  [hilbert] B5c resolve descent: "
+          f"{qs_binary['resolve_descent']['entries_per_property']:.2f} entries "
+          f"(binary) vs {qs_rmi['resolve_descent']['entries_per_property']:.2f} "
+          f"(rmi); tight descent identical at "
+          f"{qs_binary['tight_descent']['entries_per_property']:.2f}")
+    print(f"  [hilbert] B5c seed quality: window missed "
+          f"{qs_binary['seed_quality']['window_missed']} (binary) vs "
+          f"{qs_rmi['seed_quality']['window_missed']} (rmi) of {len(props)}; "
+          f"mean d_seed/d_best "
+          f"{qs_binary['seed_quality']['mean_d_seed_over_d_best']:.4f} vs "
+          f"{qs_rmi['seed_quality']['mean_d_seed_over_d_best']:.4f}")
 
     # B5 negative cases. Every one of these is a way a run could silently
     # become a control run or a run against the wrong array.
