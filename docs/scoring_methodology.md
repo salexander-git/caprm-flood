@@ -1,24 +1,19 @@
-# Scoring Methodology — Current Implementation
+# Scoring Methodology
 
 **Status:** preliminary
 **Scoring policy version:** `preliminary_exposure_index_v2`
 **Written:** 2026-07-16
-**Roadmap chunk:** A2 — harden scoring methodology
-
-**Supersedes** the version of this document written for
-`preliminary_exposure_index_v1`, which described a three-weight policy with
-undeclared terrain sub-weights.
+**Roadmap chunks:** A1 reconstruction, A2 hardening, A3 sensitivity, A4 audit
 
 ---
 
 ## Purpose and standing
 
-This document records **what the scoring layer does**, including its known
-limitations.
+This document records what the scoring layer does, including its limitations.
 
 Every statement traces to one of two places:
 
-- **Source:** `python/caprm/scoring.py`.
+- **Source:** `python/caprm/scoring.py`, `python/caprm/sensitivity.py`.
 - **Measured:** a generated artifact, cited by file.
 
 Sections marked **⚠ Limitation** record behavior that is understood and
@@ -29,7 +24,7 @@ Measured values come from a countywide run on 2026-07-16 against:
 ```text
 evidence  sha256 4e0d27e14b30aba4c2afb350b9c58d6b4384f951db7252831c29df8487bd75f2
 terrain   sha256 e7768c538b41639032af176bd789bec76137c29348bc9be931ca7b4c44e5d3de
-index     sha256 8b91edc47bf58cf45d7bd1202ca2f3226b52998a2ce15dfb67cb1463ec1efce2
+index     sha256 3cae2e830a5867bee4d51a36f1c5c04f05ee0a6a26d64dace27da75d3c4911b0
 ```
 
 Supporting artifacts:
@@ -38,6 +33,8 @@ Supporting artifacts:
 outputs/validation/property_exposure_index_countywide_manifest.json
 outputs/validation/scoring_inputs_summary.json
 outputs/validation/component_correlation_summary.json
+outputs/validation/scoring_sensitivity_manifest.json
+outputs/validation/milestone3_audit.json
 ```
 
 ---
@@ -95,7 +92,8 @@ meters, and $r_i$ is relative elevation in meters.
 **These four weights plus the two evidence tables are sufficient to
 reproduce the index.** The manifest records them, so a third party can
 recompute the result without reading source code. That property is a
-requirement, not a convenience.
+requirement, not a convenience, and `audit_milestone3_products.py` verifies
+it against the stored artifact on every run.
 
 ### Provenance of the weights
 
@@ -108,20 +106,20 @@ a terrain component split internally 0.60 absolute / 0.40 relative:
 ```
 
 Scoring is linear, so the flat and nested forms are algebraically
-identical. Verified across the countywide workload:
+identical. Verified across the countywide workload at a maximum absolute
+difference of `5.0e-13`, and locked by
+`test_flat_weights_reproduce_legacy_nested_policy`.
 
-```text
-maximum absolute difference: 5.0e-13 across 267,362 properties
-```
-
-and locked by `test_flat_weights_reproduce_legacy_nested_policy`.
+**Why the nesting was removed.** The sub-weights were absent from
+`DEFAULT_WEIGHTS`, unchecked by `validate_weights`, and absent from every
+manifest. The consequence was not cosmetic: **the manifest could not
+reproduce the score.** A reader with the manifest and both evidence tables
+still had to open `scoring.py` to find the missing constants.
 
 > **⚠ Open — the weights are a judgement call.**
 > No source, manifest, or document justifies 0.40 / 0.35 / 0.15 / 0.10.
 > They are not learned, not calibrated, and not derived from any external
-> reference. A3 sensitivity analysis will measure how much the ranking
-> depends on them. Until then they should be described as a starting
-> configuration, not a defended choice.
+> reference. Section 12 measures how much the ranking depends on them.
 
 ---
 
@@ -179,8 +177,7 @@ by zone in this dataset: every matched non-X zone is SFHA; X never is. This
 is a property of the current data, **not** a guarantee of the FEMA schema.
 
 **Nearest-water distance:** 0.0 – 2,630.235 m; mean 506.411; median
-325.346; 0 nulls; 266 properties at exactly 0.0 (inside a waterbody);
-265,773 distinct values.
+325.346; 0 nulls; 266 properties at exactly 0.0 (inside a waterbody).
 
 **Terrain elevation:** 75.000 – 296.309 m; mean 143.197; median 146.828;
 0 nulls.
@@ -212,33 +209,13 @@ value, `EPSG:26918`.
 ### Missing-value policy
 
 **There is no imputation anywhere in the scoring layer.** Every missing,
-non-finite, or unparseable input raises:
-
-- `strict_bool` raises on a null or unparseable Boolean, reporting the CSV
-  row number.
-- `percentile_score` raises on any non-finite value.
-- `water_component_score` raises on non-finite or negative distances.
-- A matched row with a null zone raises via the zone check.
+non-finite, or unparseable input raises.
 
 ---
 
 ## 5. The percentile transform
 
 Three of the four components are built on one function.
-
-```python
-def percentile_score(series, higher_value_is_higher_exposure):
-    numeric = to_numeric(series, errors="raise").astype("float64")
-    if any(not isfinite(numeric)):
-        raise ValueError("Cannot score nonfinite numeric values.")
-
-    scoring_values = numeric if higher_value_is_higher_exposure else -numeric
-
-    if scoring_values.nunique() == 1:
-        return Series(50.0, index=series.index)
-
-    return scoring_values.rank(method="average", pct=True) * 100.0
-```
 
 $$
 \text{pct}(v_i) = \frac{\text{rank}_{\text{avg}}(s_i)}{n} \times 100
@@ -252,37 +229,32 @@ $$
 **Properties:**
 
 - **Range** $(0, 100]$. The minimum attainable score is $100/n$, not 0.
-  Countywide: `0.00037402473051518164`. (Measured.)
+  Countywide: `0.00037402473051518164`.
 - **Ties** receive the mean of the ranks they span. Deterministic and
   order-independent.
-- **Mean** fixed at $\frac{n+1}{2n} \times 100$ by construction, regardless
-  of the input distribution. Countywide: `50.00018701236526` — measured
-  identically for all three percentile components.
+- **Mean** fixed at $\frac{n+1}{2n} \times 100$ by construction. Countywide:
+  `50.00018701236526` — measured identically for all three percentile
+  components.
 - **Standard deviation** fixed at $\approx 100/\sqrt{12} = 28.8675$, the
-  standard deviation of a uniform distribution. Measured: `28.8675674` for
-  all three. Percentile ranks are uniform by construction, so their spread
-  is structurally pinned.
-- **Direction by negation**, not by reversing the rank. Equivalent, one
-  code path.
+  standard deviation of a uniform distribution. Measured `28.8675674` for
+  all three.
+- **Direction by negation**, not by reversing the rank.
 
 > **⚠ Limitation — rank-preserving, magnitude-destroying.**
 > Only the ordering of the input survives. A property 5 m from a stream and
-> one 50 m away may sit at adjacent percentiles. The transform discards the
-> 10× physical distance ratio.
+> one 50 m away may sit at adjacent percentiles.
 
 > **⚠ Limitation — distribution dependence.**
-> Percentile scores are computed over **the rows supplied**. Scoring a
-> subset yields different scores for the same property. The index is
-> meaningful only for the full countywide workload, and values are not
-> comparable across workloads or NFHL vintages. Nothing in the output
-> schema records which population a score was computed against.
+> Percentile scores are computed over the rows supplied. Scoring a subset
+> yields different scores for the same property. The index is meaningful
+> only for the full countywide workload, and values are not comparable
+> across workloads or NFHL vintages.
 
 > **⚠ Limitation — silent degenerate branch.**
 > A component whose input has one unique value returns a constant 50.0 for
-> every property, with no warning. Unreachable at countywide scale;
-> reachable in small workloads. Tested, behavior deliberate: a constant
-> input carries no ranking information, and the midpoint is more honest
-> than asserting an ordering.
+> every property. Unreachable at countywide scale. Tested; deliberate — a
+> constant input carries no ranking information, and the midpoint is more
+> honest than asserting an ordering.
 
 ---
 
@@ -297,10 +269,7 @@ FEMA_ZONE_SCORES = {"X": 10.0, "AO": 80.0, "A": 90.0, "AE": 95.0, "VE": 100.0}
 UNMATCHED_FEMA_SCORE = 0.0
 ```
 
-Zone strings are stripped and uppercased before lookup, so matching is
-whitespace- and case-insensitive.
-
-| Zone | Score | Meaning | Count (measured) |
+| Zone | Score | Meaning | Count |
 |---|---:|---|---:|
 | `VE` | 100.0 | Coastal high hazard, wave action | 39 |
 | `AE` | 95.0 | 1% annual chance, base flood elevation determined | 4,226 |
@@ -323,19 +292,16 @@ zone would rank as less exposed than a property outside the floodplain
 entirely. A future NFHL vintage or another county could introduce `AH`,
 `AR`, `A99`, or `D` at any time.
 
-Extend the table deliberately, after deciding where a new zone belongs in
-the ordering.
-
 ### `is_sfha` is validated, not scored
 
 Special Flood Hazard Area status is implied by the zone, so scoring both
-would double-count one signal. Measured: `is_sfha` is perfectly collinear
-with `fema_zone` in this workload.
+would double-count one signal. It is still required, and enforces one
+invariant: **a property cannot be SFHA without matching a flood-hazard
+polygon.** That is a FEMA invariant, not a property of one dataset.
 
-It is still required, and used to enforce one invariant: **a property
-cannot be SFHA without matching a flood-hazard polygon.** That is a FEMA
-invariant, not a property of one dataset, so violating it means the
-upstream evidence is corrupt.
+The v1 policy applied `is_sfha & score < 80 → 90` as an override. It was
+**unreachable**: all 5,061 SFHA properties already score ≥ 80 from zone
+alone. Removed rather than left as dead, untested code.
 
 ---
 
@@ -353,8 +319,6 @@ Raises on non-finite or negative distances.
 `0.000374`; max `99.950442`. The 266 properties at distance 0.0 share the
 top tied rank.
 
-**Assumption:** that rank of proximity is a meaningful exposure proxy.
-
 ---
 
 ## 8. Components: Terrain
@@ -370,23 +334,18 @@ $$
 `terrain_relative_elevation_m = terrain_elevation_m −
 terrain_local_mean_elevation_m`, where the local mean is taken over a square
 window of half-width `ceil(90 m / pixel size)`. Positive means the property
-sits above its immediate surroundings. Measured mean `+0.247 m` — properties
-sit fractionally above their neighbourhood, consistent with construction on
-locally higher ground.
+sits above its immediate surroundings. Measured mean `+0.247 m` —
+consistent with construction on locally higher ground.
 
 **Why two components and not one.** Absolute elevation measures position in
 the county; relative elevation measures position within the immediate
-neighbourhood. A property can sit high in the county and low within its
-surroundings, or the reverse. Measured Spearman between them:
+neighbourhood. Measured Spearman between them: **−0.006**. Statistically
+independent.
 
-```text
-terrain_absolute ↔ terrain_relative:  -0.006
-```
-
-Statistically independent. They are grouped as one evidence family because
-they derive from the same DEM, which is a **provenance** relationship. A
-scoring weight expresses what a component *means*, which is a different
-question. Sharing a source raster is not a reason to share a weight budget.
+They are grouped as one evidence family because they derive from the same
+DEM, which is a **provenance** relationship. A scoring weight expresses what
+a component *means*, which is a different question. Sharing a source raster
+is not a reason to share a weight budget.
 
 ---
 
@@ -402,45 +361,85 @@ Rank correlation between all four components, countywide:
 | **terrain_rel** | 0.087 | −0.069 | −0.006 | 1.000 |
 
 **Largest pairwise correlation: 0.152.** The components are near-orthogonal.
-No component duplicates another, and all four earn their place.
+No component duplicates another.
 
 This was measured specifically to test whether low absolute elevation was
 shadowing water distance — the county's elevation floor is 75.0 m and Lake
 Ontario sits at ~74.2 m, so low absolute elevation substantially means *near
-the lake*, and the lake is a waterbody in the hydrography cache. It is not:
-`water ↔ terrain_absolute` is 0.102. Water distance is local — nearest of
-5,600 flowlines and 2,972 waterbodies — so it does not track regional
-elevation.
+the lake*, and the lake is a waterbody in the hydrography cache. **It is
+not:** `water ↔ terrain_absolute` is 0.102. Water distance is local —
+nearest of 5,600 flowlines and 2,972 waterbodies — so it does not track
+regional elevation.
 
 **Tail dependence exceeds global correlation.** In the top decile,
-`water ↔ terrain_relative` overlap is 23.8% against ~10% expected by
-chance, despite a global correlation of −0.069. Physically plausible:
-properties near water usually sit on raised banks, but the extreme cases sit
-in depressions near water — the floodplain signature. The relationship is
-non-monotonic, so rank correlation alone would miss it. Recorded; not acted
-on.
+`water ↔ terrain_relative` overlap is 23.8% against ~10% expected by chance,
+despite a global correlation of −0.069. Physically plausible: properties
+near water usually sit on raised banks, but the extreme cases sit in
+depressions near water — the floodplain signature. The relationship is
+non-monotonic, so rank correlation alone would miss it.
 
 ---
 
-## 10. Composite, ranking, and output
+## 10. The composite is rounded before ranking
+
+```python
+COMPOSITE_DECIMALS = 9
+```
+
+The composite is rounded to 9 decimal places before it is stored or ranked.
+
+**Why.** Under any percentile-based weighting the composite lies on a
+lattice. Each percentile component is $\text{rank} \times 100/n$ with ranks
+in half steps, so with the default weights:
+
+$$
+I = 0.40\,C_{\text{fema}} + \frac{100}{n}\left(0.35 r_w + 0.15 r_{ta} + 0.10 r_{tr}\right)
+$$
+
+and the bracket is $0.05 \times (7 r_w + 3 r_{ta} + 2 r_{tr})$ — a multiple
+of $2.5/n$, about **9.4e-6** countywide. Distinct rank triples collide on
+that lattice constantly: many properties have **mathematically identical
+composites**.
+
+Float arithmetic separates a colliding pair by around `1e-14`, depending on
+operation order. Ranking the unrounded value therefore:
+
+1. imposes an ordering on properties tied in substance, sourced from
+   rounding order rather than evidence — the same category of error as
+   percentile-ranking the FEMA component to manufacture spread, which this
+   project rejects;
+2. breaks reproducibility, because writing the index at 12 decimal places
+   re-merges the pair, so **the stored percentile could not be recomputed
+   from the stored index**.
+
+Measured before the fix: recomputing the percentile from the stored index
+disagreed by up to `1.066e-02` percentile points — about 28.5 ranks,
+implying a tie group of roughly 58 properties split by float noise.
+
+**Why 9 decimals.** The lattice spacing is `9.4e-6`. Rounding at `1e-9` sits
+four orders of magnitude below the smallest distinction the lattice can
+express and five above float noise. It merges only values tied in substance.
+The constant has a derivation rather than being a guess.
+
+`caprm.sensitivity.score_scenarios` applies the same rounding, so every
+scenario ranking is built on the same rule as the baseline and remains
+comparable to it.
+
+Locked by `test_percentile_reproduces_from_the_stored_index` and verified
+against the stored artifact by `audit_milestone3_products.py`.
+
+---
+
+## 11. Composite, ranking, and output
 
 ### Verification against the artifact
 
-Measured component means reproduce the measured index mean exactly:
-
-```text
-0.40(11.580179681480539)
-  + 0.35(50.00018701236526)
-  + 0.15(50.00018701236527)
-  + 0.10(50.00018701236526)
-  = 34.63218408001137
-```
-
-**Measured index:** min `7.914598933281469`, max `99.929084911094320`, mean
-`34.632184080011370`, median `33.728429993791190`, std `13.063711939924469`.
+**Measured index:** min `7.914598933`, max `99.929084911`, mean
+`34.63218408001099`, median `33.7284299935`, std `13.063711939924076`.
 
 Independent recomputation from the evidence tables agrees with the shipped
-artifact to `5.0e-13`.
+artifact to `5.0e-10`, which is the half-ulp of `round(9)` — bounded by
+construction, not by float noise.
 
 ### Bounds
 
@@ -449,21 +448,14 @@ violation raises `RuntimeError`. **No clipping occurs** — out of range is
 treated as a bug, not corrected. The bounds hold structurally: a convex
 combination of values in `[0, 100]` cannot leave `[0, 100]`.
 
-### Percentile
+### Percentile and ordering
 
-$$
-P_i = \text{pct}(I_i) \quad \text{(not inverted)}
-$$
-
-Measured: min `0.00037402473051518164`, max `100.0`.
-
-Ties receive equal percentiles. **There is no integer rank column.**
-
-### Ordering
+$P_i = \text{pct}(I_i)$, not inverted. Measured min
+`0.00037402473051518164`, max `100.0`. Ties receive equal percentiles.
+**There is no integer rank column.**
 
 Output is sorted by `property_id` with a stable sort — **not** by score — so
-ordering is deterministic and independent of input row order. Verified by
-`test_build_exposure_index_ignores_input_row_order`.
+ordering is deterministic and independent of input row order.
 
 ### Output schema
 
@@ -489,13 +481,11 @@ Written with `float_format="%.12f"`. 267,362 rows, 267,362 unique IDs.
 
 ---
 
-## 11. Nominal weight is not influence
+## 12. Nominal weight is not influence
 
 Weight alone does not determine how much a component moves the ranking.
 Influence scales with **weight × spread**, and the components do not have
 equal spread.
-
-Measured countywide:
 
 | Component | Weight | Std | Variance share | Spearman vs index |
 |---|---:|---:|---:|---:|
@@ -536,56 +526,134 @@ Water and terrain then rank the properties FEMA is silent on.
 **Rejected alternative:** percentile-ranking the FEMA component to give it
 comparable spread. That would smear 262,297 identical zone-X properties
 across ranks 0–98, inventing distinctions the source data does not contain.
-Manufacturing false precision to make a weight look like it is working is
-backwards.
 
 ### Method
 
 `variance_share` is $\text{Cov}(w_k C_k, I) / \text{Var}(I)$. By linearity
-of covariance, $\sum_k \text{Cov}(w_k C_k, I) = \text{Cov}(I, I) =
-\text{Var}(I)$, so the shares sum to exactly 1.0 **without assuming the
-components are uncorrelated**. This matters: an orthogonality-assuming
-estimate predicts water 0.681 and fema 0.139, which is wrong in both
-directions because FEMA correlates +0.152 with water and terrain_relative
-correlates −0.069 with it.
+of covariance, $\sum_k \text{Cov}(w_k C_k, I) = \text{Var}(I)$, so the
+shares sum to exactly 1.0 **without assuming the components are
+uncorrelated**. This matters: an orthogonality-assuming estimate predicts
+water 0.681 and fema 0.139, wrong in both directions because FEMA
+correlates +0.152 with water and terrain_relative correlates −0.069 with it.
 
 Spearman is computed as the Pearson correlation of ranks, which is the
 definition when ties are present. This avoids adding scipy for one
-statistic, and avoids a pandas asymmetry: `DataFrame.corr(method="spearman")`
-uses an internal implementation while `Series.corr(method="spearman")`
-requires scipy.
+statistic, and avoids a pandas asymmetry:
+`DataFrame.corr(method="spearman")` uses an internal implementation while
+`Series.corr(method="spearman")` requires scipy.
 
 ---
 
-## 12. Weights are configurable
+## 13. Sensitivity — measured
 
-```powershell
---weights '{"fema":0.4,"water":0.35,"terrain_absolute":0.15,"terrain_relative":0.1}'
-```
+**Verdict: moderately sensitive.**
 
-`validate_weights` enforces: key set exactly
-`{fema, water, terrain_absolute, terrain_relative}`; no negatives; sum equal
-to 1.0 within tolerance. Weights are validated before any input is read.
+40 scenarios: 1 baseline, 1 equal-weighted, 8 single-component
+emphasized/deemphasized (×2 / ×0.5, renormalized), 2 terrain-family, 24
+seeded Dirichlet perturbations around the baseline, and 4 reference corners.
 
-**The manifest records the weights actually applied**, plus
-`weights_are_default`. `summarize_exposure_index` **requires** weights as an
-argument rather than defaulting — reporting `DEFAULT_WEIGHTS` when a caller
-supplied something else would make every sensitivity scenario claim the
-baseline configuration. The signature makes that failure unreachable.
+| Measure | Value | Scenario |
+|---|---:|---|
+| Minimum Spearman vs baseline | **0.875** | `equal` |
+| Median Spearman vs baseline | 0.996 | |
+| Minimum top-decile overlap | **0.761** | `equal` |
+| Median top-decile overlap | 0.946 | |
+| Maximum percentile shift | 47.5 | |
+| Median of median percentile shift | 1.56 | |
 
-`scoring_policy_version` does not vary with weights. Weights vary within a
-policy version; the manifest's weights block reports them.
+### Declared thresholds
+
+| Verdict | Min Spearman | Min top-decile overlap |
+|---|---:|---:|
+| stable | 0.95 | 0.80 |
+| moderately sensitive | 0.85 | 0.60 |
+
+Declared in `caprm.sensitivity` **before any result was measured**. They are
+a judgement call with no external standard. Choosing them after inspecting
+the output would make the verdict unfalsifiable.
+
+The verdict is driven by the **worst** plausible scenario, not the average.
+An index that survives most reweightings but collapses under one plausible
+reweighting is not stable.
+
+### The metrics discriminate
+
+| | Spearman | top-decile overlap |
+|---|---|---|
+| reference corners | 0.167 – 0.893 | ≥ 0.289 |
+| plausible scenarios | 0.875 – ~1.0 | ≥ 0.761 |
+
+This calibration is why the numbers above can be interpreted at all. Three
+of four components are percentile ranks, and reweighting a linear sum of
+rank variables tends to preserve order — so a high correlation could have
+been an artifact of the design rather than a finding. **It is not.** The
+corners span a wide range, so the metric can tell configurations apart.
+
+### The baseline is substantially a water ranking
+
+**`water_only` correlates 0.893 with the baseline. `equal` correlates
+0.875.**
+
+Putting 100% of the weight on water alone reproduces the baseline ranking
+**better** than weighting all four components equally.
+
+This follows directly from water's 65% variance share: the baseline already
+*is* substantially a water ranking. Equal weighting cuts water to 25% and
+promotes `terrain_relative` — which correlates 0.167 with the baseline
+ranking — from 0.10 to 0.25. That moves more mass than going all-in on
+water.
+
+The honest characterization is that the index is **a water-proximity
+ranking with a decisive FEMA correction on the 1.9% of properties FEMA has
+information about**, adjusted by terrain. It should not be described as
+though all four components contribute comparably.
+
+### The verdict hinges on one scenario
+
+Every other plausible scenario — all 24 perturbations, all 8
+single-component reweightings, both terrain-family scenarios — sits near
+0.996. **`equal` alone drags the verdict down.** This is not general
+instability; it is one specific, explainable sensitivity: *the index is
+stable unless you stop privileging water.*
+
+`equal` stays in the family. "Weight everything the same because I don't
+want to assume" is the most obvious default a reviewer would reach for.
+
+### The extremes never move; the middle churns
+
+| | percentile range across 36 plausible scenarios |
+|---|---|
+| top-ranked properties | **0.0004** |
+| bottom-ranked properties | 0.02 – 0.25 |
+| median property | **18.0** |
+| 77.6% of properties | > 10 points |
+| 25.8% of properties | > 25 points |
+| worst property | 63.0 |
+
+All 20 most-unstable properties have a baseline percentile between **59 and
+66** — dead middle. They swing from roughly the 16th to the 80th percentile
+depending on weights. The top of the ranking is immovable to four decimal
+places.
+
+**This is the most defensible property of the index.** A VE-zone property
+sitting in water at low elevation is top-ranked under every weighting.
+Weight choice matters only for properties with genuinely mixed evidence —
+high on one component, low on another — which is exactly where it *should*
+matter.
+
+**One-line summary: the index reliably identifies the extremes; the middle
+ordering depends on weighting assumptions.**
 
 ---
 
-## 13. Assumptions and limitations
+## 14. Assumptions and limitations
 
 1. **Rank is a sufficient proxy for exposure** in three of four components.
    Magnitude is discarded.
 2. **The FEMA lookup values** (10/80/90/95/100) express relative severity on
    a scale commensurable with percentile ranks. Neither the values nor the
    commensurability is externally justified.
-3. **The weights are undocumented judgement calls.** A3 will measure how
+3. **The weights are undocumented judgement calls.** Section 13 measures how
    much the ranking depends on them.
 4. **Linear additive combination** assumes components substitute for one
    another: a high FEMA score can be offset by a low water score. No
@@ -601,11 +669,11 @@ policy version; the manifest's weights block reports them.
 
 **Established:**
 
-- Composite arithmetic reproduces the artifact to 5.0e-13 across 267,362
-  properties.
+- Composite arithmetic reproduces the artifact to `5.0e-10`.
 - The four-weight model reproduces the retired nested policy exactly.
-- Percentile transform behaves as specified — component means and standard
-  deviations match their closed forms.
+- The stored percentile reproduces from the stored index.
+- Percentile component means and standard deviations match their closed
+  forms.
 - Every component's directionality is tested.
 - Determinism and row-order independence are tested.
 - Non-default weights reach the composite and are reported correctly.
@@ -613,21 +681,32 @@ policy version; the manifest's weights block reports them.
   values, CRS mismatches, row loss, and duplicate IDs all raise.
 - Variance shares sum to 1.0.
 - Components are near-orthogonal (max pairwise |ρ| = 0.152).
+- Rank stability measured across 40 weight scenarios with declared
+  thresholds and metric calibration.
+- All four products describe the same 267,362 properties; manifests agree
+  with the artifacts on disk.
 
 **Not established:**
 
-- Whether the weights are defensible.
-- **Rank stability under alternative weights — this is A3, the milestone's
-  central methodological question.**
+- Whether the weights are defensible. Sensitivity measures how much the
+  ranking depends on them; it does not establish that they are right.
+- Whether the four components are the right components.
+- Whether the index corresponds to any real-world flood outcome. **No
+  validation against observed flooding has been attempted, and none is
+  planned.**
 
 ---
 
-## 14. Reproducing
+## 15. Reproducing
 
 ```powershell
 .\.venv\Scripts\python.exe python\scripts\build_exposure_index.py
 .\.venv\Scripts\python.exe python\scripts\summarize_milestone3_results.py
+.\.venv\Scripts\python.exe python\scripts\analyze_scoring_sensitivity.py
 .\.venv\Scripts\python.exe python\scripts\summarize_component_correlation.py
 .\.venv\Scripts\python.exe python\scripts\summarize_scoring_inputs.py
+.\.venv\Scripts\python.exe python\scripts\audit_milestone3_products.py
 .\.venv\Scripts\python.exe -m pytest -q
 ```
+
+The audit exits nonzero on any failure.

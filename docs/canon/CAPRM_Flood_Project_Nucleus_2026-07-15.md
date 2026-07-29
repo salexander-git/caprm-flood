@@ -1003,6 +1003,27 @@ published record already shows that ZM-index, ML-Index, and RSMI cannot
 systematically outperform non-learned indexes. A negative result, measured
 against an exact baseline with verified correctness, is a finding.
 
+**It did lose, and the shape of the loss is the contribution.** B6 measured it
+countywide: at the shipped configuration the learned rung is 6.48 percent slower
+than its own binary-search control. But that figure is not a property of the
+model. It moves from +11.6 percent to +0.001 percent across nine seed-window
+sizes, and roughly doubles under split-geometry verification. See section 18.27.
+
+**Scope of the B5/B5c/B6 negative result.** It is measured at ONE index size,
+1,189,589 entries. The learned-index literature's central claim is that the
+advantage grows with index size, and this project does not test that. The
+`_10000`/`_100000`/`_countywide` workloads vary QUERY COUNT, not index size: the
+exporter writes the whole feature table from the hydrography cache regardless of
+the property set, so all three workloads carry 8,572 features and 1,072,254
+vertices and build the identical index (verified by row count and by input
+digest, 2026-07-29). A true index-size axis requires a defensible hydrography
+subsetting scheme, a reference recomputed at each subset, and the RMI retrained
+at each N, since a model fitted to 1.19M keys says nothing at 100K. It is
+deferred as a stretch chunk. Until it exists, the finding is: at ~1.19M
+extended-object entries, on this workload, at this window, under this
+verification mode, a two-stage RMI seed loses to binary search by about ten
+distance computations per probe saved.
+
 **The project will not beat R-trees.** It does not need to. The question is
 whether the approach extends to a query class the literature has not touched,
 and what it costs.
@@ -1386,6 +1407,28 @@ reached the same conclusion about the segment BVH by a different route. Further
 work on this query belongs in verification, not in search — and that bounds what
 any learned index can achieve here.
 
+**Measured at a second operating point (B6, 2026-07-29).** The inflation term
+behaves as this section predicts when the query population moves, which means it
+is a property of the workload as well as of the index. On the 10,000-property
+subset, whose properties sit nearer water than the county as a whole, `N_true_r`
+rises 1.6067 -> 1.6906 and admitted midpoints rise 10.2783 -> 11.7066, so the
+capped geometric inflation rises 6.397x -> 6.9245x, while phase-2 segment checks
+FALL 11,021.83 -> 1,486.11 per property. Nearer water means fewer and smaller
+candidate features to rescan, and simultaneously a larger `(r + L/2)^2 / r^2`
+because `L/2` = 12.5 m is a bigger fraction of a smaller `r`. Any inflation
+figure must therefore name the workload that produced it.
+
+**The window scan is inflation's uncounted twin.** The seed window reads `2W`
+entries either side of the seed position, and that work appears in NO emitted
+counter. At W = 2048 it is 4,096 distance computations per query against 72.88
+counted resolve-descent entries — the uncounted work exceeds the entire counted
+query. It is analytically known rather than instrumented, so it is reported as a
+known additive term; but B6's joint fit over eighteen countywide cells puts a
+sequential window-scan entry at ~3.2 ns against ~25 ns for a scattered
+resolve-descent entry, a 7.8x locality premium, so the two must never be summed
+as though an entry were an entry. B2 said a segment check is not
+mode-invariant; B6 says an entry is not access-pattern-invariant.
+
 ## 18.20 A model is an artifact
 
 Reason:
@@ -1586,6 +1629,39 @@ claim, because they are deterministic and reproduce exactly across compiler and
 platform; B6 still owes a repetition protocol before any wall-clock figure is
 asserted.
 
+**Replicated, and the first wall-clock statement that survives its own noise
+(B6, 2026-07-29).** The convexity mechanism reproduces at independent operating
+points. On the 10,000-property workload the mean `d_seed / d_best` ratio moves
+1.2521 (binary) -> 2.0385 (rmi), a 1.628x move predicting about 2.65x more
+admitted entries under a uniform-density reading; measured resolve entries move
+113.0575 -> 385.7320, a factor of 3.412. Jensen plus the tail accounts for the
+excess, as it did countywide.
+
+More consequentially, the counted quantity now PREDICTS the clock. B5c isolated
+the marginal cost of one resolve-descent entry at 20.40 ns before any B6 timing
+existed. Multiplying that constant by the counted entry difference reproduces
+twelve independently measured wall-clock gaps:
+
+```text
+                        delta entries   predicted us   measured us   ratio
+_10000      W=64           272.675          5.563         5.010      0.901
+_100000     W=64           279.542          5.703         5.271      0.924
+countywide  W=64           211.341          4.311         4.302      0.998
+countywide  W=8..2048      nine points, least-squares slope through the
+                           origin: 21.02 ns/entry against the isolated 20.40
+```
+
+A mechanism that computes the number is stronger than a mechanism that narrates
+it. The caveat travels with it: the per-point ratio degrades once the gap falls
+inside the cells' range, so the fit is carried by the resolvable points.
+
+Under the B6 protocol — 7 repetitions, 1 warm-up, blocked by repetition — the
+5-v-4 effect at `_10000` is +15.83 percent with NON-OVERLAPPING ranges: the
+learned rung's fastest run, 0.406175 s, is slower than the control's slowest,
+0.357990 s. B5c's +5.92 percent at n=1 against a 3.85 percent same-configuration
+spread could not carry the claim; this can. The durable point is procedural: the
+protocol, not the effect, was what changed.
+
 ## 18.23 A two-stage linear RMI binds at the router, not at the leaves
 
 Reason:
@@ -1618,6 +1694,167 @@ This also bounds what the architecture can reach here without changing what
 it requires either a nonlinear root or a stored boundary table — both of which
 leave the design the phase committed to. That is a statement about where the
 capacity binds, not a defect.
+
+---
+
+## 18.24 Structure size and peak memory are different claims
+
+Reason:
+
+B6 measured both for the first time and they disagree in direction. Countywide,
+on persistent structure the Hilbert path is 8.74x smaller than the segment BVH —
+9,516,712 bytes of keys plus a 4,194,400-byte model against 119,768,836 bytes of
+BVH. On peak RESIDENT memory the segment BVH is 1.25x smaller, 185.77 MB against
+232.50 MB. On peak COMMITTED memory the Hilbert path is 1.20x smaller, 285.21 MB
+against 342.33 MB. Three instruments, two directions.
+
+The attribution is measured, not argued. The BVH's peak resident memory is its
+rung-1 baseline plus its index almost exactly (113.27 MB measured against
+119.77 MB reported, the gap being working-set trimming), while it commits 257 MB
+above baseline — roughly twice its final index — because construction allocates
+temporaries the working set never holds simultaneously. The Hilbert path's peak
+resident memory exceeds its baseline by 160-166 MB against a 9.5 MB persistent
+key array, and that excess is CONSTANT across a 27x range of query count, which
+places it in index construction rather than in the query. It remains
+unattributed beyond that.
+
+Two consequences. Neither figure may be quoted alone, because "the learned path
+uses less memory" and "the learned path uses more memory" are both true of
+different quantities. And peak resident memory is the wrong instrument for a
+model's size cost specifically: the learned rung's peak exceeds the control's by
+53,248 bytes against a 4,194,400-byte model, 1.3 percent of it, because the peak
+occurs during index construction before the model is loaded. Report a model's
+cost from its bytes and its load-time allocation, never from process peak.
+
+---
+
+## 18.25 A null result from an instrument not shown to be live is not a result
+
+Reason:
+
+B6b's first attempt built seven binaries with `-DCAPRM_SEED_WINDOW=8..512`
+against a source file that never referenced the macro. A compiler accepts and
+discards a `-D` that nothing uses, without a warning. All seven were the default
+window.
+
+The countywide neutrality gate PASSED on that build, and could not have done
+otherwise: unmodified source produces the canonical digest by construction, so
+the gate cannot distinguish "the parameter is present and neutral" from "the
+parameter was never added." Had the binaries not self-reported their window, the
+sweep would have produced seven identical rows, and the natural reading —
+"`SEED_WINDOW` has no measurable effect" — would have been false, publishable,
+and consistent with every piece of evidence collected. The eventual measurement
+moves the 5-v-4 comparison by 29 percentage points.
+
+The rule: a neutrality gate requires a positive control. Before an identity is
+evidence of neutrality, some setting of the same parameter must be shown to
+CHANGE something. Here the control was the W=8 build moving
+`resolve_entries_per_property` and `fraction_window_missed`; only after that
+fired did the W=64 identity mean anything. A build system that cannot fail is
+not a check.
+
+Corollary on checksums. MinGW writes a link timestamp into the PE header, so
+binaries built seconds apart differ regardless of source. An executable digest
+taken without `-Wl,--no-insert-timestamp` records WHEN it was built, not WHAT,
+and any provenance argument resting on such a digest is void. This project
+treats checksums as provenance, so the flag is not optional.
+
+---
+
+## 18.26 The seed window, not the model, determines the sign of 5 vs 4
+
+Reason:
+
+Measured at nine window sizes on both the 10,000-property and countywide
+workloads, both seeders, with byte-identical evidence at every point (B6,
+2026-07-29). Countywide:
+
+```text
+W        rmi/binary   binary missed   binary resolve   rmi resolve
+   8       1.11620        69.88%          167.97           523.04
+  64       1.06365        38.62%          141.17           352.52
+ 512       1.01209        17.13%           87.91           150.06
+2048       1.00001        11.84%           77.46            94.19
+```
+
+The learned rung converges on its control not by improving but by having its
+error made irrelevant: a wide window recovers a good `d_seed` from a bad
+position, so `R_seed` shrinks toward `R` and the resolve descent stops being
+seed-sensitive. At W = 2048 on the 10,000-property workload every counted
+quantity is identical to the last digit and only the control's 20.22 key probes
+distinguish the two rungs.
+
+Three durable consequences.
+
+First, 5 vs 4 is CONDITIONAL. Reporting it at one window reports one point on a
+monotone curve, and the point the project happened to ship at is not privileged.
+
+Second, both seeders have an interior wall-clock optimum, because the window's
+own `2W` scan is unbounded in `W` while the resolve descent it buys has a floor.
+At each seeder's own best measured window the learned rung is still slower.
+
+Third, an independent result from the same sweep, and not about the model at
+all: the EXACT binary-search control misses its window on 11.84 percent of
+countywide queries at W = 2048. Widening from ±512 to ±2048, over an index of
+1,189,589 entries, buys 1.3 percentage points. Hilbert locality over extended
+objects has a hard core that window size does not reach, and that is a statement
+about space-filling curves rather than about learning.
+
+---
+
+## 18.27 The reported benefit of a learned spatial index depends on parameters
+## the literature holds fixed and does not report
+
+Reason:
+
+This is the phase's contribution, and it is methodological rather than a
+benchmark result. The project set out to ask whether learned indexing helps for
+exact nearest-neighbour search over extended objects. It answers that — no, not
+here — but the more durable finding is that the question as usually posed is
+underdetermined.
+
+Three independent demonstrations, all measured on the same ladder, all with
+byte-identical evidence at every point:
+
+```text
+axis                 range measured        effect on the 5-v-4 comparison
+seed window          W = 8 .. 2048         +11.6%  ->  +0.001%   countywide
+verification mode    original vs split     roughly doubles under split
+query workload       10K, 100K, 267K       4-v-3 moves 4.73x -> 1.95x, and the
+                                           feature-size counter explains why
+```
+
+None of these three is reported as a variable in the learned-spatial-index
+literature this project reviewed. The seed window is an implementation detail
+that never appears; exactness is usually not attempted, so the verification
+fork does not exist; and workload composition is treated as a fixed benchmark
+rather than as a parameter whose effect is measurable.
+
+Why each one moves the answer:
+
+- **The seed window** determines how much a bad predicted position costs. Wide
+  enough, and any seed is as good as any other, so the model's advantage and its
+  disadvantage both vanish. A paper reporting a learned win at one window has
+  reported one point on a curve.
+- **The verification mode** determines what fraction of query time the index
+  controls at all. Under byte-identical verification, exact rescanning is ~99
+  percent of the work and dilutes every index effect toward zero. A method
+  evaluated only in that regime will report small effects regardless of merit.
+- **The workload** determines the size of the features near the queries, and the
+  feature BVH's cost tracks feature SIZE rather than feature count: 17,377
+  segments per candidate feature on one subset against 12,873 countywide, which
+  reproduces its 1.6x wall-clock difference exactly.
+
+What this obliges the project to do. Every comparison it publishes names its
+window, its verification mode and its workload. Every claim about the learned
+rung is stated as conditional on those three. And the negative result is framed
+not as "learning did not help" but as "learning did not help HERE, and here is
+the parameter space in which that sentence is meaningful" — which is a stronger
+claim than the win would have been, and is the half of the section 14b research
+question the literature has not measured.
+
+The requirement this places on future work, including PHASE C and any B7: a
+result that cannot name the parameter values it holds fixed is not reportable.
 
 ---
 
@@ -1690,6 +1927,9 @@ covering both rungs 4 and 5; they differ only at the seed seam behind `--seed`.
 Current `docs/` contents:
 
 ```text
+docs/canon/                    The three canonical documents (moved from docs/
+                               on 2026-07-29): Nucleus, Current Status, Roadmap.
+                               Precedence order is defined in section 26.
 docs/benchmark_results.md      Nearest-water benchmark methodology and results
 docs/crs_policy.md             Canonical operational CRS policy
 docs/data_sources.md           Source provenance, vintages, inclusion rules, limits
@@ -1906,9 +2146,9 @@ The exact latest implementation and output state should be read from
 
 A new assistant continuing this project should begin by reading:
 
-1. `docs/CAPRM_Flood_Project_Nucleus_2026-07-15.md`
-2. `docs/CAPRM_Flood_Current_Status.md`
-3. `docs/CAPRM_Flood_Roadmap.md`
+1. `docs/canon/CAPRM_Flood_Project_Nucleus_2026-07-15.md`
+2. `docs/canon/CAPRM_Flood_Current_Status.md`
+3. `docs/canon/CAPRM_Flood_Roadmap.md`
 4. `docs/scoring_methodology.md`
 5. `docs/crs_policy.md`
 6. `docs/data_sources.md`

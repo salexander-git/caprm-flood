@@ -73,7 +73,7 @@ reads it directly.
 
 ## Phase B — learned indexing (the contribution)
 
-### B1b/B1c — Segment BVH + splitting. STATUS: next
+### B1b/B1c — Segment BVH + splitting. STATUS: DONE (2026-07-22, commit 998c859)
 **Objective:** build an exact nearest-water index over ~1.06M individual segments
 (with the long-segment split applied), reusing the exact kernel, matching the Python
 oracle field-for-field.
@@ -99,7 +99,7 @@ Nucleus (segment index + splitting as durable method); `data_sources.md` unaffec
 **Conversation budget:** fits one conversation if the build compiles cleanly; if the
 interior-zero handling gets fiddly, split acceptance into a second short conversation.
 
-### B2 — run-size sweep. STATUS: pending B1
+### B2 — run-size sweep. STATUS: DONE (2026-07-23, cap 25 m chosen)
 **Objective:** sweep segment "run size" {1,2,4,8,…} and produce the
 pruning-vs-inflation tradeoff curve; pick and justify an operating point.
 **Inputs to paste:** B1 outputs + `water_benchmark.py` (seen),
@@ -108,7 +108,8 @@ pruning-vs-inflation tradeoff curve; pick and justify an operating point.
 **Acceptance [local]:** curve produced; operating point chosen with a stated reason.
 **Budget:** one conversation.
 
-### B3 — Hilbert + inflation + binary-search control. STATUS: pending B2
+### B3 — Hilbert + inflation + binary-search control. STATUS: DONE
+(B3a fixture 2026-07-28; B3b countywide 2026-07-28)
 **Objective:** replace the 2D box hierarchy with a 1D Hilbert ordering of segment
 midpoints; implement the `r + L/2` inflated-disk search; validate exactness with a
 **binary-search** query (the control — non-optional, or B6 can't attribute a win/loss
@@ -119,15 +120,26 @@ the manifest); confirm the capped L feeds the inflation radius.
 **two conversations** (B3a: keys + sort + inflation + query; B3b: validation + edge
 cases). Documented fallback if the disk→curve-range decomposition overruns: expand the
 candidate window to cover the inflated disk's bounding box — cruder, still exact.
-**Acceptance [local]:** Hilbert + binary search reproduces the reference
-field-for-field countywide; inflation cost measured as a fraction of the uninflated
-disk.
+**Acceptance [local]:** MET 2026-07-28. Hilbert + binary search reproduces the
+reference field-for-field countywide (267,362/267,362, three configurations, exit
+0, max abs error 4.658e-10 m original / 9.157e-10 m split). Inflation measured
+6.397x capped versus 3,493.3x uncapped — splitting bought 546x. Box-vs-disk gate:
+enable (1.875x phase-1, 7.55% phase-2). Control characterized at 20.2376 probes
+mean / 21 max. The uninflated-disk denominator named in the original acceptance
+line was degenerate and was replaced by `n_true_r` before measurement; see
+Current Status, B3b.
 
-### B4 — train RMI (the ML index). STATUS: pending B3  [authoring: cowork]
+### B4 — train RMI (the ML index). STATUS: next  [authoring: cowork]
 Two-stage recursive model index, linear models, numpy least-squares, no framework.
 Emit weights + seed + training-array checksum + manifest. **Acceptance:** predicted
 position + recorded per-model error bound provably contains the true position for
-**every** key (exhaustive over ~1M, not sampled). Python trains. One conversation.
+**every** key — exhaustive over all 1,189,589, not sampled, reported per
+second-stage model. 79 keys are exact duplicates, so the position mapping is not
+injective: state the convention (first or last position of the run) and make the
+bound valid under it. Control to beat: 20.2376 probes mean, 21 max. Ceiling: the
+model replaces ~20 probes out of ~11,922 phase-2 segment checks per property, so
+judge it on search-side metrics, not on an end-to-end speedup the workload cannot
+deliver. Python trains. One conversation.
 
 ### B5 — port RMI inference to C++. STATUS: pending B4
 ~50 lines: normalize → root model → leaf model → predicted position → clamp →
@@ -205,15 +217,15 @@ index component at v3.
 
 ## Critical path
 
-B1b/c → B2 → B3(a,b) → B4 → B5 → B6, then D → E. C runs alongside B4–B6. B3 is the
-schedule risk. E is gated on reading the professor requirements file.
+B1b/c → B2 → B3(a,b) → B4 → B5 → B6, then D → E. C runs alongside B4–B6. B1, B2
+and B3 are complete as of 2026-07-28; B4 is next. E is gated on reading the
+professor requirements file.
 
-## Canonical-doc updates pending from B1a (measure L)
+## Canonical-doc update status
 
-Not yet written (I will produce exact replacement text on request, after re-reading
-the target sections):
-- **Current Status §21:** record L result, splitting decision, mark measure-L done,
-  set next task = B1b/c.
-- **Roadmap B1:** fold in segment-splitting as part of B1; mark measure-L complete.
-- **Nucleus:** add segment-level indexing + distance-exact splitting as durable method
-  under the Milestone 4 section.
+B1a, B1b/c, B2, B3a and B3b are all written into Current Status §21, Roadmap
+PHASE B, and Nucleus 18.19 / 18.22 as of 2026-07-28. No canonical-doc updates are
+outstanding.
+
+Commit status: B1 is committed at 998c859. **B2, B3a and B3b are validated and
+commit-pending.**

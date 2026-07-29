@@ -24,8 +24,8 @@ C   Neural surrogate                           scoped, runs alongside B4-B6
 
 ## THE B1 FINDING THAT RESHAPES EVERYTHING AFTER IT
 
-Read this before any remaining Phase B prompt. It is the single most important
-result B1 produced, and it is not what B1 was expected to produce.
+Read this before any remaining Phase B prompt. It is the most important result B1
+produced, and it is not what B1 was expected to produce.
 
 B1 measured, countywide, per property:
 
@@ -34,56 +34,103 @@ phase 1  search        28.29 node visits  +  6.49 segment box tests  ~= 35 opera
 phase 2  verification  9,716.87 segment checks
 ```
 
-**Over 99 percent of remaining query work is verification, not search.** Search
-is already nearly free. This follows directly from B1's design decision: to
-guarantee output byte-identical to the reference, the final distance is computed
-by the unchanged exact kernel over each candidate feature's *entire original
-geometry*, which rescans about 6,490 segments per candidate feature.
+Search is roughly 0.4 percent of query work. Verification dominates, because B1
+computes the reported distance with the unchanged exact kernel over each candidate
+feature's *entire original geometry* — about 6,490 segments per candidate — in order to
+guarantee output byte-identical to the reference.
 
-The consequence is an Amdahl ceiling. Any further improvement confined to
-*search* — Hilbert ordering, a learned position model, a better tree — can at
-best remove that ~35-operation term. If verification stays at 9,716.87 segment
-checks, the total achievable speedup from B3, B4, and B5 combined is on the
-order of one part in three hundred, which will be indistinguishable from timing
-noise.
+### The ceiling, stated correctly
 
-This does not invalidate the phase. It sharpens what the phase is measuring, and
-it must be stated in advance rather than discovered in B6.
+Verification is not a fixed cost. It is:
+
+```text
+verification = candidate_features x avg_segments_per_candidate_feature
+```
+
+Candidate count is itself a search-quality metric, so better search reduces
+verification indirectly. That is exactly how B1 earned its 7.28x:
+
+```text
+Feature BVH   5.498 candidates x 12,872 segments  =  70,771 checks
+Segment BVH   1.497 candidates x  6,490 segments  =   9,717 checks
+floor         1.000 candidate  x  6,490 segments  =   6,490 checks
+```
+
+At least one feature must be verified. So under Option A the remaining headroom for
+every later search-side improvement combined is:
+
+```text
+(9,717 + 35) / 6,490  =  ~1.50x
+```
+
+**Not 1.003x.** An earlier draft of this document computed the ceiling by holding
+verification constant while varying search, which is incoherent — one drives the other.
+1.50x is a real and measurable range, though a modest one, and it is a bound on B3, B4,
+and B5 *combined* rather than on any one of them.
+
+### Hilbert ordering will probably make candidate count worse
+
+Best-first BVH traversal with tight bounds is already close to optimal at candidate
+selection. Flattening to one dimension and searching an inflated range is strictly
+lossier, so expect implementation 4 to admit MORE candidates than implementation 3, and
+therefore to verify more.
+
+This is not a failure. It is the measurement. Phase B's stated question is what
+flattening two-dimensional extended objects into one dimension costs, and the answer is
+denominated in precisely this inflation-induced candidate growth. Report the regression
+as a quantitative result.
 
 ### The design fork this creates
 
 ```text
 Option A  Verify over ORIGINAL feature geometry     (what B1 does)
           exact to 4.658e-10 m, byte-identical to the reference
-          verification cost ~9,717 segment checks/property
-          index improvements are capped by Amdahl at ~1.003x
+          verification ~9,717 segment checks/property, floor ~6,490
+          combined search-side headroom ~1.50x
 
 Option B  Verify over SPLIT SEGMENT geometry
-          the traversal already reaches the nearest sub-segment; report that
-          distance instead of rescanning the parent feature
-          verification cost collapses to tens of segment distance evaluations
-          expected agreement ~1e-9 m rather than ~4.7e-10 m, because split
-          endpoints are interpolated and differ from the original segment's
-          endpoints in the last few ULPs (measured worst case in B1's unit
-          tests: 1.18e-9 m)
+          the traversal already reaches the nearest sub-segment; report that distance
+          instead of rescanning the parent feature
+          verification collapses to tens of segment distance evaluations
+          expected agreement ~1e-9 m rather than ~4.7e-10 m, because split endpoints are
+          interpolated and differ from the original segment's endpoints by a few ULPs
+          (B1 unit tests measured worst case 1.18e-9 m)
           still passes the harness: the tolerance is 1e-6 m
-          tie-breaking remains stable: the 1e-6 m tie tolerance is roughly
-          three orders of magnitude larger than the perturbation, so a
-          near-tie is resolved as a tie by water_feature_id either way
+          tie-breaking remains stable: the 1e-6 m tie tolerance is ~1000x the
+          perturbation, so a near-tie resolves as a tie on water_feature_id either way
 ```
 
-**Do not choose Option B silently, and do not choose it by default.** It trades
-a provable property (byte-identical output) for a measurable one (search
-improvements become visible). It is a project-level decision, it belongs to B2,
-and whichever way it goes it must be recorded in the Nucleus with its reasoning.
+**Do not choose one and discard the other.** The A-versus-B difference is the phase's
+answer to "what does exactness cost?" — measured on real data at ~1M entries. Both paths
+share the same code behind one flag, so preserving both costs a branch, not a second
+implementation. B6 reports the cross-product.
 
-If Option A is kept, Phase B's honest framing is: *a segment-granularity index
-reduces the geometric work by 7.28x and drives search cost to near zero; the
-remaining cost is exact verification, which no index can remove.* That is a
-legitimate and defensible result. It is also a narrower claim than "learned
-indexing beats a segment BVH," and the report must not overstate it.
+### What this does NOT mean
 
----
+It does not mean the machine learning is bloat, and nothing is being cut from the
+Milestone 4 pivot. Three points hold regardless of the ceiling:
+
+1. **Implementations 4 and 5 share an identical candidate set and identical verification
+   cost by construction** — same Hilbert order, same inflated range, same decomposition,
+   same kernel. The only difference is whether a binary search or a model finds the
+   starting position. Verification appears on both sides of the 5-vs-4 comparison and
+   cancels. The learned-versus-control comparison is therefore *already isolated* from
+   the ceiling and is measurable directly in probes, window size, position error, and
+   search-phase time.
+2. **Index size is ceiling-immune.** The canonical learned-index claim is that a model
+   replaces a structure: a sorted array plus a few linear coefficients versus a BVH's
+   node arrays. That is measured in bytes and verification never enters it. Report it as
+   a first-class column.
+3. **Under Option B the ceiling largely lifts.** Verification collapses, search becomes a
+   large fraction of query time, and the RMI's advantage or disadvantage over binary
+   search becomes visible in wall clock rather than only in component metrics.
+
+Only **B7 (learned radius)** is a genuine cut candidate, and the Roadmap already lists it
+as stretch and not required. B3b's binary-search control stays regardless: without it,
+5-vs-4 is confounded, and that is a methodology requirement rather than a performance bet.
+
+What changed is framing and reporting discipline. State the ceiling in advance, report
+search-side effects explicitly, and never present a noise-level wall-clock delta as a win.
 
 ## PROMPT — B2 · Entry-extent sweep (formerly "run-size sweep")
 
@@ -117,19 +164,25 @@ Suggested cap sweep: 10, 25, 50, 100, 200, 500, unlimited. The 100 m point costs
 +0.50% entries, so the informative region is at TIGHTER caps where entry count grows
 materially. If run grouping is implemented, sweep 1, 2, 4, 8, 16, 32, 64, 128 alongside it.
 
-DECISION TO RESOLVE IN THIS CHUNK — verification strategy
+SECOND OBJECTIVE — implement BOTH verification modes behind one flag
 B1 measured search at ~35 operations/property against verification at 9,716.87 segment
-checks/property. Search is therefore ~0.4% of query work and an Amdahl ceiling of roughly
-1.003x applies to every later search-side improvement (B3, B4, B5).
+checks/property. Verification = candidate_features x segments_per_candidate, and the
+verification floor is one candidate x ~6,490 segments, so the combined search-side
+headroom for B3+B4+B5 under the current design is (9,717+35)/6,490 ~= 1.50x.
 
-Present the Option A / Option B fork (see "THE B1 FINDING" section of this document) with
-measured evidence, and get an explicit decision before B3a is written:
-  A  keep verification over original feature geometry: byte-identical output preserved,
-     later index work cannot show a wall-clock win
-  B  verify over split segment geometry: verification collapses, agreement moves from
-     ~4.7e-10 m to ~1e-9 m, still far inside the 1e-6 m harness tolerance
-Prototype Option B on the 1,000-property fixture and MEASURE the resulting agreement
-before recommending either. Do not adopt Option B on argument alone.
+Implement the fork rather than deciding it (see "THE B1 FINDING" in this document):
+  A  verify over ORIGINAL feature geometry  -> byte-identical, 4.658e-10 m
+  B  verify over SPLIT SEGMENT geometry     -> verification collapses, expect ~1e-9 m
+Both are one flag on the same code path; do not fork the implementation. Every later
+chunk inherits the flag, and B6 reports the A/B cross-product. That difference is the
+phase's measured answer to "what does exactness cost over extended objects," which is the
+second half of the Nucleus section 14b research question and currently unanswered in the
+literature.
+
+MEASURE the Option B agreement on the fixture AND countywide; do not assert it from the
+1.18e-9 m unit-test bound. Confirm specifically that no feature_id disagreements appear —
+the tie tolerance is ~1000x the perturbation, so none are expected, but expected is not
+measured. If Option B produces any field disagreement, report it and keep A as default.
 
 CRITICAL COMPATIBILITY CONSTRAINT
 python/scripts/build_property_evidence.py asserts that the benchmark summary's algorithm
@@ -146,9 +199,10 @@ MEASURE, PER PARAMETER VALUE — report search and verification separately
   exact agreement — must hold at EVERY value
 
 PREDICTION TO TEST, STATED IN ADVANCE
-Because verification dominates, wall clock may be nearly INSENSITIVE to this parameter.
-If the curve is flat, report it as the finding and explain why. Do not tune until a
-preferred shape appears. A negative result is a result (Nucleus 18.18).
+Under Option A, wall clock may be nearly INSENSITIVE to this parameter, because
+verification dominates and the cap moves mainly traversal cost. Under Option B the curve
+should become live. If either curve is flat, report it as the finding and explain why. Do
+not tune until a preferred shape appears. A negative result is a result (Nucleus 18.18).
 
 WHAT B2 CANNOT CLAIM
 B1's index is a 2D BVH with no midpoint ordering, so search-radius inflation does not
@@ -171,7 +225,8 @@ ACCEPTANCE (local runs)
 
 DELIVERABLES
   sweep CSV; summary JSON at a NEW path; the figure; chosen operating point with reasons;
-  a recorded decision on the verification-strategy fork
+  both verification modes implemented behind one flag, with measured A/B agreement and
+  cost at the chosen operating point
   Confirm matplotlib is installed in .venv BEFORE the figure step. If a dependency is
   missing, add it to requirements.txt deliberately in the same change — do not pip install
   ad hoc (see the scipy/spatial_split gap in Current Status section 16).
@@ -209,10 +264,11 @@ WHAT B1 CHANGED ABOUT THIS CHUNK
    written before this was known; the phase's expected "entire cost of treating extended
    objects as points" turned out to be purchasable for +0.50% index entries.
    Use the CAPPED L. Using the uncapped L would be incorrect AND catastrophically slow.
-2. MIRROR B1'S TWO-PHASE STRUCTURE unless B2 selected Option B. Phase 1 selects candidates
-   by Hilbert range; phase 2 runs the unchanged kernel and tie rule over candidate
-   features. This is what makes byte-identical output achievable, and it lets 4-vs-3
-   isolate the dimensionality reduction with everything else held constant.
+2. MIRROR B1'S TWO-PHASE STRUCTURE and inherit B2's verification flag. Phase 1 selects
+   candidates by Hilbert range; phase 2 verifies under Option A (original feature
+   geometry, byte-identical) or Option B (split segment geometry, ~1e-9 m), selected by
+   the same flag B2 introduced. Do not hard-code either. This keeps 4-vs-3 isolated to the
+   dimensionality reduction with everything else held constant.
 3. VERIFICATION DOMINATES. B1 measured search at ~35 operations/property against
    verification at 9,716.87 segment checks/property. This chunk changes phase 1 only.
    Expect little or no wall-clock movement under Option A. Do not treat that as failure.
@@ -283,11 +339,11 @@ TASKS
 ACCEPTANCE (local runs)
   compare_python_cpp_water.py exits 0 against outputs/baseline/
   python_nearest_water_countywide.csv: all_fields_agree == 267,362
-  Expected max abs error depends on the B2 verification decision:
-    Option A (verify over original geometry)  -> 4.658e-10 m, matching B1 and the Feature
-                                                 BVH exactly
-    Option B (verify over split geometry)     -> ~1e-9 m; state the measured value and
-                                                 confirm no feature_id disagreements
+  Run and report BOTH verification modes:
+    Option A (verify over original geometry)  -> expect 4.658e-10 m, matching B1 and the
+                                                 Feature BVH exactly
+    Option B (verify over split geometry)     -> expect ~1e-9 m; state the measured value
+                                                 and confirm no feature_id disagreements
   266 exact-zero distances, all class = waterbody
   267,362 rows, 267,362 unique property_ids, no nulls in required columns,
   distances in [0, 20000), single distance_crs and algorithm values
@@ -323,10 +379,12 @@ both stages. Inference must be a handful of multiply-adds or the speed argument 
 
 CONTEXT FROM B1 — read before interpreting any result
 Search is ~0.4% of query work (about 35 operations against 9,716.87 verification segment
-checks). Under B2 Option A, a perfect position predictor cannot produce a measurable
-end-to-end speedup. The RMI is therefore being evaluated on SEARCH-side metrics —
-predicted-position error, search-window size, key throughput — and any wall-clock claim
-must be reported against that ceiling. Frame this before training, not after benchmarking.
+checks), and under Option A the combined search-side headroom for B3+B4+B5 is ~1.50x. A
+perfect position predictor therefore cannot produce a large end-to-end speedup in that
+mode; under Option B it can. Either way the RMI's own quality is measured on SEARCH-side
+metrics — predicted-position error, search-window size, key throughput — plus index size
+in bytes, which the ceiling does not touch at all and which is the canonical learned-index
+claim (a model replacing a structure). Frame this before training, not after benchmarking.
 
 ACCEPTANCE
   EXHAUSTIVE error bound, not sampled: for every one of the ~1.07M keys, the predicted
@@ -371,10 +429,15 @@ ACCEPTANCE (local runs)
   Report the search-window size distribution: min, median, p99, max, and the fraction of
   queries where the window collapses to a single position.
 
-WHAT B5 CANNOT CLAIM
-Under B2 Option A the end-to-end speedup is capped near 1.003x by verification cost. Report
-the search-side improvement separately from wall clock, and do not present a wall-clock
-difference inside timing noise as a win.
+WHAT B5 CAN AND CANNOT CLAIM
+CAN: implementations 4 and 5 share an identical candidate set and identical verification
+cost, so the 5-vs-4 comparison is clean under BOTH verification modes. Probes per query,
+search-window size, position error, index bytes, and search-phase time are all valid
+measurements of the learned index and none of them are affected by the ceiling.
+CANNOT: under Option A, combined search-side headroom is ~1.50x for B3+B4+B5 together, so
+an end-to-end wall-clock delta may sit inside noise. Report search-side metrics separately
+from wall clock and do not present a noise-level difference as a win. Under Option B the
+end-to-end comparison becomes live; report it straight, whichever way it falls.
 
 DELIVERABLES
   hilbert_rmi program; agreement report; window-size distribution.
@@ -417,16 +480,35 @@ TASKS
    total segment checks or only wall clock will hide the actual structure of the result.
 5. Inflation cost and memory are first-class columns.
 
+THE HEADLINE TABLE — run the full ladder under BOTH verification modes
+This cross-product is B6's primary deliverable. The row difference is index quality; the
+COLUMN difference is the cost of exactness, which is the half of the Nucleus section 14b
+research question the literature has never measured.
+
+                              Option A (byte-identical)   Option B (~1e-9 m)
+  brute force                       n/a                        n/a
+  Feature BVH                    70,771 checks                  -
+  Segment BVH                     9,717 checks                  ?
+  Hilbert + binary search             ?                         ?
+  Hilbert + RMI                       ?                         ?
+  columns: checks, wall clock, index bytes, candidates/property, inflation cost
+
 FRAME THE RESULT BEFORE INTERPRETING IT
-B1 measured search at ~0.4% of query work. Under B2 Option A, comparisons 4-vs-3 and 5-vs-4
-are expected to be flat in wall clock by construction, and the honest headline is:
-  segment granularity produced a 7.28x reduction in geometric work and drove search cost to
-  near zero; beyond that point exact verification dominates, and no index — learned or
-  otherwise — can remove it.
-That is a real finding and it is the one the data supports. Do not tune to force a learned
-win. A negative result, stated in advance and measured against an exact baseline, is a
-result (Nucleus 18.18). If B2 selected Option B, the comparisons become live and should be
-reported straight, whichever way they fall.
+Under Option A the combined search-side headroom is ~1.50x (verification floor ~6,490
+checks against B1's 9,717), so 4-vs-3 and 5-vs-4 will be small in wall clock and may sit
+inside noise. Expect implementation 4 to admit MORE candidates than implementation 3:
+flattening 2D to 1D and searching an inflated range is strictly lossier than best-first
+traversal with tight bounds. That regression is the measurement 4-vs-3 exists to produce,
+not a failure.
+
+5-vs-4 is unaffected by any of this. Implementations 4 and 5 share an identical candidate
+set and identical verification cost by construction, so verification cancels and the
+learned-versus-control comparison is clean in both columns. Report it in probes per query,
+search-window size, position error, index bytes, and search-phase time — not only in
+end-to-end wall clock.
+
+Do not tune to force a learned win. A negative result, stated in advance and measured
+against an exact baseline, is a result (Nucleus 18.18).
 
 ACCEPTANCE (local runs)
   one runs CSV and one summary JSON covering all five implementations

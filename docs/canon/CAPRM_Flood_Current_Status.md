@@ -1,12 +1,12 @@
-# CAPRM-Flood Current Status — 2026-07-28
+# CAPRM-Flood Current Status — 2026-07-29
 
 ## Purpose of This Document
 
-This document records the exact current operational state of CAPRM-Flood as of **July 28, 2026**.
+This document records the exact current operational state of CAPRM-Flood as of **July 29, 2026**.
 
 ```text
 Verified at commit:   see section 2
-Test suite:           257 passed  (excluding untracked spatial_split WIP)
+Test suite:           304 passed  (excluding untracked spatial_split WIP)
 Product audit:        49 pass, 1 warn, 0 fail
 Scoring policy:       preliminary_exposure_index_v2
 ```
@@ -86,8 +86,7 @@ master
 Current synchronized commit:
 
 ```text
-f2e2e00 Milestone 4 B5: RMI inference in C++; byte-identical countywide,
-        measured 3.85% slower
+86ff32b Docs: bring README and validation.md current through Milestone 4 B5c
 ```
 
 Synchronization status at the last check:
@@ -99,10 +98,27 @@ behind: 0
 ```
 
 The local repository and GitHub remote are synchronized through commit
-f2e2e00 (HEAD == origin/master, verified 2026-07-28). Milestone 4 commit
-lineage: B1 at 998c859; B2, B3a, B3b and B4 at 97bfb1e; B5 at f2e2e00.
+86ff32b (HEAD == origin/master, verified 2026-07-29). Milestone 4 commit
+lineage:
 
-B5c's implementation is present in the working tree and not yet committed; see
+```text
+998c859  B1
+27031d9  B2
+97bfb1e  B3a, B3b, B4
+f2e2e00  B5
+00c5fd2  docs: record B5's hash; pin rasterio and its transitive closure
+ff8121f  B5c
+86ff32b  docs: README and validation.md through B5c
+```
+
+Two corrections this section had accumulated. B2 is at 27031d9, not at 97bfb1e
+as previously recorded. B5c is committed at ff8121f; the step-8 hash-recording
+convention was followed for B5 at 00c5fd2 and lapsed for B5c, which is exactly
+the failure mode the convention exists to prevent and is why the recommended
+first prompt tells a new assistant to check this hash against `git log -1`
+before trusting anything else in this document.
+
+B6a, B6b and B6c are present in the working tree and NOT yet committed; see
 section 21.
 
 **A document that records its own commit hash is stale the instant it is
@@ -111,13 +127,20 @@ rather than vigilance: every chunk ends with a small follow-up commit whose only
 job is to write the previous commit's hash into this section. Treat it as step 8
 of the working standard's commit sequence.
 
-**The three canonical documents live under `docs/`, not at the repository
-root.** `git add CAPRM_Flood_Current_Status.md` fails with "pathspec did not
-match any files"; the correct paths are
-`docs/CAPRM_Flood_Current_Status.md`,
-`docs/CAPRM_Flood_Project_Nucleus_2026-07-15.md` and
-`docs/CAPRM_Flood_Roadmap.md`. Confirm with
+**The three canonical documents live under `docs/canon/`, not at the repository
+root and no longer directly under `docs/`.** They were moved from `docs/` to
+`docs/canon/` on 2026-07-29. `git add CAPRM_Flood_Current_Status.md` fails with
+"pathspec did not match any files"; the correct paths are
+`docs/canon/CAPRM_Flood_Current_Status.md`,
+`docs/canon/CAPRM_Flood_Project_Nucleus_2026-07-15.md` and
+`docs/canon/CAPRM_Flood_Roadmap.md`. Confirm with
 `git ls-files | Select-String CAPRM_Flood`.
+
+The move should be staged as a rename so history follows the files:
+`git add -A docs/` will detect it. Anything that referenced the old paths —
+`README.md`, `docs/kickoff_prompts_m4.md`, `docs/caprm_flood_m4_chunking_plan.md`
+— must be updated in the same commit, or the pointers a new assistant is told to
+follow will be dead.
 
 `models/` is a tracked directory and `models/water_hilbert_rmi.bin` is tracked
 and clean: `git check-ignore -v models/water_hilbert_rmi.bin` prints nothing,
@@ -2607,66 +2630,305 @@ Recorded and not blocking:
 
 ---
 
+## B6a result — the measurement harness, 2026-07-29
+
+New: `python/caprm/ladder_benchmark.py`, `python/scripts/benchmark_water_ladder.py`,
+`tests/test_ladder_benchmark.py`. No implementation source modified. Kept
+separate from `water_benchmark.py`, whose `summarize_benchmark_runs` asserts the
+algorithm set equals `{brute_force, feature_bvh}` and whose output is the
+Milestone 2 artifact cited in section 19b; the new module imports its stdout
+prefix maps rather than restating them.
+
+Protocol, declared before measuring: 3 + 1 warm-up for rung 1 and 7 + 1 for
+rungs 2-5, because rung 1 resolves a ~20x effect and rungs 4/5 a ~6 percent one
+against ~4 percent noise; blocked by repetition and cyclically rotated by block
+index; stdout to a pipe on every run, since all five binaries print progress from
+inside the timed region; `--verify-counts`, `--uncapped-half` and
+`--seed-error-stats` refused by assertion, `--query-stats` required on rungs 4-5;
+dispersion as min/median/max and relative spread always, standard deviation only
+at n >= 5; every run appended and fsynced to a JSON-lines sidecar; every row
+carries a session id and a cell whose repetitions span sessions is refused.
+
+Proving run at `_10000`: 31 timed runs, five cells, one output digest per cell,
+no deterministic counter drift, five-of-five exact agreement at 10,000/10,000
+with maximum absolute error 4.63671767647611e-10 m identical across all five
+rungs — the residual is pure Python/C++ floating point with no index
+contribution.
+
+**Two sittings of the identical configuration disagreed.** Rung 1 moved 11.02
+percent between them, 39.940 s to 44.342 s, on provably identical work; rungs
+2-5 moved under 1 percent; every adjacent RATIO among rungs 2-5 reproduced to
+within 0.25 percent. This is the evidence behind the session guard. The first
+sitting's summary was overwritten before the sidecar existed and survives only
+as transcribed values: 39.9400 / 1.1608 / 0.0753 / 0.3520 / 0.4077 s. Recorded
+here as transcription, which is weaker than an artifact, with the overwrite as
+the reason.
+
+---
+
+## B6b result — SEED_WINDOW as a build parameter, 2026-07-29
+
+One hunk in `cpp/spatial_core/src/water_distance_hilbert.cpp`: an `#ifndef
+CAPRM_SEED_WINDOW` guard defaulting to 64, plus `static_assert(SEED_WINDOW >=
+1)`. Compile-time rather than a runtime flag deliberately: a runtime bound would
+put a variable where the compiler sees a constant, changing loop bounds and
+unrolling inside the timed region, and would make every measurement including
+W=64 non-comparable with everything recorded through B5c. Build flags gain
+`-Wl,--no-insert-timestamp`.
+
+Gates, all passed on the post-edit source: countywide default build reproduces
+`8ad41e83...d6b7e9e`; `fixture_crosscheck.py` ALL CROSS-CHECKS PASSED; nine
+windows {8..2048} x two seeders at `_10000`, all 18 runs exit 0 against the two
+expected digests; every binary self-reports its window on stdout and in its
+`--query-stats` JSON, cross-checked against the `-D` value.
+
+**The first attempt failed silently and is recorded in Nucleus 18.25.** Seven
+binaries built with `-D` against source that never referenced the macro; the
+compiler discarded the definition without warning; all seven were W=64; the
+neutrality digest gate passed on them. The rule extracted: a neutrality gate
+requires a positive control.
+
+Range extension to W = 1024 and 2048 was declared AFTER seeing the {8..512}
+results and is recorded as such (Nucleus 18.12): the pre-declared range did not
+bracket either seeder's optimum. No result from {8..512} was revised.
+
+---
+
+## B6c result — the ladder and the window sweep, 2026-07-29
+
+Two invocations, deliberately separate, with no comparison crossing them.
+
+```text
+A  ladder   5 rungs x 3 workloads at W=64        15 cells, 108 runs, ~1.9 h
+B  sweep    2 rungs x 9 windows at countywide    18 cells, 144 runs, ~1.1 h
+```
+
+Every run in B was digest-gated and passed. Exactness closed for all fifteen
+ladder cells: `_10000` and `_100000` at 10,000/10,000 and 100,000/100,000, and
+countywide at 267,362/267,362 for brute force, the feature BVH and the segment
+BVH, with the two Hilbert rungs inheriting validation through byte-identity to
+`8ad41e83...` and `86f05df0...`. The countywide maximum absolute error is
+4.657998431412125e-10 m for brute force, the feature BVH and the segment BVH
+alike — three index structures, three traversal orders, one residual, which is
+Nucleus 18.16 measured three ways at full scale.
+
+### The three adjacent comparisons, Option A (original-geometry verification)
+
+```text
+             2 v 1        3 v 2         4 v 3          5 v 4    n
+_10000       33.6x     15.681x     4.732x slower     +14.31%   3/7
+_100000      11.3x     14.928x     2.138x slower      +9.80%   3/7
+countywide   17.0x      6.905x     1.947x slower      +6.48%   3/7
+```
+
+Segment checks per property beside the clock, never inferred from it:
+
+```text
+             brute force   feature BVH   segment BVH   hilbert (both seeders)
+_10000        1,063,159      34,011.2       1,269.29        1,486.11
+_100000       1,063,159     113,194.9       6,697.86        8,056.00
+countywide    1,063,159      70,770.6       9,407.62       11,021.83
+```
+
+Three durable readings. Every comparison SHRINKS as the query count grows,
+because phase-2 verification is seed- and index-invariant common work that
+dilutes what the index does. The 4-v-3 phase-2 penalty is +17.1 percent at
+`_10000` and +17.2 percent at countywide against segment-BVH baselines that
+differ 7.4-fold — the cost of flattening 2D to 1D is stable where the absolute
+work is not. And `_100000` does 1.599x more feature-BVH work per property than
+countywide while doing LESS segment-BVH work, which the counter explains: 17,377
+segments per candidate feature against 12,873, so the feature BVH's cost tracks
+feature SIZE and the segment BVH's does not. That is B1's granularity premise
+measured against a workload contrast rather than asserted.
+
+**`brute_force@countywide` carries a 31.71 percent spread at n=3**, five times
+any other cell and rising with run length across all three workloads. Its number
+is an order-of-magnitude statement, ~17x, not a measurement. Rung 1 is in no
+adjacent comparison.
+
+### The window sweep, countywide
+
+```text
+W        binary s    rmi s   rmi/binary   binary missed   exchange rate
+   8      18.1273   20.2337    1.11620        69.88%        17.55:1
+  64      17.9349   19.0764    1.06365        38.62%        10.44:1
+ 512      18.3422   18.5639    1.01209        17.13%         3.07:1
+2048      20.8680   20.8683    1.00001        11.84%         0.83:1
+```
+
+Monotone across nine points, converging to unity to five decimal places. See
+Nucleus 18.26 and 18.27.
+
+### The cost model
+
+B5c's independently isolated 20.40 ns per resolve-descent entry predicts twelve
+measured wall-clock gaps within roughly 10 percent everywhere and within 0.2
+percent at the countywide operating point; the least-squares slope through the
+origin over the sweep is 21.02 ns/entry. A joint fit over the eighteen sweep
+cells separates two access patterns — ~3.2 ns for a sequential window-scan entry
+against ~25 ns for a scattered resolve-descent entry, R^2 0.997 with structured
+residuals. That second fit is exploratory, not a validated prediction.
+
+### Cross-invocation term, measured
+
+```text
+                    invocation A   invocation B    diff
+hilbert_binary         17.7500       17.9349      +1.04%
+hilbert_rmi            18.9003       19.0764      +0.93%
+5 v 4 ratio            1.06481        1.06365      0.116 pp
+```
+
+Absolutes move ~1 percent between invocations; the ratio agrees to 0.116
+percentage points. This is why the project reports ratios within an invocation
+and absolutes with their invocation named.
+
+### Memory, countywide
+
+```text
+                    structure      peak RSS      peak commit
+segment_bvh        119,768,836   185,774,080    342,327,296
+hilbert_rmi         13,711,112   232,501,248    285,212,672
+                   8.74x smaller  1.25x larger   1.20x smaller
+```
+
+Three instruments, two directions. See Nucleus 18.24.
+
+### Correction carried by B6c
+
+`9,716.87` is B1's cap=100 figure, not the cap=25 operating point the ladder
+runs. The cap=25 countywide value is 9,407.6 (B2's sweep table) and B6c measured
+9,407.617649. Four turns of B6 analysis used the wrong baseline, and the
+corrected 4-v-3 phase-2 penalty is +17.2 percent countywide rather than +13.4.
+The wrong figure still appears in `docs/kickoff_prompts_m4.md` and in
+`tests/test_ladder_benchmark.py`'s `SEGMENT_BVH_STDOUT` fixture and must be
+fixed there.
+
+---
+
+## Artifacts generated by B6a-B6c
+
+```text
+outputs/benchmark/water_ladder_runs_{ladder,sweep}.csv and .jsonl
+outputs/benchmark/water_ladder_runs_b6b_verify10k_w{8..2048}.csv
+outputs/benchmark/water_ladder_runs_b6b_neutrality.csv
+outputs/validation/water_ladder_summary_{ladder,sweep}.json
+outputs/validation/water_ladder_summary_b6b_*.json
+outputs/validation/b6b_window_sweep_counters_10000.csv
+outputs/validation/b6c_{ladder,sweep}_counters.csv
+outputs/validation/ladder_agreement_*.csv, ladder_summary_*.json  (15 cells)
+outputs/validation/b6_analysis.json, b6_benchmark_tables.md
+cpp/spatial_core/build/water_distance_hilbert_w{8..2048}.exe
+```
+
+---
+
+## Immediate next task — B6c-2, then B6d
+
+**B6c-2. Complete the verification-mode cross-product.** B6's primary
+deliverable per `docs/kickoff_prompts_m4.md` is the Option A / Option B
+cross-product, and the conversation-level prompt that ran B6a-B6c restricted the
+ladder to Option A. Rung 3 is already measured under both modes (B2: cap 25,
+sec A 9.596, sec B 1.705, 5.63x, 7 reps countywide) and Option B exactness is
+already validated for rungs 3, 4 and 5 (B3b). Missing: the timing of rungs 4 and
+5 under split verification.
+
+This is not cosmetic. `kickoff_prompts_m4.md` states that under Option B the
+verification ceiling lifts and the learned rung's advantage or disadvantage
+becomes visible in WALL CLOCK rather than only in component metrics. B6c
+measured 5-v-4 at +6.48 percent against 4.6-14.2 percent cell spread and could
+not resolve either seeder's optimal window; that is the predicted consequence of
+measuring only in the diluted column.
+
+Predicted before running, from B2's decomposition (verification work falls
+~6.02x while search is untouched) applied to B6c's Option A countywide medians:
+
+```text
+                      A measured   B predicted
+segment_bvh              9.1167        ~1.62
+hilbert_binary          17.7500        ~8.97
+hilbert_rmi             18.9003       ~10.12
+
+4 v 3   1.947x slower  ->  ~5.5x slower
+5 v 4   +6.48%         ->  ~+12.8%
+```
+
+Requires making verification mode a third cell dimension in the harness; it sits
+at index 2 of `RungSpec.trailing_positionals` for both `segment_bvh` and
+`hilbert`. Option B output is NOT byte-identical to Option A — B2 measured
+8.82e-10 to 9.17e-10 m against 4.658e-10 — so Option B cells gate on
+`compare_python_cpp_water.py` at 1e-6 m and these runs establish the canonical
+Option B digests.
+
+**B6d. Close out.** The benchmark table as three adjacent comparisons with wall
+clock beside counts in both columns; search and verification as separate columns
+throughout; inflation as a first-class axis; the memory table; the five
+canonical-document updates; and commit.
+
+---
+
 # 22. Recommended First Prompt for a New AI Assistant
 
 Use:
 
-> We are continuing CAPRM-Flood at Milestone 4, chunk B6. Read Nucleus sections
-> 14b, 18.15, 18.18, 18.19, 18.22 and 18.23, this document's sections 19b and 21
-> including the B1, B2, B3b, B4, B5 and B5c subsections, and
-> `CAPRM_Flood_Roadmap.md` PHASE B and B6 before proposing anything.
+> We are continuing CAPRM-Flood at Milestone 4, chunk B6c-2 then B6d. Read
+> Nucleus sections 14b, 18.15, 18.16, 18.18, 18.19, 18.22, 18.24, 18.25, 18.26
+> and 18.27, this document's sections 19b and 21 including the B1, B2, B3b, B4,
+> B5, B5c, B6a, B6b and B6c subsections, `CAPRM_Flood_Roadmap.md` PHASE B and
+> B6, and the B6 prompt in `docs/kickoff_prompts_m4.md`, before proposing
+> anything.
 >
 > Confirm the commit recorded in this document's section 2 matches
 > `git log -1 --oneline`. If it does not, say so before continuing — you are
-> reading a stale copy. The canonical documents live under `docs/`.
+> reading a stale copy. The canonical documents live under `docs/canon/`.
 >
 > Milestones 1 through 3 are frozen. The exposure index is not under active work
-> and must not be modified. B6 measures; it builds nothing. No kernel, tolerance,
-> tie rule, region predicate or emitted field changes.
+> and must not be modified. No kernel, tolerance, tie rule, region predicate or
+> emitted field changes. The one permitted source edit in PHASE B has already
+> been made: the `#ifndef CAPRM_SEED_WINDOW` guard.
 >
-> All five rungs exist, every rung claiming exactness produces byte-identical
-> evidence countywide, and the learned rung's cost is attributed to a counted
-> quantity: it saves 20.2376 key probes per property and spends 211.34 extra
-> point-to-segment distance computations, about 10 to 1 in the wrong direction.
-> Report that. Nucleus 18.18 and section 14b both committed the project to
-> reporting whichever way it fell.
+> All five rungs exist and every one claiming exactness has been validated at
+> every workload. B6c measured the ladder and a nine-window sweep and produced
+> the phase's contribution, recorded as Nucleus 18.27: **the reported benefit of
+> a learned spatial index depends on parameters the literature holds fixed and
+> does not report** — the seed window moves 5-v-4 from +11.6 percent to +0.001
+> percent, the verification mode roughly doubles it, and the workload moves
+> 4-v-3 from 4.73x to 1.95x. Every comparison published must name its window,
+> its verification mode and its workload.
 >
-> Six traps, all of them things this project has already recorded and can still
-> walk into:
+> B6c-2 completes the Option A / Option B verification cross-product, which
+> `docs/kickoff_prompts_m4.md` names as B6's primary deliverable and which the
+> conversation-level B6 prompt restricted away. Rung 3 is already measured under
+> both modes (B2). Missing: rungs 4 and 5 under split verification. Predictions
+> are declared in section 21 and must not be adjusted after the fact.
+>
+> Seven traps, all recorded and all still walkable-into:
 >
 > - Never infer a speedup from counts. B2 measured 1.43x fewer segment checks
->   running 6.0x faster. Report wall clock beside counts, always.
-> - Do not report B4's 6.323 "mean last-mile probes" as a measured C++ probe
->   count. It is a modelled quantity over index keys describing a search the
->   shipped path does not perform; rung 5 performs zero key comparisons.
-> - No wall-clock claim from a single run. B5c measured 3.85 percent spread
->   between two runs of the SAME configuration, the order of the effects being
->   claimed. State a repetition and warm-up protocol and report dispersion.
-> - Run the whole ladder under one region predicate (`disk`) and one
->   verification mode. Mixing them confounds the comparisons.
-> - No run carrying `--verify-counts`, `--uncapped-half` or
->   `--seed-error-stats` is benchmark-eligible. `--query-stats` is free and is.
-> - There is no B-tree here. Against rung 4 the model only ADDS bytes; the
->   defensible size comparison is rung 5 against rung 3.
+>   running 6.0x faster. Wall clock beside counts, always.
+> - A segment check is not comparable across verification modes, and an entry is
+>   not comparable across access patterns: ~3.2 ns sequential against ~25 ns
+>   scattered. Never sum or compare them.
+> - No wall-clock claim from a single run, and none crossing invocations. B6c
+>   measured the between-invocation term at ~1 percent and cell spreads of 4.6
+>   to 14.2 percent countywide. Report ratios within an invocation.
+> - A neutrality gate requires a positive control (Nucleus 18.25). An identity
+>   proves nothing until some setting of the same parameter is shown to change
+>   something.
+> - Executable digests are void without `-Wl,--no-insert-timestamp`.
+> - No run carrying `--verify-counts`, `--uncapped-half` or `--seed-error-stats`
+>   is benchmark-eligible. `--query-stats` is free and is eligible.
+> - The workload ladder varies QUERY COUNT, not index size. It is not the
+>   scaling axis the learned-index literature argues over (Nucleus 14b).
 >
-> Two axes come from B5c and are not optional. The water workload ladder
-> (`_10000`, `_100000`, `_countywide`) is already exported with identical
-> schemas, and learned indexes are argued to win as N grows, so report a
-> three-point curve per rung rather than one point. And sweep `SEED_WINDOW` over
-> {8,16,32,64,128,256,512} for BOTH seeders, upward as well as downward: the
-> exact binary control misses the +/-64 window on 38.62 percent of queries, so
-> this is a query-design parameter rather than an RMI tuning knob. Compare only
-> at matched window size. Both sweeps are cheap because every emitted counter
-> comes from the tight descent, so window size is byte-neutral and byte-identity
-> is a free check at every point.
+> Every derived number in the benchmark tables is computed by
+> `python/scripts/analyze_b6_results.py` and nowhere else. If an analysis is
+> performed in conversation, it must land in that script with a test before it
+> is quoted, or it does not exist.
 >
-> Inflation is a first-class axis, not a footnote. It is the cost of extended
-> objects and the thing the literature has not measured, because the literature
-> indexes points.
->
-> Completion gate: exact agreement across all compared fields at countywide
-> scale for every implementation claiming exactness, and a benchmark table
-> reported as the three adjacent comparisons with wall clock beside counts.
+> Completion gate for B6: the Option A / Option B cross-product complete, the
+> three adjacent comparisons reported with wall clock beside counts in both
+> columns, search and verification as separate columns, inflation and memory as
+> first-class columns, and the three canonical documents updated.
 
 ---
 

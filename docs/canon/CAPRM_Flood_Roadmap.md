@@ -64,8 +64,10 @@ verdict: moderately sensitive to component weights
 Next priority:
 
 ```text
-B6. Benchmark the five-implementation ladder, reported as three adjacent
-    comparisons, with a repetition protocol and a scaling curve
+B6c-2. Complete the Option A / Option B verification cross-product, then
+       B6d: close out the benchmark and update the canonical documents.
+       B6a (harness), B6b (seed-window parameterization) and B6c (the ladder
+       and the nine-window sweep) are complete and validated.
 ```
 
 B1 through B5c are complete and validated countywide (see PHASE B). The
@@ -1071,6 +1073,39 @@ adjacent comparisons.
 
 ---
 
+### B6 status, 2026-07-29
+
+```text
+B6a  measurement harness and protocol            COMPLETE, validated at _10000
+B6b  SEED_WINDOW as a compile-time parameter     COMPLETE, 9 windows byte-neutral
+B6c  the ladder and the nine-window sweep        COMPLETE, 252 timed runs
+B6c-2 Option A / Option B verification           NEXT
+B6d  close-out: tables and canonical documents   pending B6c-2
+```
+
+Delivered beyond the original scope: a nine-window seed sweep at two workloads,
+a validated cost model (B5c's isolated 20.40 ns/entry predicts twelve measured
+wall-clock gaps), a query-count curve across a 27x range of Q, per-cell resident
+AND committed memory, session guards and crash-safe recording, and
+`python/scripts/analyze_b6_results.py`, which computes every derived number in
+the benchmark tables so that no analysis lives only in a conversation.
+
+Not delivered, and the reason B6 is not yet closed: the Option A / Option B
+verification cross-product that `docs/kickoff_prompts_m4.md` names as B6's
+primary deliverable. Rung 3 is measured under both modes at B2; rungs 4 and 5
+are not. See Current Status section 21 for the declared predictions.
+
+### The contribution, recorded
+
+B6's durable output is not the table. It is Nucleus 18.27: **the reported
+benefit of a learned spatial index depends on parameters the literature holds
+fixed and does not report.** Three measured demonstrations — seed window,
+verification mode, workload composition — each of which moves the sign or the
+magnitude of the learned-versus-control comparison. Every result this project
+publishes about the learned rung names all three.
+
+---
+
 ## B7. Learned Radius — Stretch
 
 ### The idea
@@ -1831,7 +1866,8 @@ The ladder is built and the learned rung's cost is now attributable: it saves
 20.2376 key probes per property and spends 211.34 extra point-to-segment
 distance computations, about ten to one against. B6 measures and builds nothing.
 Two axes B5c forced are not optional — the `_10000`/`_100000`/`_countywide`
-scaling curve, because learned indexes are argued to win as N grows, and a
+query-count curve, which varies Q at a fixed index size and is NOT the
+literature's N-scaling axis (Nucleus 14b), and a
 `SEED_WINDOW` sweep upward as well as downward for BOTH seeders, because the
 exact binary control misses the +/-64 window on 38.62 percent of queries and the
 window is therefore a query-design parameter rather than an RMI tuning knob.
