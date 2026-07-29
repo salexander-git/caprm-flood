@@ -143,7 +143,24 @@ constexpr std::uint32_t DEFAULT_HILBERT_ORDER = 32;
 // position, yields the same emitted fields. Recorded in the manifest because it
 // affects measured query cost, and because B5's model error bound plays the
 // same role.
-constexpr std::size_t SEED_WINDOW = 64;
+// B6b makes this a COMPILE-TIME parameter rather than a runtime option. B5c
+// measured that the exact binary-search control misses the +/-64 window on
+// 38.62 percent of countywide queries, so the window is a query-design
+// parameter for BOTH seeders and has to be swept. A runtime `--seed-window`
+// would put a variable where the compiler currently sees a constant, changing
+// loop bounds and unrolling inside the region being timed, and would make every
+// measurement -- including the one at 64 -- non-comparable with everything
+// recorded through B5c. Building with no -D leaves the default build unchanged;
+// that is gated by output digest rather than assumed.
+#ifndef CAPRM_SEED_WINDOW
+#define CAPRM_SEED_WINDOW 64
+#endif
+constexpr std::size_t SEED_WINDOW = CAPRM_SEED_WINDOW;
+
+// A zero window would collapse lo and hi onto the seed position and leave
+// d_seed unset, so the exactness argument's premise -- that d_seed is the
+// minimum over a window of REAL segments -- would have no window to range over.
+static_assert(SEED_WINDOW >= 1, "SEED_WINDOW must admit at least one entry.");
 
 
 // ---------------------------------------------------------------------------
