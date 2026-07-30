@@ -1,0 +1,2253 @@
+{
+  "task": "C1_blocked_kfold_partition",
+  "schema_version": "c1_kfold_v1",
+  "generated_utc": "2026-07-30T16:24:31.864851+00:00",
+  "tool_version": "caprm.spatial_kfold/c1.0",
+  "crs": "EPSG:26918",
+  "operating_point": {
+    "buffer_m": 2125.0,
+    "buffer_chosen_as": "lag at gamma/sill = 0.50",
+    "buffer_source": "outputs/validation/spatial_correlation_v2.json",
+    "block_size_m": 10000.0,
+    "n_folds": 5,
+    "seeds": [
+      20260722,
+      20260723,
+      20260724,
+      20260725,
+      20260726
+    ],
+    "grid_origin_x_m": 0.0,
+    "grid_origin_y_m": 0.0,
+    "isolate_test_from_val": true,
+    "fold_hash": "blake2b(f'{seed}:fold:{i}:{j}') % n_folds"
+  },
+  "inputs": {
+    "dataset": "outputs/training/supervised_dataset_v2.csv",
+    "dataset_sha256": "2e3132faf5ce2dc0f31bd4d7ff40041171f4f68d99e91b5a5c2f350151ba7799",
+    "rows": 267362,
+    "correlation_artifact": "outputs/validation/spatial_correlation_v2.json",
+    "correlation_sha256": "6ae7fc2d7dc65994ceec9f61a180712d96ac6676fabbed3fc442a7f90cc76edb"
+  },
+  "coordinate_label_ambiguity": {
+    "distinct_coordinates": 266038,
+    "coordinate_groups_with_multiple_properties": 376,
+    "rows_in_those_groups": 1700,
+    "groups_with_differing_label": 0,
+    "max_within_group_label_range": 0.0,
+    "irreducible_mse": 3.925745661741985e-31,
+    "irreducible_rmse": 6.265577117666005e-16,
+    "target_variance": 170.65993133657912
+  },
+  "per_seed": [
+    {
+      "seed": 20260722,
+      "split_path": "outputs\\splits\\spatial_kfold_countywide_seed20260722.csv",
+      "split_sha256": "90c3971fe3b47cf25c46116a0c70a3697695983c4c18352437462ebfd3f788e3",
+      "deterministic_on_rerun": true,
+      "stats": {
+        "n_properties": 267362,
+        "n_blocks_total": 29,
+        "blocks_per_fold": {
+          "0": 5,
+          "1": 6,
+          "2": 7,
+          "3": 5,
+          "4": 6
+        },
+        "properties_tested_at_least_once": 89344,
+        "test_coverage_fraction": 0.3341686552314839,
+        "folds": [
+          {
+            "fold": 0,
+            "counts": {
+              "train": 134499,
+              "val": 43074,
+              "test": 19772,
+              "dropped": 70017
+            },
+            "counts_pre_buffer": {
+              "train": 134499,
+              "val": 76741,
+              "test": 56122
+            },
+            "test_blocks": 5,
+            "gate_test": {
+              "partition": "kfold_0",
+              "holdout_label": "test",
+              "criterion_separation_m": 2125.0,
+              "n_train": 134499,
+              "n_holdout": 19772,
+              "min_distance_m": 2125.0145924685717,
+              "distance_percentiles_m": {
+                "p0": 2125.0145924685717,
+                "p1": 2177.615612940459,
+                "p5": 2360.0825594933617,
+                "p25": 3069.4038721344864,
+                "p50": 3682.6622258476536,
+                "p75": 4463.244381126335,
+                "p95": 5393.3547127207685,
+                "p100": 7422.459401477215
+              },
+              "n_metric_violations": 0,
+              "fraction_metric_violations": 0.0,
+              "min_chebyshev_blocks": 1,
+              "n_grid_violations": 19772,
+              "block_size_m": 10000.0,
+              "passed": true
+            },
+            "gate_val": {
+              "partition": "kfold_0",
+              "holdout_label": "val",
+              "criterion_separation_m": 2125.0,
+              "n_train": 134499,
+              "n_holdout": 43074,
+              "min_distance_m": 2125.0051161707806,
+              "distance_percentiles_m": {
+                "p0": 2125.0051161707806,
+                "p1": 2149.8197431910057,
+                "p5": 2254.760897753961,
+                "p25": 2885.971067706939,
+                "p50": 3622.316921938803,
+                "p75": 4290.473677930224,
+                "p95": 4899.963718672408,
+                "p100": 7535.218724047193
+              },
+              "n_metric_violations": 0,
+              "fraction_metric_violations": 0.0,
+              "min_chebyshev_blocks": 1,
+              "n_grid_violations": 43074,
+              "block_size_m": 10000.0,
+              "passed": true
+            },
+            "min_test_to_val_separation_m": 2125.0968248033155,
+            "baseline": {
+              "partition": "kfold_0",
+              "holdout_label": "test",
+              "n_train": 134499,
+              "n_holdout": 19772,
+              "rmse": 14.214171239035581,
+              "mae": 10.707266284964547,
+              "max_abs_error": 68.458010113,
+              "r2": -0.5098738082474645,
+              "mean_nearest_train_distance_m": 3775.3298428423645
+            }
+          },
+          {
+            "fold": 1,
+            "counts": {
+              "train": 141665,
+              "val": 25133,
+              "test": 25335,
+              "dropped": 75229
+            },
+            "counts_pre_buffer": {
+              "train": 141665,
+              "val": 48956,
+              "test": 76741
+            },
+            "test_blocks": 6,
+            "gate_test": {
+              "partition": "kfold_1",
+              "holdout_label": "test",
+              "criterion_separation_m": 2125.0,
+              "n_train": 141665,
+              "n_holdout": 25335,
+              "min_distance_m": 2125.0400457396963,
+              "distance_percentiles_m": {
+                "p0": 2125.0400457396963,
+                "p1": 2144.637885698,
+                "p5": 2226.9936517991523,
+                "p25": 2731.3916930196424,
+                "p50": 3605.0115252268656,
+                "p75": 4347.333798848556,
+                "p95": 4949.332206112354,
+                "p100": 7084.030383288756
+              },
+              "n_metric_violations": 0,
+              "fraction_metric_violations": 0.0,
+              "min_chebyshev_blocks": 1,
+              "n_grid_violations": 25335,
+              "block_size_m": 10000.0,
+              "passed": true
+            },
+            "gate_val": {
+              "partition": "kfold_1",
+              "holdout_label": "val",
+              "criterion_separation_m": 2125.0,
+              "n_train": 141665,
+              "n_holdout": 25133,
+              "min_distance_m": 2125.0073525678204,
+              "distance_percentiles_m": {
+                "p0": 2125.0073525678204,
+                "p1": 2160.5253112236273,
+                "p5": 2302.553959997524,
+                "p25": 2929.8843075583336,
+                "p50": 3665.132119722967,
+                "p75": 4427.816425242075,
+                "p95": 4998.291240378329,
+                "p100": 7427.087383647306
+              },
+              "n_metric_violations": 0,
+              "fraction_metric_violations": 0.0,
+              "min_chebyshev_blocks": 1,
+              "n_grid_violations": 25133,
+              "block_size_m": 10000.0,
+              "passed": true
+            },
+            "min_test_to_val_separation_m": 2125.0051161707806,
+            "baseline": {
+              "partition": "kfold_1",
+              "holdout_label": "test",
+              "n_train": 141665,
+              "n_holdout": 25335,
+              "rmse": 14.286718404548074,
+              "mae": 10.951896136926347,
+              "max_abs_error": 74.329889813,
+              "r2": -0.712930441188399,
+              "mean_nearest_train_distance_m": 3588.6146174487253
+            }
+          },
+          {
+            "fold": 2,
+            "counts": {
+              "train": 206655,
+              "val": 4959,
+              "test": 12267,
+              "dropped": 43481
+            },
+            "counts_pre_buffer": {
+              "train": 206655,
+              "val": 11751,
+              "test": 48956
+            },
+            "test_blocks": 7,
+            "gate_test": {
+              "partition": "kfold_2",
+              "holdout_label": "test",
+              "criterion_separation_m": 2125.0,
+              "n_train": 206655,
+              "n_holdout": 12267,
+              "min_distance_m": 2125.4167101588505,
+              "distance_percentiles_m": {
+                "p0": 2125.4167101588505,
+                "p1": 2150.3176823058902,
+                "p5": 2233.934753885813,
+                "p25": 2618.9993501002377,
+                "p50": 3267.65493746528,
+                "p75": 4140.560802359152,
+                "p95": 5100.869081455947,
+                "p100": 6611.5811967216005
+              },
+              "n_metric_violations": 0,
+              "fraction_metric_violations": 0.0,
+              "min_chebyshev_blocks": 1,
+              "n_grid_violations": 12267,
+              "block_size_m": 10000.0,
+              "passed": true
+            },
+            "gate_val": {
+              "partition": "kfold_2",
+              "holdout_label": "val",
+              "criterion_separation_m": 2125.0,
+              "n_train": 206655,
+              "n_holdout": 4959,
+              "min_distance_m": 2125.012533169073,
+              "distance_percentiles_m": {
+                "p0": 2125.012533169073,
+                "p1": 2147.0986061827766,
+                "p5": 2227.9342545191803,
+                "p25": 2590.7895108029697,
+                "p50": 3254.4615038404218,
+                "p75": 4470.598854807748,
+                "p95": 6850.8814375753,
+                "p100": 8442.415269199248
+              },
+              "n_metric_violations": 0,
+              "fraction_metric_violations": 0.0,
+              "min_chebyshev_blocks": 1,
+              "n_grid_violations": 4959,
+              "block_size_m": 10000.0,
+              "passed": true
+            },
+            "min_test_to_val_separation_m": 2126.26166784677,
+            "baseline": {
+              "partition": "kfold_2",
+              "holdout_label": "test",
+              "n_train": 206655,
+              "n_holdout": 12267,
+              "rmse": 16.42944132433444,
+              "mae": 12.560682336019891,
+              "max_abs_error": 71.42981426,
+              "r2": -0.49307738316836724,
+              "mean_nearest_train_distance_m": 3433.568176509631
+            }
+          },
+          {
+            "fold": 3,
+            "counts": {
+              "train": 181819,
+              "val": 29659,
+              "test": 3363,
+              "dropped": 52521
+            },
+            "counts_pre_buffer": {
+              "train": 181819,
+              "val": 73792,
+              "test": 11751
+            },
+            "test_blocks": 5,
+            "gate_test": {
+              "partition": "kfold_3",
+              "holdout_label": "test",
+              "criterion_separation_m": 2125.0,
+              "n_train": 181819,
+              "n_holdout": 3363,
+              "min_distance_m": 2125.012533169073,
+              "distance_percentiles_m": {
+                "p0": 2125.012533169073,
+                "p1": 2139.08459227744,
+                "p5": 2231.9089593405424,
+                "p25": 2651.220262294932,
+                "p50": 4055.6793197983843,
+                "p75": 4874.684787112807,
+                "p95": 6187.314560849095,
+                "p100": 6769.927220482158
+              },
+              "n_metric_violations": 0,
+              "fraction_metric_violations": 0.0,
+              "min_chebyshev_blocks": 1,
+              "n_grid_violations": 3363,
+              "block_size_m": 10000.0,
+              "passed": true
+            },
+            "gate_val": {
+              "partition": "kfold_3",
+              "holdout_label": "val",
+              "criterion_separation_m": 2125.0,
+              "n_train": 181819,
+              "n_holdout": 29659,
+              "min_distance_m": 2125.0037716706006,
+              "distance_percentiles_m": {
+                "p0": 2125.0037716706006,
+                "p1": 2142.558760156288,
+                "p5": 2217.453299372122,
+                "p25": 2641.293994015856,
+                "p50": 3134.6428566571076,
+                "p75": 3737.3172803867114,
+                "p95": 4788.4227755427255,
+                "p100": 6034.637516648497
+              },
+              "n_metric_violations": 0,
+              "fraction_metric_violations": 0.0,
+              "min_chebyshev_blocks": 1,
+              "n_grid_violations": 29659,
+              "block_size_m": 10000.0,
+              "passed": true
+            },
+            "min_test_to_val_separation_m": 2128.4887913202083,
+            "baseline": {
+              "partition": "kfold_3",
+              "holdout_label": "test",
+              "n_train": 181819,
+              "n_holdout": 3363,
+              "rmse": 15.969576965887466,
+              "mae": 11.787796213873328,
+              "max_abs_error": 60.31564134,
+              "r2": -0.31752964040002296,
+              "mean_nearest_train_distance_m": 4004.7714387054766
+            }
+          },
+          {
+            "fold": 4,
+            "counts": {
+              "train": 137448,
+              "val": 26628,
+              "test": 28607,
+              "dropped": 74679
+            },
+            "counts_pre_buffer": {
+              "train": 137448,
+              "val": 56122,
+              "test": 73792
+            },
+            "test_blocks": 6,
+            "gate_test": {
+              "partition": "kfold_4",
+              "holdout_label": "test",
+              "criterion_separation_m": 2125.0,
+              "n_train": 137448,
+              "n_holdout": 28607,
+              "min_distance_m": 2125.0037716706006,
+              "distance_percentiles_m": {
+                "p0": 2125.0037716706006,
+                "p1": 2145.5527182663823,
+                "p5": 2240.4676098284704,
+                "p25": 2722.426978206963,
+                "p50": 3289.537032805679,
+                "p75": 4022.9368289360063,
+                "p95": 4916.458108931706,
+                "p100": 6426.633003158456
+              },
+              "n_metric_violations": 0,
+              "fraction_metric_violations": 0.0,
+              "min_chebyshev_blocks": 1,
+              "n_grid_violations": 28607,
+              "block_size_m": 10000.0,
+              "passed": true
+            },
+            "gate_val": {
+              "partition": "kfold_4",
+              "holdout_label": "val",
+              "criterion_separation_m": 2125.0,
+              "n_train": 137448,
+              "n_holdout": 26628,
+              "min_distance_m": 2125.0145924685717,
+              "distance_percentiles_m": {
+                "p0": 2125.0145924685717,
+                "p1": 2143.773651679873,
+                "p5": 2222.255137395777,
+                "p25": 2599.103744245453,
+                "p50": 3116.016562672875,
+                "p75": 3812.99477236621,
+                "p95": 4736.018995168377,
+                "p100": 5105.845369764274
+              },
+              "n_metric_violations": 0,
+              "fraction_metric_violations": 0.0,
+              "min_chebyshev_blocks": 1,
+              "n_grid_violations": 26628,
+              "block_size_m": 10000.0,
+              "passed": true
+            },
+            "min_test_to_val_separation_m": 2125.036426039083,
+            "baseline": {
+              "partition": "kfold_4",
+              "holdout_label": "test",
+              "n_train": 137448,
+              "n_holdout": 28607,
+              "rmse": 16.529001123002363,
+              "mae": 12.137815670542944,
+              "max_abs_error": 64.62198442600001,
+              "r2": -0.7402203154029139,
+              "mean_nearest_train_distance_m": 3409.703472507274
+            }
+          }
+        ],
+        "aggregate_baseline": {
+          "n": 89344,
+          "rmse": 15.386040349253106,
+          "mae": 11.52982964033155,
+          "max_abs_error": 74.329889813,
+          "r2": -0.36461995432576066,
+          "test_mean_label": 36.49689949511231,
+          "test_std_label": 13.171142205345884
+        },
+        "crs": "EPSG:26918"
+      }
+    },
+    {
+      "seed": 20260723,
+      "split_path": "outputs\\splits\\spatial_kfold_countywide_seed20260723.csv",
+      "split_sha256": "9ea9c820bc2aa56bfa91f409efbb17886f3494fa38f8ffd06068161b34c0ad8a",
+      "deterministic_on_rerun": true,
+      "stats": {
+        "n_properties": 267362,
+        "n_blocks_total": 29,
+        "blocks_per_fold": {
+          "0": 9,
+          "1": 5,
+          "2": 7,
+          "3": 4,
+          "4": 4
+        },
+        "properties_tested_at_least_once": 100257,
+        "test_coverage_fraction": 0.3749859740726057,
+        "folds": [
+          {
+            "fold": 0,
+            "counts": {
+              "train": 111549,
+              "val": 56210,
+              "test": 18038,
+              "dropped": 81565
+            },
+            "counts_pre_buffer": {
+              "train": 111549,
+              "val": 93907,
+              "test": 61906
+            },
+            "test_blocks": 9,
+            "gate_test": {
+              "partition": "kfold_0",
+              "holdout_label": "test",
+              "criterion_separation_m": 2125.0,
+              "n_train": 111549,
+              "n_holdout": 18038,
+              "min_distance_m": 2125.1465385774427,
+              "distance_percentiles_m": {
+                "p0": 2125.1465385774427,
+                "p1": 2145.1851974403226,
+                "p5": 2221.2900648316554,
+                "p25": 2652.1579715860635,
+                "p50": 3310.3597254721626,
+                "p75": 4229.973717369702,
+                "p95": 5650.556415732904,
+                "p100": 7535.218724047193
+              },
+              "n_metric_violations": 0,
+              "fraction_metric_violations": 0.0,
+              "min_chebyshev_blocks": 1,
+              "n_grid_violations": 18038,
+              "block_size_m": 10000.0,
+              "passed": true
+            },
+            "gate_val": {
+              "partition": "kfold_0",
+              "holdout_label": "val",
+              "criterion_separation_m": 2125.0,
+              "n_train": 111549,
+              "n_holdout": 56210,
+              "min_distance_m": 2125.0051161707806,
+              "distance_percentiles_m": {
+                "p0": 2125.0051161707806,
+                "p1": 2151.023177600739,
+                "p5": 2262.390323550753,
+                "p25": 2856.041115922369,
+                "p50": 3561.059694432024,
+                "p75": 4299.04065970892,
+                "p95": 4915.120157904067,
+                "p100": 6256.567974890182
+              },
+              "n_metric_violations": 0,
+              "fraction_metric_violations": 0.0,
+              "min_chebyshev_blocks": 1,
+              "n_grid_violations": 56210,
+              "block_size_m": 10000.0,
+              "passed": true
+            },
+            "min_test_to_val_separation_m": 2125.1100192254194,
+            "baseline": {
+              "partition": "kfold_0",
+              "holdout_label": "test",
+              "n_train": 111549,
+              "n_holdout": 18038,
+              "rmse": 16.285017556221554,
+              "mae": 12.014248166575118,
+              "max_abs_error": 68.898966569,
+              "r2": -0.7191524691021154,
+              "mean_nearest_train_distance_m": 3550.6532849589944
+            }
+          },
+          {
+            "fold": 1,
+            "counts": {
+              "train": 118553,
+              "val": 29456,
+              "test": 43168,
+              "dropped": 76185
+            },
+            "counts_pre_buffer": {
+              "train": 118553,
+              "val": 54902,
+              "test": 93907
+            },
+            "test_blocks": 5,
+            "gate_test": {
+              "partition": "kfold_1",
+              "holdout_label": "test",
+              "criterion_separation_m": 2125.0,
+              "n_train": 118553,
+              "n_holdout": 43168,
+              "min_distance_m": 2125.0051161707806,
+              "distance_percentiles_m": {
+                "p0": 2125.0051161707806,
+                "p1": 2146.897980144456,
+                "p5": 2240.036357214089,
+                "p25": 2777.1063285695773,
+                "p50": 3487.8746746083,
+                "p75": 4338.693637878239,
+                "p95": 6007.011242502486,
+                "p100": 8153.323547098125
+              },
+              "n_metric_violations": 0,
+              "fraction_metric_violations": 0.0,
+              "min_chebyshev_blocks": 1,
+              "n_grid_violations": 43168,
+              "block_size_m": 10000.0,
+              "passed": true
+            },
+            "gate_val": {
+              "partition": "kfold_1",
+              "holdout_label": "val",
+              "criterion_separation_m": 2125.0,
+              "n_train": 118553,
+              "n_holdout": 29456,
+              "min_distance_m": 2125.0037716706006,
+              "distance_percentiles_m": {
+                "p0": 2125.0037716706006,
+                "p1": 2150.3572141793243,
+                "p5": 2259.586482752774,
+                "p25": 2808.763948561791,
+                "p50": 3639.3970916642456,
+                "p75": 4466.267780996829,
+                "p95": 6624.143989117501,
+                "p100": 9821.100683633145
+              },
+              "n_metric_violations": 0,
+              "fraction_metric_violations": 0.0,
+              "min_chebyshev_blocks": 1,
+              "n_grid_violations": 29456,
+              "block_size_m": 10000.0,
+              "passed": true
+            },
+            "min_test_to_val_separation_m": 2125.0145924685717,
+            "baseline": {
+              "partition": "kfold_1",
+              "holdout_label": "test",
+              "n_train": 118553,
+              "n_holdout": 43168,
+              "rmse": 15.056316628951958,
+              "mae": 11.429815031447902,
+              "max_abs_error": 72.193329643,
+              "r2": -0.5938828760543908,
+              "mean_nearest_train_distance_m": 3694.7685961039574
+            }
+          },
+          {
+            "fold": 2,
+            "counts": {
+              "train": 183943,
+              "val": 8165,
+              "test": 27043,
+              "dropped": 48211
+            },
+            "counts_pre_buffer": {
+              "train": 183943,
+              "val": 28517,
+              "test": 54902
+            },
+            "test_blocks": 7,
+            "gate_test": {
+              "partition": "kfold_2",
+              "holdout_label": "test",
+              "criterion_separation_m": 2125.0,
+              "n_train": 183943,
+              "n_holdout": 27043,
+              "min_distance_m": 2125.0037716706006,
+              "distance_percentiles_m": {
+                "p0": 2125.0037716706006,
+                "p1": 2149.649088382905,
+                "p5": 2254.8023238970814,
+                "p25": 2825.141565854654,
+                "p50": 3592.3375071134687,
+                "p75": 4336.509276515899,
+                "p95": 5079.671145300869,
+                "p100": 7358.185150282942
+              },
+              "n_metric_violations": 0,
+              "fraction_metric_violations": 0.0,
+              "min_chebyshev_blocks": 1,
+              "n_grid_violations": 27043,
+              "block_size_m": 10000.0,
+              "passed": true
+            },
+            "gate_val": {
+              "partition": "kfold_2",
+              "holdout_label": "val",
+              "criterion_separation_m": 2125.0,
+              "n_train": 183943,
+              "n_holdout": 8165,
+              "min_distance_m": 2125.5672584980844,
+              "distance_percentiles_m": {
+                "p0": 2125.5672584980844,
+                "p1": 2140.2063075283913,
+                "p5": 2189.478715388846,
+                "p25": 2468.8865032327117,
+                "p50": 2850.396517563307,
+                "p75": 3486.799957382457,
+                "p95": 4878.424885165751,
+                "p100": 7042.083807750313
+              },
+              "n_metric_violations": 0,
+              "fraction_metric_violations": 0.0,
+              "min_chebyshev_blocks": 1,
+              "n_grid_violations": 8165,
+              "block_size_m": 10000.0,
+              "passed": true
+            },
+            "min_test_to_val_separation_m": 2131.7892810170097,
+            "baseline": {
+              "partition": "kfold_2",
+              "holdout_label": "test",
+              "n_train": 183943,
+              "n_holdout": 27043,
+              "rmse": 14.661376511358924,
+              "mae": 10.986132707652256,
+              "max_abs_error": 77.68224542,
+              "r2": -0.5130560396955441,
+              "mean_nearest_train_distance_m": 3617.1834028635562
+            }
+          },
+          {
+            "fold": 3,
+            "counts": {
+              "train": 210715,
+              "val": 4260,
+              "test": 7748,
+              "dropped": 44639
+            },
+            "counts_pre_buffer": {
+              "train": 210715,
+              "val": 28130,
+              "test": 28517
+            },
+            "test_blocks": 4,
+            "gate_test": {
+              "partition": "kfold_3",
+              "holdout_label": "test",
+              "criterion_separation_m": 2125.0,
+              "n_train": 210715,
+              "n_holdout": 7748,
+              "min_distance_m": 2125.5672584980844,
+              "distance_percentiles_m": {
+                "p0": 2125.5672584980844,
+                "p1": 2139.715621586625,
+                "p5": 2192.57416878114,
+                "p25": 2481.835908247424,
+                "p50": 2863.618799583862,
+                "p75": 3404.9677119342887,
+                "p95": 4400.791550377913,
+                "p100": 6493.726788775092
+              },
+              "n_metric_violations": 0,
+              "fraction_metric_violations": 0.0,
+              "min_chebyshev_blocks": 1,
+              "n_grid_violations": 7748,
+              "block_size_m": 10000.0,
+              "passed": true
+            },
+            "gate_val": {
+              "partition": "kfold_3",
+              "holdout_label": "val",
+              "criterion_separation_m": 2125.0,
+              "n_train": 210715,
+              "n_holdout": 4260,
+              "min_distance_m": 2125.5926601934057,
+              "distance_percentiles_m": {
+                "p0": 2125.5926601934057,
+                "p1": 2138.8197561747234,
+                "p5": 2194.560705264659,
+                "p25": 2451.31242159225,
+                "p50": 2836.7195734448906,
+                "p75": 3639.5522008543257,
+                "p95": 4564.298768384496,
+                "p100": 4922.238830727656
+              },
+              "n_metric_violations": 0,
+              "fraction_metric_violations": 0.0,
+              "min_chebyshev_blocks": 1,
+              "n_grid_violations": 4260,
+              "block_size_m": 10000.0,
+              "passed": true
+            },
+            "min_test_to_val_separation_m": 9492.613759465976,
+            "baseline": {
+              "partition": "kfold_3",
+              "holdout_label": "test",
+              "n_train": 210715,
+              "n_holdout": 7748,
+              "rmse": 15.844554935109585,
+              "mae": 11.47161293976368,
+              "max_abs_error": 63.956650533,
+              "r2": -0.3754582235286139,
+              "mean_nearest_train_distance_m": 3025.784319549598
+            }
+          },
+          {
+            "fold": 4,
+            "counts": {
+              "train": 177326,
+              "val": 22449,
+              "test": 4260,
+              "dropped": 63327
+            },
+            "counts_pre_buffer": {
+              "train": 177326,
+              "val": 61906,
+              "test": 28130
+            },
+            "test_blocks": 4,
+            "gate_test": {
+              "partition": "kfold_4",
+              "holdout_label": "test",
+              "criterion_separation_m": 2125.0,
+              "n_train": 177326,
+              "n_holdout": 4260,
+              "min_distance_m": 2125.5926601934057,
+              "distance_percentiles_m": {
+                "p0": 2125.5926601934057,
+                "p1": 2138.8197561747234,
+                "p5": 2194.560705264659,
+                "p25": 2454.7950211075986,
+                "p50": 2837.403692652099,
+                "p75": 3640.667366196164,
+                "p95": 4564.433768960709,
+                "p100": 4922.238830727656
+              },
+              "n_metric_violations": 0,
+              "fraction_metric_violations": 0.0,
+              "min_chebyshev_blocks": 1,
+              "n_grid_violations": 4260,
+              "block_size_m": 10000.0,
+              "passed": true
+            },
+            "gate_val": {
+              "partition": "kfold_4",
+              "holdout_label": "val",
+              "criterion_separation_m": 2125.0,
+              "n_train": 177326,
+              "n_holdout": 22449,
+              "min_distance_m": 2125.1100192254194,
+              "distance_percentiles_m": {
+                "p0": 2125.1100192254194,
+                "p1": 2141.52110334759,
+                "p5": 2206.982419009322,
+                "p25": 2544.178945895992,
+                "p50": 3011.826269335792,
+                "p75": 3622.118966017013,
+                "p95": 4928.646404324873,
+                "p100": 7511.562173086329
+              },
+              "n_metric_violations": 0,
+              "fraction_metric_violations": 0.0,
+              "min_chebyshev_blocks": 1,
+              "n_grid_violations": 22449,
+              "block_size_m": 10000.0,
+              "passed": true
+            },
+            "min_test_to_val_separation_m": 2360.282898729856,
+            "baseline": {
+              "partition": "kfold_4",
+              "holdout_label": "test",
+              "n_train": 177326,
+              "n_holdout": 4260,
+              "rmse": 18.997939086258924,
+              "mae": 14.36356168325939,
+              "max_abs_error": 71.42981426,
+              "r2": -0.5333130805885122,
+              "mean_nearest_train_distance_m": 3073.944230425067
+            }
+          }
+        ],
+        "aggregate_baseline": {
+          "n": 100257,
+          "rmse": 15.428583172146555,
+          "mae": 11.543174844122994,
+          "max_abs_error": 77.68224542,
+          "r2": -0.4342534642514191,
+          "test_mean_label": 35.29884689279438,
+          "test_std_label": 12.882948129137052
+        },
+        "crs": "EPSG:26918"
+      }
+    },
+    {
+      "seed": 20260724,
+      "split_path": "outputs\\splits\\spatial_kfold_countywide_seed20260724.csv",
+      "split_sha256": "7a37e904b059c8a7096fa94cc8c80d8c5888dc9b74bc758b5cb7429995b378ed",
+      "deterministic_on_rerun": true,
+      "stats": {
+        "n_properties": 267362,
+        "n_blocks_total": 29,
+        "blocks_per_fold": {
+          "0": 5,
+          "1": 8,
+          "2": 10,
+          "3": 4,
+          "4": 2
+        },
+        "properties_tested_at_least_once": 130187,
+        "test_coverage_fraction": 0.48693157591579955,
+        "folds": [
+          {
+            "fold": 0,
+            "counts": {
+              "train": 189575,
+              "val": 31748,
+              "test": 3166,
+              "dropped": 42873
+            },
+            "counts_pre_buffer": {
+              "train": 189575,
+              "val": 67076,
+              "test": 10711
+            },
+            "test_blocks": 5,
+            "gate_test": {
+              "partition": "kfold_0",
+              "holdout_label": "test",
+              "criterion_separation_m": 2125.0,
+              "n_train": 189575,
+              "n_holdout": 3166,
+              "min_distance_m": 2125.0400457396963,
+              "distance_percentiles_m": {
+                "p0": 2125.0400457396963,
+                "p1": 2153.3665103879384,
+                "p5": 2328.340520224053,
+                "p25": 3164.21160449715,
+                "p50": 4190.800950293694,
+                "p75": 5161.0306206005125,
+                "p95": 5704.869484172608,
+                "p100": 8080.456907394215
+              },
+              "n_metric_violations": 0,
+              "fraction_metric_violations": 0.0,
+              "min_chebyshev_blocks": 1,
+              "n_grid_violations": 3166,
+              "block_size_m": 10000.0,
+              "passed": true
+            },
+            "gate_val": {
+              "partition": "kfold_0",
+              "holdout_label": "val",
+              "criterion_separation_m": 2125.0,
+              "n_train": 189575,
+              "n_holdout": 31748,
+              "min_distance_m": 2125.0037716706006,
+              "distance_percentiles_m": {
+                "p0": 2125.0037716706006,
+                "p1": 2148.438766678345,
+                "p5": 2241.5688142364534,
+                "p25": 2751.382663602822,
+                "p50": 3518.4903433018367,
+                "p75": 4802.212711200305,
+                "p95": 7974.202457987851,
+                "p100": 10048.896383421401
+              },
+              "n_metric_violations": 0,
+              "fraction_metric_violations": 0.0,
+              "min_chebyshev_blocks": 1,
+              "n_grid_violations": 31748,
+              "block_size_m": 10000.0,
+              "passed": true
+            },
+            "min_test_to_val_separation_m": 2128.4887913202083,
+            "baseline": {
+              "partition": "kfold_0",
+              "holdout_label": "test",
+              "n_train": 189575,
+              "n_holdout": 3166,
+              "rmse": 25.37157366381185,
+              "mae": 18.321437225474416,
+              "max_abs_error": 68.898966569,
+              "r2": -1.282942713771558,
+              "mean_nearest_train_distance_m": 4154.718547316028
+            }
+          },
+          {
+            "fold": 1,
+            "counts": {
+              "train": 51764,
+              "val": 121331,
+              "test": 26390,
+              "dropped": 67877
+            },
+            "counts_pre_buffer": {
+              "train": 51764,
+              "val": 148522,
+              "test": 67076
+            },
+            "test_blocks": 8,
+            "gate_test": {
+              "partition": "kfold_1",
+              "holdout_label": "test",
+              "criterion_separation_m": 2125.0,
+              "n_train": 51764,
+              "n_holdout": 26390,
+              "min_distance_m": 2125.035593926614,
+              "distance_percentiles_m": {
+                "p0": 2125.035593926614,
+                "p1": 2170.633977574422,
+                "p5": 2334.9739494466758,
+                "p25": 3072.36472505329,
+                "p50": 4214.834520239451,
+                "p75": 6000.446657037431,
+                "p95": 7538.676833988333,
+                "p100": 8350.180940077373
+              },
+              "n_metric_violations": 0,
+              "fraction_metric_violations": 0.0,
+              "min_chebyshev_blocks": 1,
+              "n_grid_violations": 26390,
+              "block_size_m": 10000.0,
+              "passed": true
+            },
+            "gate_val": {
+              "partition": "kfold_1",
+              "holdout_label": "val",
+              "criterion_separation_m": 2125.0,
+              "n_train": 51764,
+              "n_holdout": 121331,
+              "min_distance_m": 2125.016822554767,
+              "distance_percentiles_m": {
+                "p0": 2125.016822554767,
+                "p1": 2211.6027167108527,
+                "p5": 2577.570827723784,
+                "p25": 4265.4639066560285,
+                "p50": 6476.90527939816,
+                "p75": 8312.057808792848,
+                "p95": 10148.650846931603,
+                "p100": 11697.903845937291
+              },
+              "n_metric_violations": 0,
+              "fraction_metric_violations": 0.0,
+              "min_chebyshev_blocks": 1,
+              "n_grid_violations": 121331,
+              "block_size_m": 10000.0,
+              "passed": true
+            },
+            "min_test_to_val_separation_m": 2125.0037716706006,
+            "baseline": {
+              "partition": "kfold_1",
+              "holdout_label": "test",
+              "n_train": 51764,
+              "n_holdout": 26390,
+              "rmse": 14.419228334177372,
+              "mae": 11.046645199372643,
+              "max_abs_error": 69.347730792,
+              "r2": -0.512322433189859,
+              "mean_nearest_train_distance_m": 4551.976420964014
+            }
+          },
+          {
+            "fold": 2,
+            "counts": {
+              "train": 93633,
+              "val": 21041,
+              "test": 90028,
+              "dropped": 62660
+            },
+            "counts_pre_buffer": {
+              "train": 93633,
+              "val": 25207,
+              "test": 148522
+            },
+            "test_blocks": 10,
+            "gate_test": {
+              "partition": "kfold_2",
+              "holdout_label": "test",
+              "criterion_separation_m": 2125.0,
+              "n_train": 93633,
+              "n_holdout": 90028,
+              "min_distance_m": 2125.0145924685717,
+              "distance_percentiles_m": {
+                "p0": 2125.0145924685717,
+                "p1": 2177.42688272752,
+                "p5": 2368.32871974028,
+                "p25": 3341.785659232559,
+                "p50": 4416.746534472033,
+                "p75": 5696.476416846645,
+                "p95": 7740.348333483751,
+                "p100": 9366.493627923282
+              },
+              "n_metric_violations": 0,
+              "fraction_metric_violations": 0.0,
+              "min_chebyshev_blocks": 1,
+              "n_grid_violations": 90028,
+              "block_size_m": 10000.0,
+              "passed": true
+            },
+            "gate_val": {
+              "partition": "kfold_2",
+              "holdout_label": "val",
+              "criterion_separation_m": 2125.0,
+              "n_train": 93633,
+              "n_holdout": 21041,
+              "min_distance_m": 2125.4167101588505,
+              "distance_percentiles_m": {
+                "p0": 2125.4167101588505,
+                "p1": 2329.0840065036505,
+                "p5": 3142.338979446743,
+                "p25": 6902.709791746913,
+                "p50": 9582.827680726881,
+                "p75": 10667.532774944197,
+                "p95": 11320.699179405332,
+                "p100": 11784.09199566486
+              },
+              "n_metric_violations": 0,
+              "fraction_metric_violations": 0.0,
+              "min_chebyshev_blocks": 1,
+              "n_grid_violations": 21041,
+              "block_size_m": 10000.0,
+              "passed": true
+            },
+            "min_test_to_val_separation_m": 2125.016822554767,
+            "baseline": {
+              "partition": "kfold_2",
+              "holdout_label": "test",
+              "n_train": 93633,
+              "n_holdout": 90028,
+              "rmse": 13.093670853641488,
+              "mae": 9.635022320377615,
+              "max_abs_error": 69.69840702799999,
+              "r2": -0.18278130827392824,
+              "mean_nearest_train_distance_m": 4654.605262743963
+            }
+          },
+          {
+            "fold": 3,
+            "counts": {
+              "train": 226309,
+              "val": 5004,
+              "test": 5599,
+              "dropped": 30450
+            },
+            "counts_pre_buffer": {
+              "train": 226309,
+              "val": 15846,
+              "test": 25207
+            },
+            "test_blocks": 4,
+            "gate_test": {
+              "partition": "kfold_3",
+              "holdout_label": "test",
+              "criterion_separation_m": 2125.0,
+              "n_train": 226309,
+              "n_holdout": 5599,
+              "min_distance_m": 2125.4167101588505,
+              "distance_percentiles_m": {
+                "p0": 2125.4167101588505,
+                "p1": 2135.0979674628707,
+                "p5": 2177.1496254550034,
+                "p25": 2428.2392877202874,
+                "p50": 2764.002899882621,
+                "p75": 3250.261305074124,
+                "p95": 4388.92756194896,
+                "p100": 5088.701758867834
+              },
+              "n_metric_violations": 0,
+              "fraction_metric_violations": 0.0,
+              "min_chebyshev_blocks": 1,
+              "n_grid_violations": 5599,
+              "block_size_m": 10000.0,
+              "passed": true
+            },
+            "gate_val": {
+              "partition": "kfold_3",
+              "holdout_label": "val",
+              "criterion_separation_m": 2125.0,
+              "n_train": 226309,
+              "n_holdout": 5004,
+              "min_distance_m": 2126.26166784677,
+              "distance_percentiles_m": {
+                "p0": 2126.26166784677,
+                "p1": 2149.3222228415466,
+                "p5": 2214.904680934886,
+                "p25": 2557.959534873752,
+                "p50": 3004.085952589922,
+                "p75": 3775.1811309673376,
+                "p95": 4655.988202386263,
+                "p100": 5098.592590351933
+              },
+              "n_metric_violations": 0,
+              "fraction_metric_violations": 0.0,
+              "min_chebyshev_blocks": 1,
+              "n_grid_violations": 5004,
+              "block_size_m": 10000.0,
+              "passed": true
+            },
+            "min_test_to_val_separation_m": 14098.58698026178,
+            "baseline": {
+              "partition": "kfold_3",
+              "holdout_label": "test",
+              "n_train": 226309,
+              "n_holdout": 5599,
+              "rmse": 18.0265774298133,
+              "mae": 12.86572624000786,
+              "max_abs_error": 63.816727881999995,
+              "r2": -1.316761548057488,
+              "mean_nearest_train_distance_m": 2922.5284419371987
+            }
+          },
+          {
+            "fold": 4,
+            "counts": {
+              "train": 240805,
+              "val": 3166,
+              "test": 5004,
+              "dropped": 18387
+            },
+            "counts_pre_buffer": {
+              "train": 240805,
+              "val": 10711,
+              "test": 15846
+            },
+            "test_blocks": 2,
+            "gate_test": {
+              "partition": "kfold_4",
+              "holdout_label": "test",
+              "criterion_separation_m": 2125.0,
+              "n_train": 240805,
+              "n_holdout": 5004,
+              "min_distance_m": 2126.26166784677,
+              "distance_percentiles_m": {
+                "p0": 2126.26166784677,
+                "p1": 2149.3222228415466,
+                "p5": 2214.904680934886,
+                "p25": 2557.959534873752,
+                "p50": 3004.085952589922,
+                "p75": 3775.1811309673376,
+                "p95": 4655.988202386263,
+                "p100": 5098.592590351933
+              },
+              "n_metric_violations": 0,
+              "fraction_metric_violations": 0.0,
+              "min_chebyshev_blocks": 1,
+              "n_grid_violations": 5004,
+              "block_size_m": 10000.0,
+              "passed": true
+            },
+            "gate_val": {
+              "partition": "kfold_4",
+              "holdout_label": "val",
+              "criterion_separation_m": 2125.0,
+              "n_train": 240805,
+              "n_holdout": 3166,
+              "min_distance_m": 2125.0400457396963,
+              "distance_percentiles_m": {
+                "p0": 2125.0400457396963,
+                "p1": 2138.845243171945,
+                "p5": 2190.030753870446,
+                "p25": 2448.241471985214,
+                "p50": 2889.9675325652597,
+                "p75": 3473.5189627765412,
+                "p95": 4209.104010675464,
+                "p100": 5036.543577606781
+              },
+              "n_metric_violations": 0,
+              "fraction_metric_violations": 0.0,
+              "min_chebyshev_blocks": 1,
+              "n_grid_violations": 3166,
+              "block_size_m": 10000.0,
+              "passed": true
+            },
+            "min_test_to_val_separation_m": 6465.3359390080905,
+            "baseline": {
+              "partition": "kfold_4",
+              "holdout_label": "test",
+              "n_train": 240805,
+              "n_holdout": 5004,
+              "rmse": 13.5313382566702,
+              "mae": 10.864602025375302,
+              "max_abs_error": 61.10164496099999,
+              "r2": -0.7120972771212992,
+              "mean_nearest_train_distance_m": 3198.639557678972
+            }
+          }
+        ],
+        "aggregate_baseline": {
+          "n": 130187,
+          "rmse": 14.048922165380203,
+          "mae": 10.318619342015976,
+          "max_abs_error": 69.69840702799999,
+          "r2": -0.14653213654891473,
+          "test_mean_label": 31.898948285274045,
+          "test_std_label": 13.1205354280056
+        },
+        "crs": "EPSG:26918"
+      }
+    },
+    {
+      "seed": 20260725,
+      "split_path": "outputs\\splits\\spatial_kfold_countywide_seed20260725.csv",
+      "split_sha256": "4e3c5777f68b1eb6623223a045577895618ed2317376fea419acb8510319c319",
+      "deterministic_on_rerun": true,
+      "stats": {
+        "n_properties": 267362,
+        "n_blocks_total": 29,
+        "blocks_per_fold": {
+          "0": 1,
+          "1": 7,
+          "2": 6,
+          "3": 10,
+          "4": 5
+        },
+        "properties_tested_at_least_once": 118357,
+        "test_coverage_fraction": 0.44268445029585357,
+        "folds": [
+          {
+            "fold": 0,
+            "counts": {
+              "train": 156638,
+              "val": 58801,
+              "test": 44,
+              "dropped": 51879
+            },
+            "counts_pre_buffer": {
+              "train": 156638,
+              "val": 110310,
+              "test": 414
+            },
+            "test_blocks": 1,
+            "gate_test": {
+              "partition": "kfold_0",
+              "holdout_label": "test",
+              "criterion_separation_m": 2125.0,
+              "n_train": 156638,
+              "n_holdout": 44,
+              "min_distance_m": 2125.2276503736475,
+              "distance_percentiles_m": {
+                "p0": 2125.2276503736475,
+                "p1": 2127.8545687564697,
+                "p5": 2136.671314851389,
+                "p25": 2206.4229168600205,
+                "p50": 2324.642682942236,
+                "p75": 2372.8671624614776,
+                "p95": 2424.1771956270823,
+                "p100": 2488.640704514905
+              },
+              "n_metric_violations": 0,
+              "fraction_metric_violations": 0.0,
+              "min_chebyshev_blocks": 1,
+              "n_grid_violations": 44,
+              "block_size_m": 10000.0,
+              "passed": true
+            },
+            "gate_val": {
+              "partition": "kfold_0",
+              "holdout_label": "val",
+              "criterion_separation_m": 2125.0,
+              "n_train": 156638,
+              "n_holdout": 58801,
+              "min_distance_m": 2125.0145924685717,
+              "distance_percentiles_m": {
+                "p0": 2125.0145924685717,
+                "p1": 2153.6104434576664,
+                "p5": 2272.4244497684513,
+                "p25": 2874.3930702449875,
+                "p50": 3723.842398885303,
+                "p75": 4423.212787537339,
+                "p95": 5017.991152169187,
+                "p100": 7042.083807750313
+              },
+              "n_metric_violations": 0,
+              "fraction_metric_violations": 0.0,
+              "min_chebyshev_blocks": 1,
+              "n_grid_violations": 58801,
+              "block_size_m": 10000.0,
+              "passed": true
+            },
+            "min_test_to_val_separation_m": 14550.90557923339,
+            "baseline": {
+              "partition": "kfold_0",
+              "holdout_label": "test",
+              "n_train": 156638,
+              "n_holdout": 44,
+              "rmse": 10.211101470082587,
+              "mae": 8.724370805477275,
+              "max_abs_error": 22.025830148,
+              "r2": -0.5510730306759377,
+              "mean_nearest_train_distance_m": 2292.6580214928913
+            }
+          },
+          {
+            "fold": 1,
+            "counts": {
+              "train": 105833,
+              "val": 26615,
+              "test": 58801,
+              "dropped": 76113
+            },
+            "counts_pre_buffer": {
+              "train": 105833,
+              "val": 51219,
+              "test": 110310
+            },
+            "test_blocks": 7,
+            "gate_test": {
+              "partition": "kfold_1",
+              "holdout_label": "test",
+              "criterion_separation_m": 2125.0,
+              "n_train": 105833,
+              "n_holdout": 58801,
+              "min_distance_m": 2125.0145924685717,
+              "distance_percentiles_m": {
+                "p0": 2125.0145924685717,
+                "p1": 2172.754055353055,
+                "p5": 2357.9787551322715,
+                "p25": 3145.6992159252727,
+                "p50": 4029.1566476898356,
+                "p75": 4711.261093987944,
+                "p95": 5524.319867554656,
+                "p100": 7042.083807750313
+              },
+              "n_metric_violations": 0,
+              "fraction_metric_violations": 0.0,
+              "min_chebyshev_blocks": 1,
+              "n_grid_violations": 58801,
+              "block_size_m": 10000.0,
+              "passed": true
+            },
+            "gate_val": {
+              "partition": "kfold_1",
+              "holdout_label": "val",
+              "criterion_separation_m": 2125.0,
+              "n_train": 105833,
+              "n_holdout": 26615,
+              "min_distance_m": 2125.016822554767,
+              "distance_percentiles_m": {
+                "p0": 2125.016822554767,
+                "p1": 2148.4000546038033,
+                "p5": 2235.71051785854,
+                "p25": 2656.77912343513,
+                "p50": 3261.3375065358673,
+                "p75": 3984.8447848045516,
+                "p95": 4818.816034105191,
+                "p100": 5183.135605186103
+              },
+              "n_metric_violations": 0,
+              "fraction_metric_violations": 0.0,
+              "min_chebyshev_blocks": 1,
+              "n_grid_violations": 26615,
+              "block_size_m": 10000.0,
+              "passed": true
+            },
+            "min_test_to_val_separation_m": 2125.280087592033,
+            "baseline": {
+              "partition": "kfold_1",
+              "holdout_label": "test",
+              "n_train": 105833,
+              "n_holdout": 58801,
+              "rmse": 15.022609308829454,
+              "mae": 11.04635191211425,
+              "max_abs_error": 69.69840702799999,
+              "r2": -0.4547132230263162,
+              "mean_nearest_train_distance_m": 3952.5490414882906
+            }
+          },
+          {
+            "fold": 2,
+            "counts": {
+              "train": 136451,
+              "val": 47547,
+              "test": 13862,
+              "dropped": 69502
+            },
+            "counts_pre_buffer": {
+              "train": 136451,
+              "val": 79692,
+              "test": 51219
+            },
+            "test_blocks": 6,
+            "gate_test": {
+              "partition": "kfold_2",
+              "holdout_label": "test",
+              "criterion_separation_m": 2125.0,
+              "n_train": 136451,
+              "n_holdout": 13862,
+              "min_distance_m": 2125.1100192254194,
+              "distance_percentiles_m": {
+                "p0": 2125.1100192254194,
+                "p1": 2140.852752359817,
+                "p5": 2203.9438392394954,
+                "p25": 2516.1407659952424,
+                "p50": 2990.465258715663,
+                "p75": 3695.96016124701,
+                "p95": 4959.5005126996875,
+                "p100": 12231.008157644823
+              },
+              "n_metric_violations": 0,
+              "fraction_metric_violations": 0.0,
+              "min_chebyshev_blocks": 1,
+              "n_grid_violations": 13862,
+              "block_size_m": 10000.0,
+              "passed": true
+            },
+            "gate_val": {
+              "partition": "kfold_2",
+              "holdout_label": "val",
+              "criterion_separation_m": 2125.0,
+              "n_train": 136451,
+              "n_holdout": 47547,
+              "min_distance_m": 2125.0037716706006,
+              "distance_percentiles_m": {
+                "p0": 2125.0037716706006,
+                "p1": 2158.7601848075533,
+                "p5": 2305.7494149026156,
+                "p25": 3107.609125214033,
+                "p50": 4519.335693886992,
+                "p75": 6086.707394783149,
+                "p95": 8644.627181729938,
+                "p100": 10545.261066444546
+              },
+              "n_metric_violations": 0,
+              "fraction_metric_violations": 0.0,
+              "min_chebyshev_blocks": 1,
+              "n_grid_violations": 47547,
+              "block_size_m": 10000.0,
+              "passed": true
+            },
+            "min_test_to_val_separation_m": 2125.1465385774427,
+            "baseline": {
+              "partition": "kfold_2",
+              "holdout_label": "test",
+              "n_train": 136451,
+              "n_holdout": 13862,
+              "rmse": 16.482733902833655,
+              "mae": 13.028808385770668,
+              "max_abs_error": 81.58988749299999,
+              "r2": -0.9313463334202248,
+              "mean_nearest_train_distance_m": 3239.911470257453
+            }
+          },
+          {
+            "fold": 3,
+            "counts": {
+              "train": 161943,
+              "val": 11214,
+              "test": 35770,
+              "dropped": 58435
+            },
+            "counts_pre_buffer": {
+              "train": 161943,
+              "val": 25727,
+              "test": 79692
+            },
+            "test_blocks": 10,
+            "gate_test": {
+              "partition": "kfold_3",
+              "holdout_label": "test",
+              "criterion_separation_m": 2125.0,
+              "n_train": 161943,
+              "n_holdout": 35770,
+              "min_distance_m": 2125.0037716706006,
+              "distance_percentiles_m": {
+                "p0": 2125.0037716706006,
+                "p1": 2151.171871878388,
+                "p5": 2261.9375290116113,
+                "p25": 2835.9154771891003,
+                "p50": 3644.7628861103212,
+                "p75": 4448.8544206331235,
+                "p95": 5173.763924066846,
+                "p100": 7358.185150282942
+              },
+              "n_metric_violations": 0,
+              "fraction_metric_violations": 0.0,
+              "min_chebyshev_blocks": 1,
+              "n_grid_violations": 35770,
+              "block_size_m": 10000.0,
+              "passed": true
+            },
+            "gate_val": {
+              "partition": "kfold_3",
+              "holdout_label": "val",
+              "criterion_separation_m": 2125.0,
+              "n_train": 161943,
+              "n_holdout": 11214,
+              "min_distance_m": 2125.4006250176108,
+              "distance_percentiles_m": {
+                "p0": 2125.4006250176108,
+                "p1": 2148.4905274731377,
+                "p5": 2225.0222164991146,
+                "p25": 2559.0988943775633,
+                "p50": 3001.6567599197297,
+                "p75": 3496.622663825821,
+                "p95": 4731.725854812414,
+                "p100": 7009.269259507712
+              },
+              "n_metric_violations": 0,
+              "fraction_metric_violations": 0.0,
+              "min_chebyshev_blocks": 1,
+              "n_grid_violations": 11214,
+              "block_size_m": 10000.0,
+              "passed": true
+            },
+            "min_test_to_val_separation_m": 2128.4887913202083,
+            "baseline": {
+              "partition": "kfold_3",
+              "holdout_label": "test",
+              "n_train": 161943,
+              "n_holdout": 35770,
+              "rmse": 15.334151687518293,
+              "mae": 11.467579433055997,
+              "max_abs_error": 77.68224542,
+              "r2": -0.5282080089284142,
+              "mean_nearest_train_distance_m": 3669.2856645249517
+            }
+          },
+          {
+            "fold": 4,
+            "counts": {
+              "train": 241221,
+              "val": 44,
+              "test": 9880,
+              "dropped": 16217
+            },
+            "counts_pre_buffer": {
+              "train": 241221,
+              "val": 414,
+              "test": 25727
+            },
+            "test_blocks": 5,
+            "gate_test": {
+              "partition": "kfold_4",
+              "holdout_label": "test",
+              "criterion_separation_m": 2125.0,
+              "n_train": 241221,
+              "n_holdout": 9880,
+              "min_distance_m": 2125.4006250176108,
+              "distance_percentiles_m": {
+                "p0": 2125.4006250176108,
+                "p1": 2144.029314969355,
+                "p5": 2207.663142159338,
+                "p25": 2494.647144965673,
+                "p50": 2936.1231673624807,
+                "p75": 3384.0458453268516,
+                "p95": 4275.36708639808,
+                "p100": 5103.320869520114
+              },
+              "n_metric_violations": 0,
+              "fraction_metric_violations": 0.0,
+              "min_chebyshev_blocks": 1,
+              "n_grid_violations": 9880,
+              "block_size_m": 10000.0,
+              "passed": true
+            },
+            "gate_val": {
+              "partition": "kfold_4",
+              "holdout_label": "val",
+              "criterion_separation_m": 2125.0,
+              "n_train": 241221,
+              "n_holdout": 44,
+              "min_distance_m": 2125.2276503736475,
+              "distance_percentiles_m": {
+                "p0": 2125.2276503736475,
+                "p1": 2127.8545687564697,
+                "p5": 2136.671314851389,
+                "p25": 2206.4229168600205,
+                "p50": 2324.642682942236,
+                "p75": 2372.8671624614776,
+                "p95": 2424.1771956270823,
+                "p100": 2488.640704514905
+              },
+              "n_metric_violations": 0,
+              "fraction_metric_violations": 0.0,
+              "min_chebyshev_blocks": 1,
+              "n_grid_violations": 44,
+              "block_size_m": 10000.0,
+              "passed": true
+            },
+            "min_test_to_val_separation_m": 20286.230180343126,
+            "baseline": {
+              "partition": "kfold_4",
+              "holdout_label": "test",
+              "n_train": 241221,
+              "n_holdout": 9880,
+              "rmse": 17.78216543997232,
+              "mae": 13.285289519444838,
+              "max_abs_error": 63.956650533,
+              "r2": -0.9011841141470145,
+              "mean_nearest_train_distance_m": 3022.2958705795227
+            }
+          }
+        ],
+        "aggregate_baseline": {
+          "n": 118357,
+          "rmse": 15.538225251966898,
+          "mae": 11.591876523701615,
+          "max_abs_error": 81.58988749299999,
+          "r2": -0.41370851864222447,
+          "test_mean_label": 33.91928235649967,
+          "test_std_label": 13.068426817368717
+        },
+        "crs": "EPSG:26918"
+      }
+    },
+    {
+      "seed": 20260726,
+      "split_path": "outputs\\splits\\spatial_kfold_countywide_seed20260726.csv",
+      "split_sha256": "9b3317697958bbdd523868d039f5dbebe2168976b6a3a75799d025e5bc16329d",
+      "deterministic_on_rerun": true,
+      "stats": {
+        "n_properties": 267362,
+        "n_blocks_total": 29,
+        "blocks_per_fold": {
+          "0": 8,
+          "1": 8,
+          "2": 6,
+          "3": 2,
+          "4": 5
+        },
+        "properties_tested_at_least_once": 126177,
+        "test_coverage_fraction": 0.47193318422214076,
+        "folds": [
+          {
+            "fold": 0,
+            "counts": {
+              "train": 54190,
+              "val": 122648,
+              "test": 24761,
+              "dropped": 65763
+            },
+            "counts_pre_buffer": {
+              "train": 54190,
+              "val": 145407,
+              "test": 67765
+            },
+            "test_blocks": 8,
+            "gate_test": {
+              "partition": "kfold_0",
+              "holdout_label": "test",
+              "criterion_separation_m": 2125.0,
+              "n_train": 54190,
+              "n_holdout": 24761,
+              "min_distance_m": 2125.3849708352323,
+              "distance_percentiles_m": {
+                "p0": 2125.3849708352323,
+                "p1": 2190.307180181004,
+                "p5": 2419.7736277531235,
+                "p25": 3231.4525726817988,
+                "p50": 4116.7418869732555,
+                "p75": 5819.073734847135,
+                "p95": 7875.0898065033025,
+                "p100": 9649.58527522794
+              },
+              "n_metric_violations": 0,
+              "fraction_metric_violations": 0.0,
+              "min_chebyshev_blocks": 1,
+              "n_grid_violations": 24761,
+              "block_size_m": 10000.0,
+              "passed": true
+            },
+            "gate_val": {
+              "partition": "kfold_0",
+              "holdout_label": "val",
+              "criterion_separation_m": 2125.0,
+              "n_train": 54190,
+              "n_holdout": 122648,
+              "min_distance_m": 2125.012533169073,
+              "distance_percentiles_m": {
+                "p0": 2125.012533169073,
+                "p1": 2234.190647805235,
+                "p5": 2728.36848201489,
+                "p25": 4903.074947348223,
+                "p50": 6942.8741707519075,
+                "p75": 9118.57023683205,
+                "p95": 10793.87330308117,
+                "p100": 11736.864152392189
+              },
+              "n_metric_violations": 0,
+              "fraction_metric_violations": 0.0,
+              "min_chebyshev_blocks": 1,
+              "n_grid_violations": 122648,
+              "block_size_m": 10000.0,
+              "passed": true
+            },
+            "min_test_to_val_separation_m": 2125.0037716706006,
+            "baseline": {
+              "partition": "kfold_0",
+              "holdout_label": "test",
+              "n_train": 54190,
+              "n_holdout": 24761,
+              "rmse": 16.528613411392847,
+              "mae": 12.208315055503089,
+              "max_abs_error": 65.848879048,
+              "r2": -0.8308265003169675,
+              "mean_nearest_train_distance_m": 4578.284327914949
+            }
+          },
+          {
+            "fold": 1,
+            "counts": {
+              "train": 93979,
+              "val": 19560,
+              "test": 80671,
+              "dropped": 73152
+            },
+            "counts_pre_buffer": {
+              "train": 93979,
+              "val": 27976,
+              "test": 145407
+            },
+            "test_blocks": 8,
+            "gate_test": {
+              "partition": "kfold_1",
+              "holdout_label": "test",
+              "criterion_separation_m": 2125.0,
+              "n_train": 93979,
+              "n_holdout": 80671,
+              "min_distance_m": 2125.012533169073,
+              "distance_percentiles_m": {
+                "p0": 2125.012533169073,
+                "p1": 2159.288617082081,
+                "p5": 2293.931630498288,
+                "p25": 3022.8598571285775,
+                "p50": 3949.041028329629,
+                "p75": 4684.485874265219,
+                "p95": 5327.446905042208,
+                "p100": 8125.73206853012
+              },
+              "n_metric_violations": 0,
+              "fraction_metric_violations": 0.0,
+              "min_chebyshev_blocks": 1,
+              "n_grid_violations": 80671,
+              "block_size_m": 10000.0,
+              "passed": true
+            },
+            "gate_val": {
+              "partition": "kfold_1",
+              "holdout_label": "val",
+              "criterion_separation_m": 2125.0,
+              "n_train": 93979,
+              "n_holdout": 19560,
+              "min_distance_m": 2125.236190152559,
+              "distance_percentiles_m": {
+                "p0": 2125.236190152559,
+                "p1": 2164.67249127878,
+                "p5": 2318.4156021298336,
+                "p25": 3094.392971490201,
+                "p50": 4262.815825086582,
+                "p75": 7625.68762348282,
+                "p95": 9651.598332036063,
+                "p100": 11752.99226670555
+              },
+              "n_metric_violations": 0,
+              "fraction_metric_violations": 0.0,
+              "min_chebyshev_blocks": 1,
+              "n_grid_violations": 19560,
+              "block_size_m": 10000.0,
+              "passed": true
+            },
+            "min_test_to_val_separation_m": 2125.494986470356,
+            "baseline": {
+              "partition": "kfold_1",
+              "holdout_label": "test",
+              "n_train": 93979,
+              "n_holdout": 80671,
+              "rmse": 15.142709955440232,
+              "mae": 11.809197561410011,
+              "max_abs_error": 70.085251457,
+              "r2": -0.9435196329500397,
+              "mean_nearest_train_distance_m": 3874.6101252136077
+            }
+          },
+          {
+            "fold": 2,
+            "counts": {
+              "train": 223390,
+              "val": 6323,
+              "test": 13141,
+              "dropped": 24508
+            },
+            "counts_pre_buffer": {
+              "train": 223390,
+              "val": 15996,
+              "test": 27976
+            },
+            "test_blocks": 6,
+            "gate_test": {
+              "partition": "kfold_2",
+              "holdout_label": "test",
+              "criterion_separation_m": 2125.0,
+              "n_train": 223390,
+              "n_holdout": 13141,
+              "min_distance_m": 2125.1522590442755,
+              "distance_percentiles_m": {
+                "p0": 2125.1522590442755,
+                "p1": 2150.6286205568467,
+                "p5": 2251.4952682454727,
+                "p25": 2734.568139448037,
+                "p50": 3426.733929086806,
+                "p75": 4403.009591500005,
+                "p95": 5810.717198130839,
+                "p100": 6769.927220482158
+              },
+              "n_metric_violations": 0,
+              "fraction_metric_violations": 0.0,
+              "min_chebyshev_blocks": 1,
+              "n_grid_violations": 13141,
+              "block_size_m": 10000.0,
+              "passed": true
+            },
+            "gate_val": {
+              "partition": "kfold_2",
+              "holdout_label": "val",
+              "criterion_separation_m": 2125.0,
+              "n_train": 223390,
+              "n_holdout": 6323,
+              "min_distance_m": 2125.0145924685717,
+              "distance_percentiles_m": {
+                "p0": 2125.0145924685717,
+                "p1": 2142.9295878321477,
+                "p5": 2224.720086347196,
+                "p25": 2639.498437400201,
+                "p50": 3346.105441985692,
+                "p75": 4211.43609368913,
+                "p95": 4910.127689582563,
+                "p100": 5885.968201641151
+              },
+              "n_metric_violations": 0,
+              "fraction_metric_violations": 0.0,
+              "min_chebyshev_blocks": 1,
+              "n_grid_violations": 6323,
+              "block_size_m": 10000.0,
+              "passed": true
+            },
+            "min_test_to_val_separation_m": 2126.2539085724734,
+            "baseline": {
+              "partition": "kfold_2",
+              "holdout_label": "test",
+              "n_train": 223390,
+              "n_holdout": 13141,
+              "rmse": 23.27493310470089,
+              "mae": 16.757037243395253,
+              "max_abs_error": 67.936909509,
+              "r2": -2.0049745718644685,
+              "mean_nearest_train_distance_m": 3639.758588028909
+            }
+          },
+          {
+            "fold": 3,
+            "counts": {
+              "train": 241148,
+              "val": 3161,
+              "test": 4509,
+              "dropped": 18544
+            },
+            "counts_pre_buffer": {
+              "train": 241148,
+              "val": 10218,
+              "test": 15996
+            },
+            "test_blocks": 2,
+            "gate_test": {
+              "partition": "kfold_3",
+              "holdout_label": "test",
+              "criterion_separation_m": 2125.0,
+              "n_train": 241148,
+              "n_holdout": 4509,
+              "min_distance_m": 2125.0145924685717,
+              "distance_percentiles_m": {
+                "p0": 2125.0145924685717,
+                "p1": 2139.345524979172,
+                "p5": 2214.813377760357,
+                "p25": 2522.2548950149812,
+                "p50": 2936.1544832587724,
+                "p75": 3543.1447154313378,
+                "p95": 4417.706066836599,
+                "p100": 4916.478886526061
+              },
+              "n_metric_violations": 0,
+              "fraction_metric_violations": 0.0,
+              "min_chebyshev_blocks": 1,
+              "n_grid_violations": 4509,
+              "block_size_m": 10000.0,
+              "passed": true
+            },
+            "gate_val": {
+              "partition": "kfold_3",
+              "holdout_label": "val",
+              "criterion_separation_m": 2125.0,
+              "n_train": 241148,
+              "n_holdout": 3161,
+              "min_distance_m": 2125.4167101588505,
+              "distance_percentiles_m": {
+                "p0": 2125.4167101588505,
+                "p1": 2143.0302135981,
+                "p5": 2190.892106896406,
+                "p25": 2545.7828117317435,
+                "p50": 3471.6186410402975,
+                "p75": 5486.002406083972,
+                "p95": 6695.3658284781495,
+                "p100": 7511.562173086329
+              },
+              "n_metric_violations": 0,
+              "fraction_metric_violations": 0.0,
+              "min_chebyshev_blocks": 1,
+              "n_grid_violations": 3161,
+              "block_size_m": 10000.0,
+              "passed": true
+            },
+            "min_test_to_val_separation_m": 2177.565594452053,
+            "baseline": {
+              "partition": "kfold_3",
+              "holdout_label": "test",
+              "n_train": 241148,
+              "n_holdout": 4509,
+              "rmse": 16.676747085917942,
+              "mae": 12.007539831376803,
+              "max_abs_error": 65.70781561999999,
+              "r2": -0.5388283952985298,
+              "mean_nearest_train_distance_m": 3099.1277873540753
+            }
+          },
+          {
+            "fold": 4,
+            "counts": {
+              "train": 189379,
+              "val": 28257,
+              "test": 3095,
+              "dropped": 46631
+            },
+            "counts_pre_buffer": {
+              "train": 189379,
+              "val": 67765,
+              "test": 10218
+            },
+            "test_blocks": 5,
+            "gate_test": {
+              "partition": "kfold_4",
+              "holdout_label": "test",
+              "criterion_separation_m": 2125.0,
+              "n_train": 189379,
+              "n_holdout": 3095,
+              "min_distance_m": 2126.31248185217,
+              "distance_percentiles_m": {
+                "p0": 2126.31248185217,
+                "p1": 2181.7474055271646,
+                "p5": 2396.8342939120826,
+                "p25": 3692.9196543842195,
+                "p50": 4860.859837994679,
+                "p75": 5874.136899003936,
+                "p95": 7114.978912436058,
+                "p100": 8304.861703105586
+              },
+              "n_metric_violations": 0,
+              "fraction_metric_violations": 0.0,
+              "min_chebyshev_blocks": 1,
+              "n_grid_violations": 3095,
+              "block_size_m": 10000.0,
+              "passed": true
+            },
+            "gate_val": {
+              "partition": "kfold_4",
+              "holdout_label": "val",
+              "criterion_separation_m": 2125.0,
+              "n_train": 189379,
+              "n_holdout": 28257,
+              "min_distance_m": 2125.0037716706006,
+              "distance_percentiles_m": {
+                "p0": 2125.0037716706006,
+                "p1": 2143.602952144946,
+                "p5": 2227.551199204439,
+                "p25": 2677.8719999265454,
+                "p50": 3258.686304192969,
+                "p75": 4021.30963392126,
+                "p95": 4898.007590248982,
+                "p100": 7121.885565895822
+              },
+              "n_metric_violations": 0,
+              "fraction_metric_violations": 0.0,
+              "min_chebyshev_blocks": 1,
+              "n_grid_violations": 28257,
+              "block_size_m": 10000.0,
+              "passed": true
+            },
+            "min_test_to_val_separation_m": 2125.4167101588505,
+            "baseline": {
+              "partition": "kfold_4",
+              "holdout_label": "test",
+              "n_train": 189379,
+              "n_holdout": 3095,
+              "rmse": 16.47416036866575,
+              "mae": 11.332643753373182,
+              "max_abs_error": 70.542762248,
+              "r2": -0.6182849798199954,
+              "mean_nearest_train_distance_m": 4793.517306952232
+            }
+          }
+        ],
+        "aggregate_baseline": {
+          "n": 126177,
+          "rmse": 16.52967114465449,
+          "mae": 12.3982233013754,
+          "max_abs_error": 70.542762248,
+          "r2": -0.5417604651882764,
+          "test_mean_label": 32.116274308070274,
+          "test_std_label": 13.312434436741837
+        },
+        "crs": "EPSG:26918"
+      }
+    }
+  ],
+  "controls": {
+    "blocked_unbuffered": {
+      "expected": "FAIL",
+      "failed_as_expected": true,
+      "gates": [
+        {
+          "partition": "blocked_unbuffered_fold0",
+          "holdout_label": "test",
+          "criterion_separation_m": 2125.0,
+          "n_train": 134499,
+          "n_holdout": 56122,
+          "min_distance_m": 13.257550673540221,
+          "distance_percentiles_m": {
+            "p0": 13.257550673540221,
+            "p1": 118.8060187301058,
+            "p5": 388.3099492838822,
+            "p25": 1762.0406114192244,
+            "p50": 3033.9837192875234,
+            "p75": 3945.7631091796943,
+            "p95": 5030.072244554787,
+            "p100": 7514.473639714165
+          },
+          "n_metric_violations": 17202,
+          "fraction_metric_violations": 0.3065108157228894,
+          "min_chebyshev_blocks": 1,
+          "n_grid_violations": 56122,
+          "block_size_m": 10000.0,
+          "passed": false
+        },
+        {
+          "partition": "blocked_unbuffered_fold1",
+          "holdout_label": "test",
+          "criterion_separation_m": 2125.0,
+          "n_train": 141665,
+          "n_holdout": 76741,
+          "min_distance_m": 5.940935431498587,
+          "distance_percentiles_m": {
+            "p0": 5.940935431498587,
+            "p1": 57.4737980708042,
+            "p5": 200.4524437295542,
+            "p25": 913.1222959257459,
+            "p50": 1996.11355761093,
+            "p75": 3667.600675483578,
+            "p95": 4801.597675520281,
+            "p100": 7112.265450954345
+          },
+          "n_metric_violations": 40217,
+          "fraction_metric_violations": 0.5240614534603406,
+          "min_chebyshev_blocks": 1,
+          "n_grid_violations": 76741,
+          "block_size_m": 10000.0,
+          "passed": false
+        },
+        {
+          "partition": "blocked_unbuffered_fold2",
+          "holdout_label": "test",
+          "criterion_separation_m": 2125.0,
+          "n_train": 206655,
+          "n_holdout": 48956,
+          "min_distance_m": 9.096481226313399,
+          "distance_percentiles_m": {
+            "p0": 9.096481226313399,
+            "p1": 48.70143462857718,
+            "p5": 132.34941126699258,
+            "p25": 574.6060727809511,
+            "p50": 1193.4662040624085,
+            "p75": 2442.2787544598127,
+            "p95": 4516.335338610421,
+            "p100": 6859.821155589004
+          },
+          "n_metric_violations": 34644,
+          "fraction_metric_violations": 0.7076558542364573,
+          "min_chebyshev_blocks": 1,
+          "n_grid_violations": 48956,
+          "block_size_m": 10000.0,
+          "passed": false
+        },
+        {
+          "partition": "blocked_unbuffered_fold3",
+          "holdout_label": "test",
+          "criterion_separation_m": 2125.0,
+          "n_train": 181819,
+          "n_holdout": 11751,
+          "min_distance_m": 8.314193721834183,
+          "distance_percentiles_m": {
+            "p0": 8.314193721834183,
+            "p1": 71.35097289768457,
+            "p5": 225.7512536452893,
+            "p25": 862.7853660992647,
+            "p50": 1608.4456749287385,
+            "p75": 2985.227262558812,
+            "p95": 5241.562429966161,
+            "p100": 6769.927220482158
+          },
+          "n_metric_violations": 7388,
+          "fraction_metric_violations": 0.6287124500042549,
+          "min_chebyshev_blocks": 1,
+          "n_grid_violations": 11751,
+          "block_size_m": 10000.0,
+          "passed": false
+        },
+        {
+          "partition": "blocked_unbuffered_fold4",
+          "holdout_label": "test",
+          "criterion_separation_m": 2125.0,
+          "n_train": 137448,
+          "n_holdout": 73792,
+          "min_distance_m": 9.096481226313399,
+          "distance_percentiles_m": {
+            "p0": 9.096481226313399,
+            "p1": 68.19826824996359,
+            "p5": 250.55675802261564,
+            "p25": 1108.8272041259195,
+            "p50": 2104.125056593888,
+            "p75": 3290.359839929691,
+            "p95": 4706.079840761078,
+            "p100": 6426.633003158456
+          },
+          "n_metric_violations": 37294,
+          "fraction_metric_violations": 0.5053935385949696,
+          "min_chebyshev_blocks": 1,
+          "n_grid_violations": 73792,
+          "block_size_m": 10000.0,
+          "passed": false
+        }
+      ]
+    },
+    "random": {
+      "expected": "FAIL",
+      "failed_as_expected": true,
+      "gate": {
+        "partition": "random",
+        "holdout_label": "test",
+        "criterion_separation_m": 2125.0,
+        "n_train": 186961,
+        "n_holdout": 40205,
+        "min_distance_m": 0.0,
+        "distance_percentiles_m": {
+          "p0": 0.0,
+          "p1": 5.690902387330598,
+          "p5": 10.540405114043105,
+          "p25": 15.571413628742865,
+          "p50": 25.912811411567944,
+          "p75": 36.61448851473742,
+          "p95": 100.57060837571979,
+          "p100": 694.6903262647309
+        },
+        "n_metric_violations": 40205,
+        "fraction_metric_violations": 1.0,
+        "min_chebyshev_blocks": 0,
+        "n_grid_violations": 40205,
+        "block_size_m": 10000.0,
+        "passed": false
+      },
+      "baseline": {
+        "partition": "random",
+        "holdout_label": "test",
+        "n_train": 186961,
+        "n_holdout": 40205,
+        "rmse": 4.932900813203173,
+        "mae": 2.1301231141591344,
+        "max_abs_error": 61.521674733,
+        "r2": 0.8585543847748629,
+        "mean_nearest_train_distance_m": 35.67494878448773
+      },
+      "split_path": "outputs\\splits\\random_control_countywide.csv",
+      "split_sha256": "cdbfbad583b2c5efd3c944b2393ce8f16ed8e5c8a844f948f21948b3310f9d97"
+    }
+  },
+  "acceptance": {
+    "blocked_gate_passed_every_fold_every_seed": true,
+    "unbuffered_control_failed": true,
+    "random_control_failed": true,
+    "deterministic_every_seed": true,
+    "aggregate_baseline_rmse_range": 2.4807489792742867,
+    "aggregate_baseline_r2_min": -0.5417604651882764,
+    "aggregate_baseline_r2_max": -0.14653213654891473
+  },
+  "interpretation": "Test properties are separated from every training AND validation property by at least the recorded buffer, at which the field retains gamma/sill = 0.50. The field is non-stationary and still climbing at 8 km, so this is a stated residual dependence, not decorrelation. Error measured on this partition is error at separation >= buffer, not countywide error."
+}

@@ -1,4 +1,4 @@
-# CAPRM-Flood Project Nucleus — 2026-07-28
+# CAPRM-Flood Project Nucleus — 2026-07-30
 
 ## Purpose of This Document
 
@@ -1331,6 +1331,16 @@ A random train/test split places near-identical records on both sides and
 reports a generalization score that is really a memorization score. Any
 held-out evaluation in this project must partition by spatial block.
 
+**Measured at C1, 2026-07-30.** The median nearest-neighbour spacing between
+properties is 24.4 m, and 1,700 rows share an exact coordinate with another row.
+Under a random split the minimum test-to-train distance is therefore exactly
+0.000 m and 96.6 percent of test properties sit within 125 m of a training
+property. A nearest-training-neighbour predictor — which has learned nothing but
+"copy your neighbour" — scores R^2 = 0.8526 to 0.8667 across ten random splits
+and -0.542 to -0.147 under the blocked K-fold partition. The ranges do not
+overlap. That gap is the size of the error this principle prevents, and it is
+what the discipline bought.
+
 ## 18.18 A negative result is a result
 
 Reason:
@@ -2066,6 +2076,118 @@ Two boundaries the method has, both found by measurement rather than argument:
   B2 by a factor of seven. A sanity check that admits an answer contradicting an
   independent measurement is not yet a gate, and it is documented as a diagnostic
   rather than promoted to one.
+
+## 18.32 A blocked split's reported error is a property of its seed
+
+Reason:
+
+C1 held the separation fixed and varied only which blocks the hash assigned,
+across ten seeds and four geometries:
+
+```text
+geometry                  test-mean-label range   baseline RMSE range   R^2 range
+b2000 0.70/0.15 w625            9.82 pts               6.58            -0.885 … 0.042
+b3000 0.60/0.20 w625            7.29 pts               3.05            -1.086 … -0.128
+b4000 0.50/0.25 w2125          11.94 pts              18.69            -4.514 … 0.573
+b8000 0.60/0.20 w2125          13.14 pts              11.58            -2.325 … -0.110
+```
+
+Population mean 34.632, sigma 13.064. The seed moves the test set's own mean by
+up to one sigma, and at b=4000 moves the baseline RMSE by more than the RMSE
+itself. At b=8000 a nominal 70/15/15 realises as 31/2/9 blocks — a two-block
+validation set.
+
+This is 18.26 and 18.27 arriving in the PARTITION rather than the index: the
+reported quantity's magnitude, and here its sign, set by a parameter the
+literature holds fixed and does not report.
+
+C1 adopted blocked K-fold in response — every occupied block is test exactly
+once and validation exactly once, so no block selection is left for a seed to
+make. It reduces the leverage without removing it: aggregate baseline RMSE range
+falls to 2.48, and the test set's mean tracks the population within 2.7 points
+instead of 13, but coverage still swings 89,344 to 130,187 properties, because
+the seed still sets fold composition and fold composition sets which properties
+survive erosion.
+
+The operating rule that follows: **a PHASE C result is reported across the five
+recorded seeds, and a single-seed figure is a diagnostic, never a claim.** The
+comparison that survives this is one between non-overlapping RANGES, not one
+between two point estimates.
+
+## 18.33 A holdout must be isolated from validation, not only from training
+
+Reason:
+
+The Roadmap's completion gate constrains holdout against TRAINING. Measured at
+C1, the minimum test-to-validation separation under that gate was 5.9 to 9.8 m —
+touching. Validation is seen during model selection, so that is a selection
+leak: second order against the training leak, and real.
+
+Isolating test from both cost 32 percent of test coverage and moved the
+nearest-neighbour baseline RMSE by 0.2. The cost was paid, because a leak that
+has been measured and then left in place is worse than one that was never
+looked for.
+
+Two general rules follow. First, a separation guarantee must name every split
+the model saw in any capacity, not only the one it fitted on. Second, a flag
+that turns such a guarantee off is only credible if a test shows it changes
+something — `test_build_kfold_leaves_test_beside_validation_when_isolation_is_off`
+exists for exactly that reason, and it is the same requirement 18.25 places on a
+neutrality gate.
+
+## 18.34 A geometric criterion and a grid criterion are not interchangeable
+
+Reason:
+
+The Roadmap's C1 gate was worded on the block grid: no test property within one
+block of a training property. C1 measured it and found it unachievable. At a 70
+percent train block share every occupied block has a training block within
+Chebyshev separation 1, so `min_chebyshev_to_train` is 1 in every configuration
+tested, and the grid criterion cannot hold for any partition that retains a test
+set unless training rows are also dropped.
+
+Nor does either criterion imply the other. Points in Chebyshev-adjacent blocks
+can be up to `2*b*sqrt(2)` apart; points `s` metres apart can still share a
+block edge. The project therefore states the metric criterion as binding,
+measures both, and reports the grid figure beside it rather than deriving one
+from the other.
+
+One trap inside the grid figure is worth naming because it produces a plausible
+number rather than an error: the Chebyshev separation must be minimised over ALL
+training blocks, not read off the block of the metrically nearest training
+property. Those are different quantities — the closest training point in metres
+need not sit in the grid-closest training block — and conflating them is the
+18.29 defect shape in a new place.
+
+The boundary itself is `>=`, not `>`. Two points on the facing edges of an
+`s`-wide gap are exactly `s` apart, and an assertion written `>` is a latent
+failure that fires once, on a rerun, for no reason a reader can reconstruct.
+
+## 18.35 A commit that depends on an untracked file passes every local check
+
+Reason:
+
+C1's first commit shipped `spatial_kfold.py`, which imports `caprm.split_gate`,
+without shipping `split_gate.py`. It was pushed. Every local check passed —
+`git status` was clean for what was staged, the full test suite was green, the
+module imported — because the missing file was sitting in the working directory
+the whole time. A clean checkout of that commit cannot import the module or
+collect its tests.
+
+The general shape: **a check performed in the environment that contains the
+defect cannot detect it.** This is 18.25's positive-control rule applied to the
+repository rather than to a build flag, and the fix is the same in kind — run
+the check somewhere the defect would have to show:
+
+```powershell
+git clone --depth 1 . $env:TEMP\caprm-verify
+cd $env:TEMP\caprm-verify
+python -m pytest -q
+```
+
+A clean clone that cannot collect its own tests is a repository that does not
+reflect the validated implementation, whatever the working tree says. This is
+step 6.5 of the commit sequence.
 
 # 19. Repository Structure and Current Source Responsibilities
 

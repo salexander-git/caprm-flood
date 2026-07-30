@@ -39,4 +39,4 @@ pytest>=8.0,<9.0
 # Phase C, spatial-block split. Required by python/caprm/spatial_split.py
 # (scipy.spatial.cKDTree), which is currently untracked. Uncomment and pin from
 # `pip freeze` in the SAME change that commits spatial_split.py, not before.
-# scipy==
+scipy==1.18.0

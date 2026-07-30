@@ -1,14 +1,15 @@
-# CAPRM-Flood Current Status — 2026-07-29
+# CAPRM-Flood Current Status — 2026-07-30
 
 ## Purpose of This Document
 
-This document records the exact current operational state of CAPRM-Flood as of **July 29, 2026**.
+This document records the exact current operational state of CAPRM-Flood as of **July 30, 2026**.
 
 ```text
 Verified at commit:   see section 2
-Test suite:           304 passed  (excluding untracked spatial_split WIP)
+Test suite:           486 passed  (full suite, no --ignore)
 Product audit:        49 pass, 1 warn, 0 fail
 Scoring policy:       preliminary_exposure_index_v2
+Phase C partition:    blocked K-fold, b=10,000 m, w=2,125 m, K=5, 5 seeds
 ```
 
 **Staleness check.** This document lives in the repository. If you are reading
@@ -86,15 +87,44 @@ master
 Current synchronized commit:
 
 ```text
-664a431 Milestone 4 B6a-B6c: five-rung ladder harness, SEED_WINDOW as a
-        build parameter, ladder and nine-window sweep measured countywide
+<C1_REMEDIATION_HASH>  Milestone 4 C1: Phase C modules, tests, scipy pin,
+                       partition manifest
 ```
 
-B6c-2 and B6d are COMPLETE IN THE WORKING TREE AND NOT YET COMMITTED. This hash
-is therefore one chunk behind the described state, which is the failure mode
-section 2 exists to prevent: the hash below must be replaced in a follow-up
-commit once B6d is pushed, and until then no reader should treat `664a431` as
-containing the cross-product tables or the mode dimension.
+Replace `<C1_REMEDIATION_HASH>` in the follow-up commit described at the end of
+this section. Until it is replaced, this document does not record where its own
+state lives, which is precisely the failure this section exists to prevent.
+
+Milestone 4 C1 commit lineage:
+
+```text
+9b561d1  C1 partition of record: spatial_kfold, spatial_split, builder, tests.
+         INCOMPLETE AS PUSHED — `spatial_kfold.py` imports `caprm.split_gate`,
+         which this commit did not contain, so a clean checkout of 9b561d1
+         cannot import the module or collect its tests. It also carried B6d's
+         documentation edits under a C1 message, and set this section to
+         `664a431` while HEAD was `9b561d1`.
+<next>   C1 remediation: the twelve dependency modules and tests, the scipy
+         pin, and outputs/validation/c1_kfold_manifest.json.
+```
+
+Both defects are recorded rather than rewritten. The first is the reason the
+clean-clone check below is now part of the commit sequence; the second is the
+recurrence this section has already logged twice.
+
+**Step 6.5 of the commit sequence, added 2026-07-30.** Before pushing, verify
+that the repository AS TRACKED is complete:
+
+```powershell
+git clone --depth 1 . $env:TEMP\caprm-verify
+cd $env:TEMP\caprm-verify
+python -m pytest -q
+```
+
+`git status` cannot detect a commit that depends on an untracked file, because
+the file is present locally. A clean clone can. This is the same principle as
+B6b's positive control: a check that cannot fail on the condition it targets is
+not a check.
 
 Synchronization status at the last check:
 
@@ -160,12 +190,13 @@ and not to be staged with it:
  M docs/caprm_flood_m4_chunking_plan.md
  M docs/caprm_flood_m4_kickoff_prompts.md
  M docs/scoring_methodology.md
- M requirements.txt
-?? python/caprm/spatial_split.py
-?? python/caprm/build_spatial_split.py
-?? tests/test_spatial_split.py
    (plus course, poster, and presentation files)
 ```
+
+`python/caprm/spatial_split.py`, `python/caprm/build_spatial_split.py` and
+`tests/test_spatial_split.py` are no longer untracked; they were committed at
+C1 together with the Phase C modules built on them. `requirements.txt` is
+committed with `scipy==1.18.0` pinned.
 
 Two items previously flagged here are resolved:
 
@@ -982,34 +1013,32 @@ docs/milestone_2.md            Milestone 2 method and results
 
 # 16. Test Status
 
-Measured on 2026-07-28:
+Measured on 2026-07-30:
 
 ```text
-python -m pytest -q --ignore=tests/test_spatial_split.py
-257 passed in 3.64s
+python -m pytest -q
+486 passed
 ```
 
-Per module:
+**The `--ignore=tests/test_spatial_split.py` flag is retired.** scipy is
+installed and pinned as `scipy==1.18.0` in `requirements.txt` as of the C1
+commit, so `tests/test_spatial_split.py` collects and runs. Any figure in this
+document or in `README.md` quoting 181, 257 or 304 tests is superseded.
+
+Phase C added, at C1:
 
 ```text
-tests/test_scoring.py             44
-tests/test_sensitivity.py         38
-tests/test_audit.py               38
-tests/test_rmi.py                 47   (Milestone 4 B4)
-tests/test_hilbert_inflation.py   13   (Milestone 4 B3b)
-tests/test_water_benchmark.py     14   (Milestone 4 B2, +11 over B1)
-tests/test_water_segment_split.py  5   (Milestone 4 B1)
-pre-existing modules              61
+tests/test_spatial_split.py       11   (pre-existing WIP, previously ignored)
+tests/test_supervised_dataset.py  11   (C1)
+tests/test_spatial_correlation.py 16   (C1)
+tests/test_split_gate.py          16   (C1)
+tests/test_spatial_kfold.py       20   (C1)
 ```
 
-**The `--ignore` flag is required and is not a Milestone 4 issue.**
-`tests/test_spatial_split.py` imports `caprm.spatial_split`, which imports
-`scipy.spatial.cKDTree`. scipy is not installed in the venv, so pytest aborts
-during collection and runs zero tests. Both files are untracked (`??`) with no
-commit history and postdate the 2026-07-16 repository inventory; they are
-Phase C spatial-block-split work in progress. When Phase C begins, scipy must
-be installed *and* declared in `requirements.txt` in the same change. Until
-then the tracked suite is green at 257.
+The remaining growth from 257 to 486 is Milestone 4 B6's own test modules,
+which postdate the 2026-07-28 per-module table above. That table is retained as
+a historical record and is no longer a current inventory; regenerate the
+breakdown with `python -m pytest --collect-only -q` if a current one is needed.
 
 Two C++ unit suites are not counted above:
 
@@ -1178,8 +1207,22 @@ grouping half of the extent axis           out of scope, documented
 verification-mode A/B fork                 DONE  (B2)
 disk-to-curve-range decomposition          not started
 search-radius inflation characterized      not started
-neural surrogate, spatial-block split      not started
+spatial-block partition for the surrogate  DONE  (C1, blocked K-fold)
+neural surrogate                           C2, not started
 ```
+
+## Open question carried out of C1
+
+`python/caprm/water_validate.py` reads both the Python reference and the C++
+output with pandas' default CSV float parser, which C1 measured to be not
+correctly rounded (34,221 eastings and 43,206 northings shifted by up to
+9.31e-10 m on the countywide coordinate file). `water_export.py:294` writes the
+C++ inputs with `%.17g`, so the export side is lossless. Whether the two
+implementations ever derive different doubles from the same coordinate text is a
+one-line experiment that has NOT been run. It is unlikely to explain the
+4.658e-10 m agreement residual — distances are O(10^3) m where the ULP is
+~1e-13 — and it is recorded here so the question is not lost rather than as a
+finding. It belongs in its own chunk, not in PHASE C.
 
 Nothing in Milestone 4 changes the exposure index, the evidence products, or
 the exact distance kernel. Every implementation that claims exactness must
@@ -1215,8 +1258,11 @@ pipeline that produces every Milestone 3 result. See PHASE D2.
 # 21. Immediate Next Task
 
 ```text
-B5. Port RMI inference to C++
+C2. Train the surrogate
 ```
+
+PHASE B is closed. PHASE C chunk C1 is complete; see the C1 result subsection
+below and the C2 statement at the end of this section.
 
 B1 through B5c are complete and validated countywide. Committed: B1 at 998c859,
 B2/B3a/B3b/B4 at 97bfb1e, B5 at f2e2e00. B5c's commit is pending. The B1 result
@@ -3139,55 +3185,286 @@ conversation-side calculation, which is the practice B6d exists to end.
 
 ---
 
-## Immediate next task — C1
+## C1 result — training data and a blocked K-fold partition, 2026-07-30
 
-**C1. Training data and a spatial-block split.** PHASE C abandons exactness
-deliberately; the error is the point. C1 builds no model — it builds the dataset
-and the partition, and the partition is the whole chunk.
+C1 built no model. It built the dataset and the partition, and the partition was
+the whole chunk.
 
-The risk is the defect shape B6d spent itself on. A random train/test split is a
-dimension the code does not know is a dimension: adjacent parcels share a FEMA
-polygon, sit metres apart on the same DEM cells, and frequently select the same
-nearest water feature, so a random split places near-identical records on both
-sides and reports memorization as generalization — plausibly, silently, with a
-good score. The target makes it worse rather than better: water carries 65
-percent of the index variance and 98.1 percent of properties are tied at the same
-FEMA component, so the label is dominated by distance-to-water, which is about as
-spatially autocorrelated as a field gets.
+### The dataset
 
-1. Build the supervised dataset: input `(x, y)` in EPSG:26918, target
-   `exposure_index_0_100` at `preliminary_exposure_index_v2`, 267,362 rows.
-   Verify the row count, the unique-ID count and the null behaviour; do not
-   assume them. Scoring stays frozen — if a label cannot be produced without
-   modifying `scoring.py`, stop and say so.
-2. Partition by spatial block, whole blocks assigned to train, validation or
-   test. Record block edge length, grid origin, RNG seed, and per-split row and
-   block counts. The block size is justified against a correlation length
-   ESTIMATED FROM THE DATA, not asserted.
-3. Measure the gate: for every test property, the metric distance to the nearest
-   training property and the block-grid separation. Report the minimum, the
-   distribution and the violation count. Define "within one block" once, in one
-   place, so a metric criterion and a grid criterion cannot drift apart.
-4. Build a random split as well and run the identical gate on it. Nucleus 18.25:
-   a neutrality gate requires a positive control. **A gate that passes on both
-   partitions is measuring nothing**, and its passing on the block split means
-   nothing until the random split fails it. Keep the random split — C2 reports
-   the memorization gap between the two, and that number is what the discipline
-   bought.
-5. Declare the baseline before any model exists: a nearest-training-neighbour
-   predictor that copies the index of the geometrically closest training
-   property. On a target this autocorrelated it will score well, and it is the
-   honest floor. A surrogate that does not beat it has learned nothing about the
-   function, only about the neighbourhood.
-6. Everything in `python/caprm/`, a thin CLI in `python/scripts/`, with tests. No
-   number reported in conversation is reportable until it lands in the module
-   with a test — the rule `analyze_b6_results.py` exists to enforce.
+`outputs/training/supervised_dataset_v2.csv`, SHA-256
+`2e3132faf5ce2dc0f31bd4d7ff40041171f4f68d99e91b5a5c2f350151ba7799`, built by
+`python/scripts/build_supervised_dataset.py` from the frozen index and the
+frozen projected coordinates. `scoring.py` is not imported; the label is read,
+never recomputed.
 
-Acceptance: 267,362 rows with unique IDs verified and no nulls; block size
-justified against a measured correlation length; the gate measured and PASSED on
-the block split; the gate measured and FAILED on the random split; both splits
-deterministic under a recorded seed and verified by rerun; the baseline error
-recorded before any model is trained; `scoring.py` and the v2 index unmodified.
+```text
+rows / unique property_id      267,362 / 267,362, both sides
+key-set asymmetry              0 in each direction
+nulls, any column              0
+scoring_policy_version         exactly ['preliminary_exposure_index_v2']
+index CSV vs its manifest      SHA-256 match
+label mean / sigma             34.63218408001099 / 13.063711939924076
+```
+
+The mean and sigma reproduce the frozen index manifest to all printed digits,
+which is an independent check that the join preserved row identity.
+
+**Two dtype hazards, both closed.** The key is text: 267,361 IDs are
+zero-padded 20-character digits and one is alphanumeric,
+`1600100001003000WC`. Read without an explicit string dtype it loses leading
+zeros on 267,361 rows and coerces one to NaN, and the join then fails looking
+like a data problem. Separately, pandas' DEFAULT CSV float parser is not
+correctly rounded: on the countywide coordinate file it disagrees with
+`float_precision="round_trip"` on 34,221 eastings and 43,206 northings by up to
+9.31e-10 m, the same order as `BOUNDARY_EPSILON_METERS`. Reader and writer are
+pinned together (`round_trip` in, `%.17g` out) so the dataset reproduces its
+source coordinates exactly. Whether the same parser sits between the Python
+reference and the C++ output in `water_validate.py` is an OPEN QUESTION recorded
+in section 20, not a claim; distances are O(10^3) m where the ULP is ~1e-13, so
+it is unlikely to explain the 4.658e-10 m agreement residual.
+
+### The label is a well-defined function of position
+
+376 co-located coordinate groups covering 1,700 rows, **zero** carrying
+differing labels; maximum within-group label range 0.0. The irreducible floor
+for any coordinate-only surrogate is 6.27e-16 RMSE against a target variance of
+170.66 — float noise from subtracting a group mean. **Every C2 residual is model
+error; none is target ambiguity.**
+
+### Correlation length, measured and model-free
+
+`outputs/validation/spatial_correlation_v2.json`, from
+`python/scripts/measure_spatial_correlation.py`. Empirical semivariogram in two
+passes: KD-tree ball queries from sampled centres against all 267,362 points for
+short lags, chunked exhaustive pairwise over a 20,000-point subsample for long
+lags. Sill = sample variance = 170.66057.
+
+```text
+gamma/sill    0.10    0.25    0.50    0.75    0.90    0.95
+lag (m)        125     625   2,125   6,125   7,625   8,125
+```
+
+At 12.5 m separation gamma/sill is 0.018: adjacent parcels are near-duplicates,
+now with a number.
+
+**A fitted range cannot carry this decision.** Fitting the standard exponential
+model and sweeping only the fit window moves the range parameter from 503.5 m to
+16,592 m — 33-fold — at R^2 >= 0.952 throughout. The block edge is therefore
+chosen against the model-free crossing lags, and `fit_exponential` is labelled a
+diagnostic and swept for exactly this reason. This is Nucleus 18.27 recurring in
+a new place.
+
+**The field is non-stationary.** The variogram does not plateau and overshoots
+to gamma/sill = 1.11 at 12.6 km. A degree-3 polynomial trend accounts for
+R^2 = 0.2527 and barely moves the short-lag shape. No partition of a 51 x 48 km
+county decorrelates this field. What C1 can claim is a measured separation with
+a stated residual, not decorrelation.
+
+### The gate, and why the Roadmap's wording was replaced
+
+The criterion, defined once in `caprm/split_gate.py`: a partition passes at
+separation `s` when every surviving holdout property lies at least `s` metres
+from every training property. `>=` and not `>` — two points on the facing edges
+of an `s`-wide gap are exactly `s` apart, and `>` is a latent failure.
+
+The Roadmap's grid wording — no test property within one block of a training
+property — was measured and found **unachievable**. `min_chebyshev_to_train` is
+1 in every configuration measured: at a 70 percent train block share every
+occupied block has a training block within Chebyshev 1. The metric criterion is
+binding; the Chebyshev figure is reported beside it rather than derived from it,
+because the two genuinely diverge. The Chebyshev value is minimised over ALL
+training blocks, not read off the metrically nearest training property — those
+are different quantities, and conflating them is the Nucleus 18.29 defect shape.
+
+### Why a single blocked holdout was rejected
+
+Holding separation fixed and varying only the seed across ten draws
+(`outputs/validation/c1_split_seed_stability.json`):
+
+```text
+geometry                  test-mean-label range   baseline RMSE range   R^2 range
+b2000 0.70/0.15 w625            9.82 pts               6.58            -0.885 … 0.042
+b3000 0.60/0.20 w625            7.29 pts               3.05            -1.086 … -0.128
+b4000 0.50/0.25 w2125          11.94 pts              18.69            -4.514 … 0.573
+b8000 0.60/0.20 w2125          13.14 pts              11.58            -2.325 … -0.110
+```
+
+Population mean 34.632, sigma 13.064. The seed moves the test set's own mean by
+up to one sigma and the baseline RMSE by more than the RMSE itself. See Nucleus
+18.32.
+
+### The partition of record
+
+`python/scripts/build_spatial_kfold.py`, manifest at
+`outputs/validation/c1_kfold_manifest.json`.
+
+```text
+buffer w        2,125 m   the lag at gamma/sill = 0.50, READ from the variogram
+                          artifact at runtime rather than typed in
+block edge b   10,000 m   chosen on fold balance and seed stability, declared
+                          before coverage was examined
+K                     5   every occupied block is test exactly once, val once
+seeds                 5   20260722 … 20260726, all persisted
+isolation          test separated from validation as well as training
+grid origin        (0, 0) in EPSG:26918
+fold hash          blake2b(f'{seed}:fold:{i}:{j}') % K
+```
+
+29 occupied blocks; folds 5/6/7/5/6 at the primary seed.
+
+```text
+     seed  tested   cov%    RMSE       R^2   testMean  testStd   minSep
+ 20260722   89,344  33.42  15.386  -0.3646    36.497   13.171   2125.0
+ 20260723  100,257  37.50  15.429  -0.4343    35.299   12.883   2125.0
+ 20260724  130,187  48.69  14.049  -0.1465    31.899   13.121   2125.0
+ 20260725  118,357  44.27  15.538  -0.4137    33.919   13.068   2125.0
+ 20260726  126,177  47.19  16.530  -0.5418    32.116   13.312   2125.0
+```
+
+Test sigma now tracks the population (12.88–13.31) where the single holdout gave
+7.78–16.31.
+
+### Controls, through the identical gate, judged at 2,125 m
+
+```text
+random                       n=40,205             min 0.000 m   100.0% violate   FAIL
+blocked unbuffered, f0..f4   n=11,751…76,741  min 5.9–13.3 m   7,388–40,217     FAIL
+blocked buffered             every fold, every seed  min 2125.0 m   0 violate    PASS
+```
+
+The random control's minimum is exactly 0.000 m because the 1,700
+coordinate-duplicate rows land on both sides. The unbuffered rung is the one
+that matters: it isolates the buffer's contribution from blocking's, and it
+fails, so the buffer is not over-building.
+
+### The nearest-training-neighbour baseline, declared before any model
+
+Aggregate over the union of each seed's folds, every property predicted at most
+once:
+
+```text
+blocked K-fold      RMSE 14.05 … 16.53      R^2 -0.542 … -0.147
+random split        RMSE  4.933             R^2  0.8526 … 0.8667 (10 seeds)
+```
+
+Non-overlapping ranges. A random split would have credited "copy your nearest
+training neighbour" with R^2 = 0.86. **A C2 surrogate that does not beat RMSE
+16.53 on every seed has learned the neighbourhood, not the function.**
+
+### Acceptance
+
+```text
+blocked_gate_passed_every_fold_every_seed   true   (25 fold x seed cells)
+unbuffered_control_failed                   true
+random_control_failed                       true
+deterministic_every_seed                    true   (rebuild, identical assignment)
+aggregate_baseline_rmse_range               2.4807489792742867
+aggregate_baseline_r2_min                   -0.5417604651882764
+aggregate_baseline_r2_max                   -0.14653213654891473
+```
+
+### Cross-platform reproduction
+
+C1-a's artifacts were generated independently on Linux / Python 3.12 / scipy
+1.17.1 / numpy 2.4.4 and on Windows / Python 3.14 / scipy 1.18.0 / numpy 2.4.6.
+`c1_split_geometry_sweep.json` and `c1_split_seed_stability.json` are
+IDENTICAL; the variogram CSVs are byte-identical; the 39 MB dataset reproduces
+to the same SHA-256. `spatial_correlation_v2.json` differs in 99 scalars, ALL
+inside `exponential_fit_window_sweep`, at most 1.0e-7 relative — the
+Levenberg-Marquardt iteration terminating differently. The one quantity that
+moved is the one already labelled a diagnostic.
+
+### What C1 did not achieve, stated plainly
+
+- **K-fold reduces seed dependence; it does not remove it.** Aggregate RMSE
+  range 2.48 against 3.05–18.69 across single-holdout geometries, but coverage
+  still swings 89,344 to 130,187, because the seed still sets fold composition
+  and fold composition sets which properties survive erosion. C2 reports across
+  all five seeds; a single-seed figure is a diagnostic, never a claim.
+- **The test set is not a random sample of the county.** It is deliberately the
+  subset far from training data. Error measured on it is error at separation
+  >= 2,125 m. C4 must frame it that way.
+- **The field is not decorrelated at 2,125 m.** gamma/sill = 0.50 is a stated
+  residual dependence.
+
+### Files, C1
+
+```text
+python/caprm/supervised_dataset.py            new
+python/caprm/spatial_correlation.py           new
+python/caprm/split_gate.py                    new
+python/caprm/spatial_kfold.py                 new
+python/caprm/spatial_split.py                 committed (was untracked WIP);
+                                              modified once, to add a hash
+                                              namespace whose default
+                                              reproduces the original key byte
+                                              for byte
+python/caprm/build_spatial_split.py           committed (was untracked WIP)
+python/scripts/build_supervised_dataset.py    new
+python/scripts/measure_spatial_correlation.py new
+python/scripts/sweep_split_geometry.py        new
+python/scripts/measure_split_seed_stability.py new
+python/scripts/build_spatial_kfold.py         new
+tests/test_supervised_dataset.py              new  (11)
+tests/test_spatial_correlation.py             new  (16)
+tests/test_split_gate.py                      new  (16)
+tests/test_spatial_kfold.py                   new  (20)
+tests/test_spatial_split.py                   committed (11, previously ignored)
+requirements.txt                              scipy==1.18.0 pinned
+```
+
+Unmodified: `scoring.py`, the v2 index, its manifest, and every Milestone 1–3
+evidence product.
+
+### Artifacts of record
+
+```text
+outputs/training/supervised_dataset_v2.csv            39 MB, regenerable, untracked
+outputs/training/supervised_dataset_v2_manifest.json
+outputs/validation/spatial_correlation_v2.json        + three variogram CSVs
+outputs/validation/c1_split_geometry_sweep.json
+outputs/validation/c1_split_seed_stability.json
+outputs/validation/c1_kfold_manifest.json             the partition of record
+outputs/splits/spatial_kfold_countywide_seed*.csv     5 x ~10.5 MB, regenerable
+outputs/splits/random_control_countywide.csv
+```
+
+The split CSVs are fully determined by seed, config and dataset, so only the
+manifests are tracked; each carries the checksums needed to verify a
+regeneration.
+
+---
+
+## Immediate next task — C2
+
+**C2. Train the surrogate.** A small MLP mapping `(x, y)` in EPSG:26918 to
+`exposure_index_0_100` at `preliminary_exposure_index_v2`, trained and evaluated
+under the C1 partition and reported across all five recorded seeds.
+
+The constraints C1 hands it, none negotiable:
+
+1. Train on the pipeline's own deterministic output. Never on flood outcomes:
+   FEMA zone determines mandatory insurance purchase, which determines who can
+   file a claim, so claims correlate with the FEMA component by construction.
+2. Do not replace the scoring layer. Its only defensible property is that it is
+   interpretable.
+3. Beat the declared floor. Nearest-training-neighbour scores RMSE 14.05 to
+   16.53 across the five seeds. A surrogate below that on some seeds and above
+   on others has not beaten it.
+4. Report across five seeds. A single-seed number is a diagnostic (Nucleus
+   18.32).
+5. A model is an artifact (Nucleus 18.20): architecture, seed, split manifest
+   digest, loss curve, and a weight checksum, or it did not happen.
+6. Every number reported lands in a module with a test before it is quoted.
+
+The mechanistic prediction to declare BEFORE training, so C3 can confirm or
+refute it: **FEMA zones are discontinuities.** 98.1 percent of properties sit at
+the same FEMA component and the index steps sharply across a zone boundary. A
+smooth network cannot represent a step; it can only ramp. Residuals should
+therefore spike along zone boundaries and stay small elsewhere. Confirming or
+refuting that is C3's real result, and the prediction must not be adjusted after
+the fact.
 
 ---
 
@@ -3195,65 +3472,54 @@ recorded before any model is trained; `scoring.py` and the v2 index unmodified.
 
 Use:
 
-> We are continuing CAPRM-Flood at Milestone 4, chunk B6c-2 then B6d. Read
-> Nucleus sections 14b, 18.15, 18.16, 18.18, 18.19, 18.22, 18.24, 18.25, 18.26
-> and 18.27, this document's sections 19b and 21 including the B1, B2, B3b, B4,
-> B5, B5c, B6a, B6b and B6c subsections, `CAPRM_Flood_Roadmap.md` PHASE B and
-> B6, and the B6 prompt in `docs/kickoff_prompts_m4.md`, before proposing
-> anything.
+> We are continuing CAPRM-Flood at Milestone 4, PHASE C, chunk C2 — training the
+> neural surrogate. Read Nucleus sections 14b, 18.17, 18.18, 18.20, 18.22,
+> 18.25, 18.27, 18.29, 18.32 and 18.33; this document's sections 16, 20 and 21
+> including the C1 result subsection; and `CAPRM_Flood_Roadmap.md` PHASE C,
+> before proposing anything.
 >
 > Confirm the commit recorded in this document's section 2 matches
 > `git log -1 --oneline`. If it does not, say so before continuing — you are
 > reading a stale copy. The canonical documents live under `docs/canon/`.
 >
 > Milestones 1 through 3 are frozen. The exposure index is not under active work
-> and must not be modified. No kernel, tolerance, tie rule, region predicate or
-> emitted field changes. The one permitted source edit in PHASE B has already
-> been made: the `#ifndef CAPRM_SEED_WINDOW` guard.
+> and must not be modified. `python/caprm/scoring.py` is read-only for the whole
+> of PHASE C. PHASE B is closed; no kernel, tolerance, tie rule, region
+> predicate or emitted field changes.
 >
-> All five rungs exist and every one claiming exactness has been validated at
-> every workload. B6c measured the ladder and a nine-window sweep and produced
-> the phase's contribution, recorded as Nucleus 18.27: **the reported benefit of
-> a learned spatial index depends on parameters the literature holds fixed and
-> does not report** — the seed window moves 5-v-4 from +11.6 percent to +0.001
-> percent, the verification mode roughly doubles it, and the workload moves
-> 4-v-3 from 4.73x to 1.95x. Every comparison published must name its window,
-> its verification mode and its workload.
+> C1 is complete. The dataset is `outputs/training/supervised_dataset_v2.csv`
+> and the partition of record is `outputs/validation/c1_kfold_manifest.json`:
+> blocked K-fold, block edge 10,000 m, buffer 2,125 m, K = 5, five recorded
+> seeds, test isolated from validation as well as training. The gate passed on
+> all 25 fold-by-seed cells with both controls failing. Do not rebuild the
+> partition; consume it.
 >
-> B6c-2 completes the Option A / Option B verification cross-product, which
-> `docs/kickoff_prompts_m4.md` names as B6's primary deliverable and which the
-> conversation-level B6 prompt restricted away. Rung 3 is already measured under
-> both modes (B2). Missing: rungs 4 and 5 under split verification. Predictions
-> are declared in section 21 and must not be adjusted after the fact.
+> Six traps, all measured and all still walkable-into:
 >
-> Seven traps, all recorded and all still walkable-into:
+> - **A single-seed number is not a result.** The seed moves a blocked split's
+>   reported error materially (Nucleus 18.32). Report across all five.
+> - **The floor is already declared.** Nearest-training-neighbour scores RMSE
+>   14.05 to 16.53. Beating it on some seeds is not beating it.
+> - **Test error is error at separation >= 2,125 m**, not countywide error.
+>   Never quote it as the latter.
+> - **The target has zero coordinate ambiguity** (measured: 376 co-located
+>   groups, none conflicting). Any residual is model error. Do not attribute it
+>   to label noise.
+> - **Read the split, do not recompute it.** The split file stores `fold` and a
+>   `dropped_mask` bitmask; `caprm.spatial_kfold.roles_from_codes` rebuilds the
+>   full role matrix and is tested to do so exactly.
+> - **A parameter that moves the headline must be swept, not fixed silently**
+>   (Nucleus 18.27). If a Fourier feature scale changes the answer, the sweep is
+>   the result.
 >
-> - Never infer a speedup from counts. B2 measured 1.43x fewer segment checks
->   running 6.0x faster. Wall clock beside counts, always.
-> - A segment check is not comparable across verification modes, and an entry is
->   not comparable across access patterns: ~3.2 ns sequential against ~25 ns
->   scattered. Never sum or compare them.
-> - No wall-clock claim from a single run, and none crossing invocations. B6c
->   measured the between-invocation term at ~1 percent and cell spreads of 4.6
->   to 14.2 percent countywide. Report ratios within an invocation.
-> - A neutrality gate requires a positive control (Nucleus 18.25). An identity
->   proves nothing until some setting of the same parameter is shown to change
->   something.
-> - Executable digests are void without `-Wl,--no-insert-timestamp`.
-> - No run carrying `--verify-counts`, `--uncapped-half` or `--seed-error-stats`
->   is benchmark-eligible. `--query-stats` is free and is eligible.
-> - The workload ladder varies QUERY COUNT, not index size. It is not the
->   scaling axis the learned-index literature argues over (Nucleus 14b).
+> Every number reported in conversation must land in a module with a test before
+> it is quoted, the rule `analyze_b6_results.py` exists to enforce.
 >
-> Every derived number in the benchmark tables is computed by
-> `python/scripts/analyze_b6_results.py` and nowhere else. If an analysis is
-> performed in conversation, it must land in that script with a test before it
-> is quoted, or it does not exist.
->
-> Completion gate for B6: the Option A / Option B cross-product complete, the
-> three adjacent comparisons reported with wall clock beside counts in both
-> columns, search and verification as separate columns, inflation and memory as
-> first-class columns, and the three canonical documents updated.
+> Completion gate for C2: a trained model per seed, each an artifact with
+> architecture, seed, split-manifest digest, loss curve and weight checksum;
+> test error reported across all five seeds against the declared floor; the
+> memorization gap against the random control measured and reported; and the
+> three canonical documents updated.
 
 ---
 

@@ -92,8 +92,8 @@ Precipitation is retained as a gated stretch goal. See section 8b.
 
 ```text
 PHASE A   Finish Milestone 3                                COMPLETE
-PHASE B   Learned indexing of extended spatial objects      current
-PHASE C   Neural surrogate
+PHASE B   Learned indexing of extended spatial objects      COMPLETE
+PHASE C   Neural surrogate                                  current (C1 done)
 PHASE D   Engineering hardening
 PHASE E   Final academic deliverables
 PHASE S   Precipitation — gated stretch goal
@@ -1202,39 +1202,69 @@ This phase abandons exactness deliberately. The error is the point.
 
 ---
 
-## C1. Prepare Training Data and a Spatial-Block Split
+## C1. Prepare Training Data and a Spatial-Block Partition — COMPLETE 2026-07-30
 
-### Goal
-
-A supervised dataset from the pipeline's own output.
+### Delivered
 
 ```text
-input:   property x, y in EPSG:26918
-target:  exposure_index_0_100 at preliminary_exposure_index_v2
-rows:    267,362, exactly labelled
+dataset      outputs/training/supervised_dataset_v2.csv
+             267,362 rows, unique IDs, zero nulls, single scoring policy
+             sha256 2e3132faf5ce2dc0f31bd4d7ff40041171f4f68d99e91b5a5c2f350151ba7799
+partition    outputs/validation/c1_kfold_manifest.json
+             blocked K-fold, b = 10,000 m, w = 2,125 m, K = 5, five seeds
+evidence     outputs/validation/spatial_correlation_v2.json
+             outputs/validation/c1_split_geometry_sweep.json
+             outputs/validation/c1_split_seed_stability.json
 ```
 
 The labels are exact because the project computed them. This is not a claim
 about flooding; it is an approximation of the project's own deterministic
-function.
+function. C1 additionally MEASURED that the target is a well-defined function of
+position — 376 co-located coordinate groups, none carrying differing labels — so
+the irreducible floor for a coordinate-only surrogate is zero and every C2
+residual is model error.
 
-### The split is the whole slide
+### How the block size was chosen
 
-**Partition by spatial block, never randomly.**
+Against a correlation length estimated from the data, not asserted. The
+empirical semivariogram reaches gamma/sill = 0.25 at 625 m, 0.50 at 2,125 m and
+0.75 at 6,125 m. A fitted exponential range was rejected as the basis for the
+choice because it moves 33-fold with the fit window alone at R^2 >= 0.952.
 
-Adjacent parcels are near-duplicates: they share a FEMA polygon, sit metres
-apart on the same DEM cells, and frequently select the same nearest water
-feature. A random split places near-identical records on both sides and reports
-a memorization score as a generalization score.
+The separation was declared FIRST, on the gamma/sill axis, and the retained row
+count reported as its consequence — not the other way around. Choosing on the
+loss axis silently selects the weak-separation corner.
 
-Use a grid of blocks — a few kilometres on a side — and assign whole blocks to
-train, validation, or test. Record the block size, the seed, and the resulting
-row counts.
+### Completion gate — revised at C1 on measurement
 
-### Completion gate
+Every surviving holdout property lies at least `s` metres from every training
+property, `>=` and not `>`. Measured, with the violation count reported, on
+three partitions through one instrument:
 
-No test-set property lies within one block of a training property. Verify it;
-do not assume it.
+```text
+random                  must FAIL     measured: min 0.000 m, 100% violate
+blocked, unbuffered     must FAIL     measured: min 5.9–13.3 m, thousands violate
+blocked, buffered       must PASS     measured: min 2125.0 m, 0 violations
+```
+
+The middle rung is the one that matters: it isolates the buffer's contribution
+from blocking's. A gate that passes on more than the last row is measuring
+nothing.
+
+The grid wording this replaces — no test property within one block of a
+training property — was measured and found unachievable at any usable test-set
+size. See Nucleus 18.34.
+
+### What C1 hands C2, and what it does not
+
+- A declared floor. Nearest-training-neighbour scores RMSE 14.05 to 16.53 across
+  the five seeds, R^2 -0.542 to -0.147. The same predictor scores R^2 0.86 on a
+  random split, which is the memorization gap the partition bought.
+- Five seeds, not one. K-fold reduced the seed's leverage but did not remove it
+  (Nucleus 18.32).
+- A stated residual, not decorrelation. The field is non-stationary and still
+  climbing at 8 km; no partition of this county decorrelates it. Test error is
+  error at separation >= 2,125 m, not countywide error.
 
 ---
 
@@ -1251,8 +1281,35 @@ position is worth trying, because raw coordinates make it hard for a small
 network to represent sharp spatial structure — and this target has sharp
 structure by construction.
 
-Record the architecture, the seed, the split, the loss curve, and a checksum of
-the weights. A model is an artifact.
+Record the architecture, the seed, the split-manifest digest, the loss curve,
+and a checksum of the weights. A model is an artifact (Nucleus 18.20).
+
+### What C1 fixed, and C2 must not relitigate
+
+Consume `outputs/validation/c1_kfold_manifest.json`. Do not rebuild the
+partition. The split files store `fold` and a `dropped_mask` bitmask;
+`caprm.spatial_kfold.roles_from_codes` rebuilds the full role matrix and is
+tested to do so exactly.
+
+Train and evaluate once per recorded seed, five in all, and report the range.
+A single-seed figure is a diagnostic, never a claim (Nucleus 18.32).
+
+### The bar
+
+```text
+nearest-training-neighbour, blocked K-fold   RMSE 14.05 … 16.53   R^2 -0.542 … -0.147
+nearest-training-neighbour, random split     RMSE  4.933          R^2  0.853 … 0.867
+```
+
+The first row is the floor: a surrogate that does not beat it has learned the
+neighbourhood, not the function. Beating it on some seeds and not others is not
+beating it. The second row is the memorization gap and exists so C2 can report
+what the partition bought — run the same model under the random control and
+publish both numbers.
+
+If a hyperparameter — the Fourier feature scale is the likely one — moves the
+headline, sweep it and report the curve. A result at one operating point is one
+point on a curve (Nucleus 18.27).
 
 ### Do not
 
@@ -1263,6 +1320,11 @@ the weights. A model is an artifact.
   never go near it.
 - Do not replace the scoring layer with the surrogate. The scoring layer's only
   defensible property is that it is interpretable.
+- Do not quote test error as countywide error. The C1 test set is deliberately
+  the subset at least 2,125 m from any training or validation property, so the
+  figure is error at that separation.
+- Do not attribute residuals to label noise. C1 measured the coordinate-label
+  ambiguity at zero.
 
 ---
 
@@ -1858,7 +1920,7 @@ related-work check on learned radius completed before any novelty claim
 ## PHASE C complete when
 
 ```text
-spatial-block split verified, not assumed
+spatial-block partition verified, not assumed              DONE at C1
 surrogate trained, weights checksummed, seed recorded
 residuals mapped and analyzed by distance to a zone boundary
 the discontinuity prediction confirmed or refuted, on the record
