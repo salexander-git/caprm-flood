@@ -1,0 +1,284 @@
+{
+  "task": "C2_neural_surrogate",
+  "schema_version": "c2_surrogate_run_v1",
+  "run_tag": "timing2",
+  "generated_utc": "2026-07-30T17:44:09.754010+00:00",
+  "tool_version": "caprm.surrogate/c2.0",
+  "crs": "EPSG:26918",
+  "complete_run": false,
+  "inputs": {
+    "dataset": "outputs/training/supervised_dataset_v2.csv",
+    "dataset_sha256": "2e3132faf5ce2dc0f31bd4d7ff40041171f4f68d99e91b5a5c2f350151ba7799",
+    "rows": 267362,
+    "dataset_manifest": "outputs/training/supervised_dataset_v2_manifest.json",
+    "dataset_manifest_sha256": "fb939019217f1d8aad425b1f6073eabcc50cda762c31fd2487aee47e8f5431c4",
+    "partition_manifest": "outputs/validation/c1_kfold_manifest.json",
+    "partition_manifest_sha256": "6c21bfd93aa7f93b8a24072220df86da2f714fd67b643128434092f88df61016",
+    "buffer_m": 2125.0,
+    "n_folds": 5,
+    "seeds": [
+      20260722
+    ],
+    "folds_run": [
+      0
+    ]
+  },
+  "architecture": {
+    "encoding": "gaussian_random_fourier",
+    "n_frequencies": 64,
+    "fourier_scale": 8.0,
+    "fourier_wavelength_m": 3178.1763564108605,
+    "include_raw_coordinates": true,
+    "hidden": [
+      128,
+      128
+    ],
+    "training_dtype": "float32",
+    "input_quantisation_m": 0.0030309450812637806,
+    "normalizer": {
+      "center_x_m": 281758.7512369147,
+      "center_y_m": 4781650.690358221,
+      "scale_m": 25425.410851286884
+    }
+  },
+  "train_config": {
+    "learning_rate": 0.002,
+    "batch_size": 4096,
+    "max_epochs": 20,
+    "patience": 20,
+    "min_epochs": 10
+  },
+  "declared_floor": {
+    "source": "outputs\\validation\\c1_kfold_manifest.json",
+    "predictor": "nearest training neighbour, declared at C1 before any model",
+    "blocked_kfold": {
+      "per_seed": {
+        "20260722": {
+          "rmse": 15.386040349253106,
+          "r2": -0.36461995432576066,
+          "n": 89344
+        },
+        "20260723": {
+          "rmse": 15.428583172146555,
+          "r2": -0.4342534642514191,
+          "n": 100257
+        },
+        "20260724": {
+          "rmse": 14.048922165380203,
+          "r2": -0.14653213654891473,
+          "n": 130187
+        },
+        "20260725": {
+          "rmse": 15.538225251966898,
+          "r2": -0.41370851864222447,
+          "n": 118357
+        },
+        "20260726": {
+          "rmse": 16.52967114465449,
+          "r2": -0.5417604651882764,
+          "n": 126177
+        }
+      },
+      "rmse_min": 14.048922165380203,
+      "rmse_max": 16.52967114465449,
+      "r2_min": -0.5417604651882764,
+      "r2_max": -0.14653213654891473
+    },
+    "random_control": {
+      "rmse": 4.932900813203173,
+      "r2": 0.8585543847748629,
+      "n": 40205
+    }
+  },
+  "declared_prediction_for_c3": "FEMA zones are discontinuities. 98.1 percent of properties sit at the same FEMA component and the index steps sharply across a zone boundary. A smooth network cannot represent a step, only a ramp, so residuals should spike along zone boundaries and stay small elsewhere. Confirming or refuting this is C3's result and the prediction is not to be adjusted afterwards.",
+  "results": {
+    "blocked_kfold": [
+      {
+        "partition": "blocked_kfold",
+        "seed": 20260722,
+        "n_folds_run": 1,
+        "folds": [
+          {
+            "label": "blocked_kfold_seed20260722_fold0",
+            "partition": "blocked_kfold",
+            "seed": 20260722,
+            "fold": 0,
+            "counts": {
+              "train": 134499,
+              "val": 43074,
+              "test": 19772
+            },
+            "epochs_run": 20,
+            "best_epoch": 0,
+            "early_stopped": false,
+            "best_val_rmse_label_units": 18.01722088779788,
+            "test": {
+              "n": 19772,
+              "rmse": 14.236540856174853,
+              "mae": 11.063860272989082,
+              "max_abs_error": 68.19281039424482,
+              "r2": -0.5146298894099179,
+              "mean_label": 37.410905723293794,
+              "std_label": 11.568104421711837
+            },
+            "weights_sha256": "825316911ab791bb5039450f2321009bed709346698ae43ecbc0eeab564dcbe6",
+            "seeds": {
+              "seed": 61893386759846813,
+              "feature_seed": 8469799332175287865,
+              "init_seed": 6209792184318227314,
+              "shuffle_seed": 3536904569601311915
+            },
+            "train_mean": 38.02753893862497,
+            "model_path": "outputs\\models\\c2_surrogate_blocked_kfold_seed20260722_fold0.npz",
+            "weights_sha256_after_reload": "825316911ab791bb5039450f2321009bed709346698ae43ecbc0eeab564dcbe6"
+          }
+        ],
+        "aggregate": {
+          "n": 19772,
+          "rmse": 14.236540856174853,
+          "mae": 11.063860272989082,
+          "max_abs_error": 68.19281039424482,
+          "r2": -0.5146298894099179,
+          "mean_label": 37.410905723293794,
+          "std_label": 11.568104421711837
+        },
+        "constant_aggregate": {
+          "n": 19772,
+          "rmse": 11.584235331876412,
+          "mae": 8.96604421541136,
+          "max_abs_error": 61.90154597237503,
+          "r2": -0.002841524430938991,
+          "mean_label": 37.410905723293794,
+          "std_label": 11.568104421711837
+        },
+        "test_coverage_fraction": 0.07395216971746171,
+        "seed_weights_sha256": "c44d84d4991ea8edd52db3f94ef9e29c102e440813bed36b8bb3bf7abd73531f"
+      }
+    ]
+  },
+  "summary": {
+    "blocked_kfold": {
+      "n_seeds": 1,
+      "seeds": [
+        20260722
+      ],
+      "rmse_min": 14.236540856174853,
+      "rmse_max": 14.236540856174853,
+      "rmse_range": 0.0,
+      "r2_min": -0.5146298894099179,
+      "r2_max": -0.5146298894099179,
+      "coverage_min": 0.07395216971746171,
+      "coverage_max": 0.07395216971746171,
+      "per_seed": {
+        "20260722": {
+          "rmse": 14.236540856174853,
+          "r2": -0.5146298894099179,
+          "n": 19772,
+          "coverage": 0.07395216971746171,
+          "seed_weights_sha256": "c44d84d4991ea8edd52db3f94ef9e29c102e440813bed36b8bb3bf7abd73531f"
+        }
+      }
+    }
+  },
+  "summary_constant_baseline": {
+    "blocked_kfold": {
+      "n_seeds": 1,
+      "seeds": [
+        20260722
+      ],
+      "rmse_min": 11.584235331876412,
+      "rmse_max": 11.584235331876412,
+      "rmse_range": 0.0,
+      "r2_min": -0.002841524430938991,
+      "r2_max": -0.002841524430938991,
+      "coverage_min": 0.07395216971746171,
+      "coverage_max": 0.07395216971746171,
+      "per_seed": {
+        "20260722": {
+          "rmse": 11.584235331876412,
+          "r2": -0.002841524430938991,
+          "n": 19772,
+          "coverage": 0.07395216971746171,
+          "seed_weights_sha256": "c44d84d4991ea8edd52db3f94ef9e29c102e440813bed36b8bb3bf7abd73531f"
+        }
+      }
+    }
+  },
+  "wall_clock_seconds": 5.191059900011169,
+  "environment": {
+    "python": "3.14.0",
+    "numpy": "2.4.6",
+    "pandas": "3.0.3",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "note": "BLAS chooses its blocking from operand shape and thread count, so bit-identical weights are claimed for a rerun on this machine and configuration, verified by --verify-determinism, not across machines."
+  },
+  "comparison_to_floor": {
+    "floor_source": "outputs\\validation\\c1_kfold_manifest.json",
+    "rmse_rungs": {
+      "rung_0_constant_train_mean": [
+        11.584235331876412,
+        11.584235331876412
+      ],
+      "rung_1_nearest_training_neighbour": [
+        14.048922165380203,
+        16.52967114465449
+      ],
+      "rung_2_surrogate": [
+        14.236540856174853,
+        14.236540856174853
+      ]
+    },
+    "constant_baseline": {
+      "rmse_range": [
+        11.584235331876412,
+        11.584235331876412
+      ],
+      "r2_range": [
+        -0.002841524430938991,
+        -0.002841524430938991
+      ],
+      "constant_beats_declared_floor_as_a_range": true,
+      "surrogate_beats_constant_as_a_range": false,
+      "why_this_rung_exists": "The declared floor's R^2 is negative on every seed, so the floor is beaten by predicting a constant. Clearing it is therefore not by itself evidence that the surrogate learned spatial structure, and the rung that shows this is reported beside the floor rather than left for a reader to derive."
+    },
+    "floor_predictor": "nearest training neighbour, declared at C1 before any model",
+    "per_seed": {
+      "20260722": {
+        "surrogate_rmse": 14.236540856174853,
+        "floor_rmse": 15.386040349253106,
+        "surrogate_r2": -0.5146298894099179,
+        "floor_r2": -0.36461995432576066,
+        "surrogate_beats_floor": true
+      }
+    },
+    "beats_floor_per_seed": true,
+    "ranges_are_disjoint": false,
+    "surrogate_rmse_range": [
+      14.236540856174853,
+      14.236540856174853
+    ],
+    "floor_rmse_range": [
+      14.048922165380203,
+      16.52967114465449
+    ],
+    "verdict": "does not beat the declared floor as a range; it beats it at every seed individually, which Nucleus 18.32 does not accept as beating it"
+  },
+  "acceptance": {
+    "run_completed": true,
+    "complete_run": false,
+    "partitions_run": [
+      "blocked_kfold"
+    ],
+    "seeds_run": [
+      20260722
+    ],
+    "models_written": 1,
+    "scoring_layer_untouched": true,
+    "partition_rebuilt": false,
+    "beats_declared_floor_as_a_range": false,
+    "beats_declared_floor_at_every_seed": true,
+    "beats_constant_baseline_as_a_range": false,
+    "memorization_gap_measured": false,
+    "deterministic_on_refit": null
+  }
+}
