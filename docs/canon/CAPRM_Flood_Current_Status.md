@@ -86,8 +86,15 @@ master
 Current synchronized commit:
 
 ```text
-86ff32b Docs: bring README and validation.md current through Milestone 4 B5c
+664a431 Milestone 4 B6a-B6c: five-rung ladder harness, SEED_WINDOW as a
+        build parameter, ladder and nine-window sweep measured countywide
 ```
+
+B6c-2 and B6d are COMPLETE IN THE WORKING TREE AND NOT YET COMMITTED. This hash
+is therefore one chunk behind the described state, which is the failure mode
+section 2 exists to prevent: the hash below must be replaced in a follow-up
+commit once B6d is pushed, and until then no reader should treat `664a431` as
+containing the cross-product tables or the mode dimension.
 
 Synchronization status at the last check:
 
@@ -2822,47 +2829,365 @@ cpp/spatial_core/build/water_distance_hilbert_w{8..2048}.exe
 
 ---
 
-## Immediate next task — B6c-2, then B6d
+## B6c-2 result — the verification cross-product, 2026-07-29
 
-**B6c-2. Complete the verification-mode cross-product.** B6's primary
-deliverable per `docs/kickoff_prompts_m4.md` is the Option A / Option B
-cross-product, and the conversation-level prompt that ran B6a-B6c restricted the
-ladder to Option A. Rung 3 is already measured under both modes (B2: cap 25,
-sec A 9.596, sec B 1.705, 5.63x, 7 reps countywide) and Option B exactness is
-already validated for rungs 3, 4 and 5 (B3b). Missing: the timing of rungs 4 and
-5 under split verification.
+`verification_mode` became a third cell dimension in the harness:
+`RungSpec.verification_mode_position` (index 2 for rungs 3-5, `None` for rungs
+1-2, which verify over original geometry by construction), substituted by
+`verification_positionals()`, which asserts the slot holds a known mode before
+writing to it. The cell key omits `@original`, so B6c's recorded keys stay
+comparable. Digest keys now match against the full cell key, and an unqualified
+`rung=` digest no longer spans verification modes — it still spans seed windows,
+which are byte-neutral. That distinction was a bug caught on the first run: the
+Option B cells inherited the Option A digests and failed.
 
-This is not cosmetic. `kickoff_prompts_m4.md` states that under Option B the
-verification ceiling lifts and the learned rung's advantage or disadvantage
-becomes visible in WALL CLOCK rather than only in component metrics. B6c
-measured 5-v-4 at +6.48 percent against 4.6-14.2 percent cell spread and could
-not resolve either seeder's optimal window; that is the predicted consequence of
-measuring only in the diluted column.
+### Exactness — Option B is a reportable mode
 
-Predicted before running, from B2's decomposition (verification work falls
-~6.02x while search is untouched) applied to B6c's Option A countywide medians:
+All three countywide split cells exit 0 at 267,362/267,362 with **zero
+`feature_id` disagreements**, maximum absolute error 9.156906344287563e-10 m,
+identical across the three and inside B2's predicted 8.82e-10 to 9.17e-10 range.
+
+### The cross-product, countywide, W=64, one invocation
 
 ```text
-                      A measured   B predicted
-segment_bvh              9.1167        ~1.62
-hilbert_binary          17.7500        ~8.97
-hilbert_rmi             18.9003       ~10.12
+                    Option A       Option B      A -> B
+segment_bvh          9.6261 s       1.6435 s     5.857x
+hilbert_binary      18.8119 s       9.4895 s     1.982x
+hilbert_rmi         20.1691 s      10.6772 s     1.889x
 
-4 v 3   1.947x slower  ->  ~5.5x slower
-5 v 4   +6.48%         ->  ~+12.8%
+4 v 3   1.954x slower  ->  5.774x slower     amplification 2.95x
+5 v 4     +7.21%       ->    +12.52%
 ```
 
-Requires making verification mode a third cell dimension in the harness; it sits
-at index 2 of `RungSpec.trailing_positionals` for both `segment_bvh` and
-`hilbert`. Option B output is NOT byte-identical to Option A — B2 measured
-8.82e-10 to 9.17e-10 m against 4.658e-10 — so Option B cells gate on
-`compare_python_cpp_water.py` at 1e-6 m and these runs establish the canonical
-Option B digests.
+Both pre-declared predictions held: 4-v-3 predicted ~5.5x, measured 5.774x;
+5-v-4 predicted +12.8 percent, measured +12.52.
 
-**B6d. Close out.** The benchmark table as three adjacent comparisons with wall
-clock beside counts in both columns; search and verification as separate columns
-throughout; inflation as a first-class axis; the memory table; the five
-canonical-document updates; and commit.
+### Optional sweeps
+
+**Nine-window sweep under Option B, countywide** (`sweepB`, 18 cells). The
+rmi/binary ratio spans 1.21402 at W=8 to 0.99875 at W=2048, a WIDER range than
+Option A's, so the window dependence is not an artifact of the diluted column.
+Slope through the origin 21.19 ns/entry against Option A's 21.02. The sub-unity
+points at W=1024 and 2048 have gap/range of 0.12 and 0.02 and are NOT a measured
+learned win.
+
+**Mode x workload grid** (`gridAB`, 18 cells). See Nucleus 18.27 for the
+denominator finding and 18.28 for the amortization crossover. Check-count ratios
+across all six mode pairs: 1.4308x to 1.4974x, mean 1.4602x, against B2's 1.43x.
+Resolve entries, candidate features and memory are identical between modes at
+every workload.
+
+### Diagnostics
+
+`--seed-error-stats` at W=2048 countywide, not benchmark-eligible, writing
+`outputs/validation/diag_seed_error_w2048.json`: 31,643 of 267,362 properties
+(11.835 percent) have their nearest split segment outside a ±2048 window; mean
+`d_seed/d_best` 1.060939, max 23.432272. The per-property content of that JSON has
+not yet been read and is the input to the open question below. The one-property
+memory isolation produced index construction at 0.912181 s but no memory figure;
+see Nucleus 18.24.
+
+### Canonical digests established by B6c-2
+
+```text
+segment_bvh@10000@split              f17a3580cde5b54ae969d10f5270daf05c209bb2d0a2506fa387ef68ff6dccdb
+segment_bvh@100000@split             4c715a915d6a7711f49ffffd1e61953240f231afe6fbc858e67dafa9470abf8c
+segment_bvh@countywide@split         90ecb3c996b07057d65a50fd074b48868d05262d2cec8bb25047bea48f79b3ea
+hilbert_binary@10000@split@w64       824482df5ee14d6ea8a5520f64bc274c5d99cf8a22f262dc6527a6946e3adfa0
+hilbert_binary@100000@split@w64      c8f03e38907376a6e2a8f1384d61686b09073f875e772bb51f01ec83cebb5421
+hilbert_binary@countywide@split@w64  05c799b1fcef76bee01701d88ae4f2512d0e6b460aa63aa7f17143616ede12ee
+hilbert_rmi@10000@split@w64          ce547239478e4e5cd82eb9119de388851b92a9ca77cff2dd62b3f43517c968c9
+hilbert_rmi@100000@split@w64         22c69b1be847127bf5ac4df20adc5b2f7b940f1ef0628ef9706282d48cbe1010
+hilbert_rmi@countywide@split@w64     008945d1a38aff3570c2eafaed7ec1b6276243062b63f1dd5c8fafa78b424620
+```
+
+### OUTSTANDING — six cells not yet validated against the reference
+
+The `_10000` and `_100000` Option B cells from `gridAB` have digests but have NOT
+been run through `compare_python_cpp_water.py`. The completion gate requires exact
+agreement for every implementation claiming exactness at every workload, so B6d
+must close this before PHASE B closes.
+
+### Artifacts
+
+```text
+outputs/benchmark/water_ladder_runs_{b6c2,sweepB,gridAB}.csv and .jsonl
+outputs/validation/water_ladder_summary_{b6c2,sweepB,gridAB}.json
+outputs/validation/{b6c2,gridAB}_counters.csv
+outputs/validation/diag_seed_error_w2048.{json,txt}
+outputs/benchmark/diag_{seed_error_w2048,one_property}.csv
+outputs/validation/ladder_{agreement,summary}_*_split*.{csv,json}   (3 countywide)
+```
+
+---
+
+## B6d result — the published tables and the close-out, 2026-07-30
+
+B6d wrote no new measurement. It patched the derivation layer, closed the last
+exactness cells, and published the cross-product.
+
+**The mode dimension, and what it was actually doing.** `analyze_b6_results.py`
+turned out to be a thin CLI; every derivation lives in
+`python/caprm/ladder_analysis.py`, and that is the file B6d patched. The defect
+was worse than mixing modes. `adjacent_comparisons` built a per-workload dict as
+`by_algorithm[row["algorithm"]] = row`, so a frame containing both modes emitted
+ONE set of comparisons drawn from whichever mode iterated last, with no mode
+recorded on the output. Measured on the `b6c2` artifact before the patch: two
+Option B rows, Option A dropped entirely, and five invariants failing because the
+byte-neutrality check was comparing Option A's digest against Option B's — a
+check that is correct and a grouping that was not.
+
+**One defect shape, six sites.** Fixing mode surfaced the identical shape in
+INVOCATION, and each site announced itself as a number moving rather than as an
+error:
+
+```text
+cost_model sweep population   slope 21.02 -> 21.46; sweep's W=64 and b6c2's
+                                W=64 collided in one group
+cost_model population key     one Option B point joined Option A's nine-window
+                                sweep
+adjacent_comparisons          countywide 3-v-2 read 6.540x instead of 6.905x,
+                                mixing ladder's rung 2 with b6c2's rung 3
+verification_decomposition    calibrating on one invocation and applying the
+                                constant to another drove rung 3's own residual
+                                to -1.689 us/property
+access_pattern_fit            countywide Option A collapsed to R^2 0.688
+```
+
+Workload, verification mode and invocation are now part of every grouping key.
+Comparisons that must borrow across an invocation — rung 2 exists in one
+invocation only, so Option B's 3-v-2 cannot be formed without it — carry
+`crosses_invocation: true` rather than being suppressed or emitted silently.
+
+**A second rung-boundary error, found the same way.** The search/verification
+decomposition initially applied rung 3's per-check constant to every rung and
+gave brute force a search cost of -2,261 us/property. A brute-force check and a
+segment-BVH check are not the same unit of work; B2's rule that counts are
+comparable within a verification mode and not across implementations that verify
+differently extends to this, and `DECOMPOSABLE_RUNGS = (3, 4, 5)` now encodes it.
+
+**The slope reconciliation.** 20.33 and 21.02 were never in conflict. They are
+different populations of the same fit, published under one label. Each population
+is now named and emitted separately:
+
+```text
+all_points          n=29   20.50 ns/entry   sweep plus single-window workloads
+window_sweep_only   n=18   21.10 ns/entry   countywide@original@sweep_runs and
+                                              countywide@split@sweep_split_runs
+resolvable_only     n=15   21.34 ns/entry   gap exceeds both cells' full range
+B5c isolated constant       20.40 ns/entry   measured before any B6 timing
+```
+
+**The six exactness cells are closed.** Every implementation claiming exactness
+now agrees field-for-field with the Python reference at every workload in both
+verification modes.
+
+```text
+segment_bvh    @10000 @split   10,000/10,000 all fields   max 8.659526e-10 m
+hilbert_binary @10000 @split   10,000/10,000 all fields   max 8.659526e-10 m
+hilbert_rmi    @10000 @split   10,000/10,000 all fields   max 8.659526e-10 m
+segment_bvh    @100000@split  100,000/100,000 all fields  max 9.066881e-10 m
+hilbert_binary @100000@split  100,000/100,000 all fields  max 9.066881e-10 m
+hilbert_rmi    @100000@split  100,000/100,000 all fields  max 9.066881e-10 m
+```
+
+The Option B bound is wider than Option A's 4.658e-10 m, as expected: split
+geometry introduces one additional rounding in the split-point computation.
+
+**The cross-product, published.** Three adjacent comparisons, two modes, three
+workloads. Cross-invocation rows omitted here and flagged in the artifact.
+
+```text
+workload    mode      3 v 2            4 v 3           5 v 4
+10000       original  15.690x faster   4.735x slower   1.143x slower
+10000       split     --               8.488x slower   1.179x slower
+100000      original  14.928x faster   2.138x slower   1.098x slower  NOT RESOLVED
+100000      split     --               5.747x slower   1.192x slower
+countywide  original   6.905x faster   1.954x slower   1.072x slower
+countywide  split      --              5.774x slower   1.125x slower
+```
+
+The absolute 5-v-4 gap holds between 4.442 and 6.188 us/property across all six
+cells while the percentage ranges 7.2 to 19.2. That is the whole point: the
+counted quantity is the invariant and the percentage is an artifact of how much
+shared verification work sits in the denominator.
+
+**The result that changes the claim.** Under split-geometry verification at
+W=2048 the ratio is **0.99875** — the learned rung is faster. The sign does not
+merely approach 1.0, it crosses it.
+
+```text
+countywide original   W8 1.11620  ->  W2048 1.00002
+countywide split      W8 1.21402  ->  W2048 0.99875
+```
+
+The measured negative is real at the shipped configuration and is not a property
+of learned indexing on this data. It is a property of a two-parameter operating
+point that the literature does not report.
+
+**Search and verification, separated.** Per-check cost is calibrated from rung 3
+alone, per workload and per mode, assuming rung 3's search is 0.6 percent of its
+query time (B1 counted ~0.4 percent by a different route). Rungs 4 and 5 never
+enter the calibration, so their agreement is an out-of-sample test of
+mode-invariant search:
+
+```text
+per-check ns    10000       5.9340 original   4.3332 split
+                100000      4.0092 original   1.1880 split
+                countywide  3.9998 original   0.9918 split   (4.03x; B2: 4.21x)
+```
+
+Cross-mode search disagreement is 1.0 to 2.6 percent at five of six cells;
+`100000 hilbert_binary` sits at 10.3 percent and is the one cell where linearity
+in the check count visibly strains.
+
+**The exactly-determined solve is recorded as a failure.** Two rungs times two
+modes is four equations in four unknowns and needs no assumed search fraction. It
+is unusable: both check-count ratios are ~1.45, so the constraints are nearly
+collinear. On the countywide `b6c2` group it returns a rung-3 search cost of
+-6.82 us/property with a per-check ratio of 2.27x against B2's 4.21x. **Its
+`usable` flag tests non-negativity only, and that is necessary but not
+sufficient** — on the `gridAB` group the solve returns a positive search cost and
+a per-check ratio of 0.575x, implying Option B checks cost MORE than Option A,
+which contradicts B2 by a factor of seven. The diagnostic is kept because the
+anchored calibration needs its justification on the record; it is not a gate.
+
+**Inflation, and its opposite motion.** Capped geometric inflation and phase-2
+verification move in opposite directions across workloads, so neither figure means
+anything without its workload named. It is also not monotone in query count:
+
+```text
+workload    entries in range  admitted  inflation  phase-2 checks  2W/counted
+10000                 1.6906   11.7066    6.9245x        1,486.11      1.1322
+100000                1.5887    9.5768    6.0282x        8,056.00      1.5507
+countywide            1.6067   10.2783    6.3972x       11,021.83      0.9067
+```
+
+**The locality premium, now fitted in both modes.** The `2W` window scan is an
+uncounted additive term whose per-entry cost differs from a resolve-descent
+entry's because one access pattern is sequential and the other scattered. The fit
+requires a free intercept to absorb the mode-invariant verification term; without
+one the regressors are asked to explain ~42 us/property they have no access to
+and the fit inverts to R^2 = -50.
+
+```text
+countywide original  3.057 ns window   22.450 ns resolve   7.343x   R^2 0.9899
+countywide split     3.314 ns window   23.005 ns resolve   6.941x   R^2 0.9825
+```
+
+Exploratory, not a validated prediction. It is reported because it is the reason
+an uncounted entry and a counted entry must never be summed.
+
+**Memory, three instruments, still disagreeing in direction.** None may be quoted
+alone (Nucleus 18.24).
+
+```text
+cell                            structure       peak RSS      peak commit
+brute_force@countywide                 --     72,503,296       85,061,632
+segment_bvh@countywide        119,768,836    185,843,712      342,319,104
+hilbert_binary@countywide@w64   9,516,712    232,357,888      285,175,808
+hilbert_rmi@countywide@w64     13,711,112    232,370,176      285,171,712
+```
+
+### Files changed by B6d
+
+```text
+python/caprm/ladder_analysis.py        mode and invocation dimensions;
+                                         DECOMPOSABLE_RUNGS; cost-model
+                                         populations; verification_decomposition,
+                                         inflation_axis, access_pattern_fit
+python/scripts/analyze_b6_results.py   five sources, absent-source reporting,
+                                         the new tables
+tests/test_ladder_analysis.py          NEW, 38 tests
+tests/test_ladder_benchmark.py         SEGMENT_BVH_STDOUT total corrected from
+                                         97,168,700 (B1's cap=100 figure) to
+                                         94,076,176
+docs/benchmark_results.md              PHASE B section added
+README.md                              11 corrections
+outputs/validation/b6_analysis.json    regenerated, 5 sources
+outputs/validation/b6_benchmark_tables.md   regenerated
+outputs/validation/ladder_summary_{segment_bvh,hilbert_binary,hilbert_rmi}_{10000,100000}_split.json
+```
+
+### Tests and validation
+
+```text
+pytest tests/test_ladder_analysis.py tests/test_ladder_benchmark.py -q
+  70 passed in 2.03s
+
+python/scripts/analyze_b6_results.py
+  Invariants: 137 passed, 0 failed
+  all_points n=29 20.50 / window_sweep_only n=18 21.10 / resolvable_only n=15 21.34
+  no absent sources, no unphysical cells
+```
+
+Regression: ladder plus sweep alone still reproduce 64/64 invariants, slope
+20.334356 and the countywide Option A comparisons at 6.905x / 1.947x / 1.065x —
+the previously published values, unchanged by the patch.
+
+### Reconciliations still open against this artifact
+
+```text
+per-check split cost   0.9918 ns here against Nucleus 18.19's 0.922
+locality premium       7.343x here against Nucleus 18.19's ~7.8x
+peak RSS segment_bvh   185,843,712 here against B6c's 185,774,080
+```
+
+All three are within the ~1 percent cross-invocation drift B6a measured, except
+the premium. The artifact is authoritative; the Nucleus prose was written from a
+conversation-side calculation, which is the practice B6d exists to end.
+
+---
+
+## Immediate next task — C1
+
+**C1. Training data and a spatial-block split.** PHASE C abandons exactness
+deliberately; the error is the point. C1 builds no model — it builds the dataset
+and the partition, and the partition is the whole chunk.
+
+The risk is the defect shape B6d spent itself on. A random train/test split is a
+dimension the code does not know is a dimension: adjacent parcels share a FEMA
+polygon, sit metres apart on the same DEM cells, and frequently select the same
+nearest water feature, so a random split places near-identical records on both
+sides and reports memorization as generalization — plausibly, silently, with a
+good score. The target makes it worse rather than better: water carries 65
+percent of the index variance and 98.1 percent of properties are tied at the same
+FEMA component, so the label is dominated by distance-to-water, which is about as
+spatially autocorrelated as a field gets.
+
+1. Build the supervised dataset: input `(x, y)` in EPSG:26918, target
+   `exposure_index_0_100` at `preliminary_exposure_index_v2`, 267,362 rows.
+   Verify the row count, the unique-ID count and the null behaviour; do not
+   assume them. Scoring stays frozen — if a label cannot be produced without
+   modifying `scoring.py`, stop and say so.
+2. Partition by spatial block, whole blocks assigned to train, validation or
+   test. Record block edge length, grid origin, RNG seed, and per-split row and
+   block counts. The block size is justified against a correlation length
+   ESTIMATED FROM THE DATA, not asserted.
+3. Measure the gate: for every test property, the metric distance to the nearest
+   training property and the block-grid separation. Report the minimum, the
+   distribution and the violation count. Define "within one block" once, in one
+   place, so a metric criterion and a grid criterion cannot drift apart.
+4. Build a random split as well and run the identical gate on it. Nucleus 18.25:
+   a neutrality gate requires a positive control. **A gate that passes on both
+   partitions is measuring nothing**, and its passing on the block split means
+   nothing until the random split fails it. Keep the random split — C2 reports
+   the memorization gap between the two, and that number is what the discipline
+   bought.
+5. Declare the baseline before any model exists: a nearest-training-neighbour
+   predictor that copies the index of the geometrically closest training
+   property. On a target this autocorrelated it will score well, and it is the
+   honest floor. A surrogate that does not beat it has learned nothing about the
+   function, only about the neighbourhood.
+6. Everything in `python/caprm/`, a thin CLI in `python/scripts/`, with tests. No
+   number reported in conversation is reportable until it lands in the module
+   with a test — the rule `analyze_b6_results.py` exists to enforce.
+
+Acceptance: 267,362 rows with unique IDs verified and no nulls; block size
+justified against a measured correlation length; the gate measured and PASSED on
+the block split; the gate measured and FAILED on the random split; both splits
+deterministic under a recorded seed and verified by rerun; the baseline error
+recorded before any model is trained; `scoring.py` and the v2 index unmodified.
 
 ---
 
@@ -2963,14 +3288,19 @@ validates the resulting query path with a binary-search control that isolates
 the contribution of learning from the contribution of dimensionality reduction,
 trains a recursive model index, and benchmarks the result against an exact
 baseline whose correctness is already proven field-by-field against an
-independent implementation. As of B5c all five rungs are built and
-measured: segment granularity cut phase-2 work 7.28x and distance-exact
+independent implementation. As of B6d all five rungs are built,
+measured in both verification modes at three workloads, and validated exactly: segment granularity cut phase-2 work 7.28x and distance-exact
 splitting cut admitted entries 546x, both classical; the 1D Hilbert reduction
 cost 13.4 percent in phase-2 work; the trained index cut seed probes 3.20x on
 index keys, which is about 0.13 percent of counted query work because phase-1
 admission was already a rounding error; and the ported model, whose output is
 byte-identical to its control on all 267,362 properties, ran the countywide
-query 3.85 percent SLOWER. The equi-depth diagnostic locates the remaining model
+query slower at the shipped configuration — 7.2 percent under Option A at seed
+window 64, where B5c's single unrepeated run had read 3.85 percent. B6 then
+showed that figure has no fixed sign: across nine seed windows it moves to
+1.00002 under Option A and to 0.99875 under Option B, where the learned rung is
+FASTER. The negative result is real at the operating point and is a property of
+that operating point rather than of learned indexing on this data. The equi-depth diagnostic locates the remaining model
 error in the router rather than the leaves, and B5c counted the slowdown rather than
 inferring it: a mispredicted seed widens the resolve descent from 141.17 to
 352.52 entries per property, so the model buys 20.24 saved key probes for 211.34

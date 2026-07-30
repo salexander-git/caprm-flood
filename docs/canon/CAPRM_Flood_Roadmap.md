@@ -1079,8 +1079,10 @@ adjacent comparisons.
 B6a  measurement harness and protocol            COMPLETE, validated at _10000
 B6b  SEED_WINDOW as a compile-time parameter     COMPLETE, 9 windows byte-neutral
 B6c  the ladder and the nine-window sweep        COMPLETE, 252 timed runs
-B6c-2 Option A / Option B verification           NEXT
-B6d  close-out: tables and canonical documents   pending B6c-2
+B6c-2 Option A / Option B verification           COMPLETE, predictions held
+      + optional Option B window sweep           COMPLETE, 18 cells
+      + optional mode x workload grid            COMPLETE, 18 cells
+B6d  close-out: tables and canonical documents   NEXT, no measurement remaining
 ```
 
 Delivered beyond the original scope: a nine-window seed sweep at two workloads,
@@ -1090,10 +1092,51 @@ AND committed memory, session guards and crash-safe recording, and
 `python/scripts/analyze_b6_results.py`, which computes every derived number in
 the benchmark tables so that no analysis lives only in a conversation.
 
-Not delivered, and the reason B6 is not yet closed: the Option A / Option B
-verification cross-product that `docs/kickoff_prompts_m4.md` names as B6's
-primary deliverable. Rung 3 is measured under both modes at B2; rungs 4 and 5
-are not. See Current Status section 21 for the declared predictions.
+The cross-product is now delivered (B6c-2). Both pre-declared predictions held,
+and it changed two published numbers: the cost of flattening 2D to 1D is 5.72x
+countywide rather than the 1.96x Option A reports, and the 5-v-4 percentage turns
+out to be a denominator effect rather than a change in the learned rung's cost.
+See Nucleus 18.27.
+
+### B6d — COMPLETE
+
+The verification-mode dimension landed in `python/caprm/ladder_analysis.py`, not
+in `analyze_b6_results.py`, which turned out to be a thin CLI over it. The defect
+was worse than mixing modes: a per-workload dict kept the last write, so a frame
+containing both modes emitted one set of comparisons drawn from whichever mode
+iterated last, with no mode recorded. Fixing it surfaced the same shape in
+INVOCATION at four further sites. Workload, mode and invocation are now part of
+every grouping key, and a comparison that must borrow across an invocation is
+flagged rather than suppressed.
+
+The six outstanding exactness cells are closed: all fields agree at 10,000 and
+100,000 in Option B, maximum absolute error 8.659526e-10 m and 9.066881e-10 m.
+Every implementation claiming exactness now agrees field-for-field with the
+Python reference at every workload in both verification modes.
+
+The cross-product is published: three adjacent comparisons, two modes, three
+workloads, wall clock beside counts, the absolute microseconds-per-property gap
+beside every ratio, and `_100000` Option A 5-v-4 marked NOT RESOLVED. Search and
+verification are separate columns. Inflation is a first-class axis. Memory is
+three instruments that disagree in direction.
+
+The cost-model slope discrepancy resolved as a population difference, not an
+error: 20.50 over all 29 matched pairs, 21.10 over the 18-point window sweep,
+21.34 over the 15 resolvable points, against B5c's independently isolated 20.40
+ns/entry. Each population is now named in the artifact.
+
+137 invariants passed, 0 failed. 70 tests passed.
+
+**PHASE B IS COMPLETE.** No measurement and no analysis remain.
+
+### The result that changed the claim
+
+Under split-geometry verification at seed window 2048 the learned-to-control
+ratio is 0.99875 — the learned rung is faster. The sign does not approach 1.0, it
+crosses it. B6's headline is therefore not "learning did not help on this
+workload" but the stronger and more transferable claim already recorded as
+Nucleus 18.27, now demonstrated across a sign change rather than only across a
+magnitude.
 
 ### The contribution, recorded
 

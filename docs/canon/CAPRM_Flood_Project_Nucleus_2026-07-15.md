@@ -1429,6 +1429,27 @@ resolve-descent entry, a 7.8x locality premium, so the two must never be summed
 as though an entry were an entry. B2 said a segment check is not
 mode-invariant; B6 says an entry is not access-pattern-invariant.
 
+**The cost of exactness, measured (B6c-2, 2026-07-29).** B2 implemented both
+verification modes behind one flag; B6c-2 ran the cross-product. Option A rescans
+each candidate feature's entire original geometry and is byte-identical to the
+reference; Option B rescans only the split segments the index holds and agrees to
+9.157e-10 m with zero `feature_id` disagreements at 267,362 properties.
+
+The check-count ratio is stable across six independent mode pairs — three
+workloads times two rungs — at 1.4308x to 1.4974x, mean 1.4602x, against B2's
+predicted 1.43x. Calibrating the per-check cost from rung 3 alone gives 3.806 ns
+for an Option A check (projection plus parity) against 0.922 ns for an Option B
+check (parity only), a ratio of 4.130x against B2's independently measured 4.21x.
+The two multiply to the 5.88x wall-clock difference rung 3 shows countywide.
+
+Using that per-check constant, borrowed from rung 3, to predict the HILBERT
+path's search cost independently in each mode agrees to 0.2 percent for rung 4.
+Search cost is therefore mode-invariant, as it must be, and the decomposition is
+sound enough to publish: countywide under Option A the segment BVH's search is
+0.6 percent of query time (B1 derived ~0.4 percent by a different route), while
+the Hilbert path's search is 41 percent under Option A and 80 percent under
+Option B.
+
 ## 18.20 A model is an artifact
 
 Reason:
@@ -1662,6 +1683,20 @@ learned rung's fastest run, 0.406175 s, is slower than the control's slowest,
 spread could not carry the claim; this can. The durable point is procedural: the
 protocol, not the effect, was what changed.
 
+**The cost model is mode-invariant (B6c-2, 2026-07-29).** Two independent
+nine-window fits, one in each verification regime, put the marginal cost of a
+resolve-descent entry at 21.02 ns (Option A) and 21.19 ns (Option B) — 0.8
+percent apart, and both within 4 percent of B5c's isolated 20.40 ns. The
+verification mode changes what fraction of the query the index controls; it does
+not change what an entry costs. A single Option A cell that came out at 24.02
+ns/entry was investigated and is ordinary variance: its gap/range was 1.62,
+against five measurements of the same quantity spanning 20.20 to 22.88 ns.
+
+The uncounted `2W` window scan is likewise mode-invariant, at 2.84 ns per entry
+under Option A and 3.18 ns under Option B, consistent with the ~3.2 ns the joint
+fit returns. The scan never touches verification geometry, so it should not care
+about the mode, and it does not.
+
 ## 18.23 A two-stage linear RMI binds at the router, not at the leaves
 
 Reason:
@@ -1725,6 +1760,21 @@ model's size cost specifically: the learned rung's peak exceeds the control's by
 53,248 bytes against a 4,194,400-byte model, 1.3 percent of it, because the peak
 occurs during index construction before the model is loaded. Report a model's
 cost from its bytes and its load-time allocation, never from process peak.
+
+**Verification mode is memory-neutral (B6c-2).** Resident and committed peaks
+agree between the two modes to within 0.1 percent at every rung and every
+workload, and `index_bytes` is identical. Expected — the mode changes which
+geometry is rescanned, not what is stored — but now measured.
+
+**The ~160 MB transient remains unattributed.** A one-property run was intended
+to isolate it, on the reasoning that with query cost near zero the peak would be
+almost entirely index construction. The run succeeded and reported index
+construction at 0.912181 s, but the binary does not print peak memory — the
+harness measures it from the parent — and reading the child's peak counters from
+a PowerShell one-liner after exit returned empty. The isolation therefore did not
+happen. The reliable route is the harness, whose Win32 handle stays valid after
+exit; doing so needs a one-property workload registered in the CLI. Recorded as
+attempted and unresolved rather than dropped.
 
 ---
 
@@ -1817,12 +1867,51 @@ Three independent demonstrations, all measured on the same ladder, all with
 byte-identical evidence at every point:
 
 ```text
-axis                 range measured        effect on the 5-v-4 comparison
-seed window          W = 8 .. 2048         +11.6%  ->  +0.001%   countywide
-verification mode    original vs split     roughly doubles under split
-query workload       10K, 100K, 267K       4-v-3 moves 4.73x -> 1.95x, and the
+axis                 range measured        effect on the comparison
+seed window          W = 8 .. 2048         5-v-4: +11.6% -> +0.001% (Option A)
+                                                  +21.4% -> -0.1%   (Option B)
+verification mode    original vs split     4-v-3: 1.96x -> 5.72x countywide
+                                           5-v-4: the PERCENTAGE roughly doubles
+                                           while the absolute gap is unchanged
+query workload       10K, 100K, 267K       4-v-3: 4.77x -> 1.96x under Option A,
+                                           8.48x -> 5.72x under Option B, and the
                                            feature-size counter explains why
 ```
+
+**The verification mode's effect on 5 vs 4 is a denominator effect, and saying so
+is more defensible than "it doubles."** Measured at three workloads (B6c-2):
+
+```text
+workload        A %      B %     A us/p   B us/p   counted prediction
+_10000        16.45%   17.92%     5.940    5.620         5.563
+_100000        5.91%   19.25%     3.590    6.188         5.703
+countywide     5.72%   12.16%     4.243    4.482         4.311
+```
+
+Option B's ABSOLUTE gap matches B5c's counted prediction at all three workloads
+(1.010, 1.085, 1.039). Option A's is erratic, and its worst point, `_100000`, has
+a gap smaller than the cell's own spread — gap/range 0.68 — so its +5.91 percent
+was never a measurement. The learned rung's penalty is 4.3 to 6.2 microseconds
+per property in both columns, exactly as the resolve-descent counter says. What
+the mode changes is the denominator: verification is a large shared term that
+compresses every percentage toward zero. **The counted quantity is the invariant
+and the percentage is the artifact.**
+
+**For 4 vs 3 the mode genuinely misleads.** Rungs 3 and 4 share the verification
+term, so under Option A the ratio divides two numbers that mostly consist of the
+same thing:
+
+```text
+workload        Option A     Option B
+_10000           4.765x       8.478x
+_100000          2.248x       5.746x
+countywide       1.959x       5.723x
+```
+
+Under Option B the cost of flattening 2D to 1D is 5.72x countywide and 5.75x at
+`_100000` — stable across a 2.7x change in query count. Under Option A it reads
+1.96x and drifts with workload. **Option B is the correct column for reporting
+4 vs 3**, and any Option A figure for it must be labelled as diluted.
 
 None of these three is reported as a variable in the learned-spatial-index
 literature this project reviewed. The seed window is an implementation detail
@@ -1857,6 +1946,126 @@ The requirement this places on future work, including PHASE C and any B7: a
 result that cannot name the parameter values it holds fixed is not reportable.
 
 ---
+
+## 18.28 The Hilbert index costs more to build than to use below ~12,000 queries
+
+Reason:
+
+Index construction is 0.912181 s and is CONSTANT across every workload, because
+the index is built from the hydrography and the hydrography does not vary with
+the property set (see 14b on query count versus index size). Query cost is linear
+in the number of properties. So there is a crossover, and it is measurable rather
+than notional:
+
+```text
+                       build / query      Option A      Option B
+_10000    (Q = 10K)                        252.5%        290.8%
+_100000   (Q = 100K)                        15.0%         28.4%
+countywide (Q = 267K)                        4.6%          9.3%
+
+build equals query at        Q = 12,301 (Option A)   Q = 24,749 (Option B)
+```
+
+Two consequences. Below roughly twelve thousand properties the Hilbert path
+spends more time constructing its index than using it, and the threshold doubles
+in the faster verification mode because the query it must amortise against is
+cheaper. And `_10000` is therefore structurally unsuited to a wall-clock claim,
+independently of the composition argument in 18.19 — build cost dominates the
+thing being measured by two and a half times.
+
+Any end-to-end claim about this path states whether index construction is
+included, and at what query count.
+
+---
+
+## 18.29. One defect shape, six sites: a dimension the code does not know is a dimension
+
+The single most repeated engineering error in PHASE B was not arithmetic. It was
+a grouping key that omitted a dimension the data actually varied along, and its
+signature is that it produces a plausible number rather than an error.
+
+The canonical instance: `by_algorithm[row["algorithm"]] = row` inside a loop over
+a workload group. Feed it a frame containing two verification modes and the
+second assignment overwrites the first, so the function emits one complete-looking
+set of comparisons drawn from whichever mode happened to iterate last, records no
+mode on the output, and raises nothing. Measured on the `b6c2` artifact, it
+dropped Option A entirely.
+
+Fixing mode then exposed the same shape in INVOCATION at four further sites — the
+cost model's sweep population, the cost model's population key, the adjacent
+comparisons, and the access-pattern fit. Every one announced itself as a number
+moving rather than as a failure: a slope drifting 21.02 to 21.46, a granularity
+ratio reading 6.540x instead of 6.905x, an R^2 falling from 0.99 to 0.69, a
+residual search cost going negative.
+
+The rule extracted: **a dimension along which the data varies belongs in the
+grouping key, not in a filter applied afterwards and not in a convention the
+author remembers.** A filter can be forgotten at one call site. A key cannot.
+Where a comparison genuinely must cross a boundary, it is emitted WITH that fact
+attached rather than suppressed or silently allowed — `crosses_invocation` is a
+column, not a policy.
+
+The corollary for a reviewer: an analysis layer that has never been fed data
+varying along a dimension has not been tested against that dimension, however
+carefully it was written. `ladder_analysis.py` was correct for as long as every
+artifact it read was Option A.
+
+## 18.30. The learned rung's sign is not fixed, and it crosses
+
+Nucleus 18.27 recorded that the reported benefit of a learned spatial index
+depends on parameters the literature holds fixed. B6d strengthened that from a
+statement about magnitude to a statement about sign.
+
+```text
+countywide original   W8 1.11620  ->  W2048 1.00002
+countywide split      W8 1.21402  ->  W2048 0.99875
+```
+
+At W=2048 under split-geometry verification the learned rung is FASTER than its
+exact control. The same code, the same index, the same 1,189,589 entries, the
+same byte-identical output — and the direction of the headline comparison is set
+by a compile-time constant and a verification-mode argument that no paper in this
+literature reports.
+
+This is why the project publishes the absolute microseconds-per-property gap
+beside every ratio. Across all six cross-product cells the 5-v-4 absolute gap
+holds between 4.442 and 6.188 us/property while the percentage ranges 7.2 to
+19.2. The counted quantity is the invariant; the percentage is an artifact of how
+much shared verification work sits in the denominator. A percentage that moves
+2.7x while the underlying cost moves 1.4x is measuring the denominator.
+
+## 18.31. Decomposing search from verification, and why it needs an outside number
+
+Search cost is mode-invariant: the traversal does not know which geometry the
+kernel will later rescan. For one rung measured in both modes that gives two
+equations in three unknowns, and adding a second rung appears to close the system
+exactly — four equations, four unknowns, no assumption required.
+
+**The exactly-determined solve is unusable, and its failure is the finding.** Both
+rungs' check-count ratios are ~1.45, so the two constraints are nearly collinear.
+On the countywide cross-product it returns a rung-3 search cost of -6.82
+us/property with a per-check ratio of 2.27x against the 4.21x B2 measured
+independently. An exactly-determined system is not a well-conditioned one.
+
+The decomposition is therefore ANCHORED: rung 3's search is a known small
+fraction of its query time (~0.4 percent counted at B1, ~0.6 percent at B6c-2),
+the per-check costs follow, and the validation is out-of-sample — rungs 4 and 5
+never enter the calibration, and their search estimates must agree between modes.
+They do, to 1.0-2.6 percent at five of six cells.
+
+Two boundaries the method has, both found by measurement rather than argument:
+
+- **It applies to rungs 3-5 only.** Applied to rungs 1-2 it gave brute force a
+  search cost of -2,261 us/property. A brute-force check and a segment-BVH check
+  are not the same unit of work; B2's rule that counts are comparable within a
+  mode and not across implementations that verify differently extends to this.
+- **Non-negativity is a necessary condition, not a sufficient one.** The retained
+  diagnostic's `usable` flag tests only that the implied search cost is positive.
+  On one invocation group the solve passes that test and still returns a per-check
+  ratio of 0.575x — implying Option B checks cost more than Option A, contradicting
+  B2 by a factor of seven. A sanity check that admits an answer contradicting an
+  independent measurement is not yet a gate, and it is documented as a diagnostic
+  rather than promoted to one.
 
 # 19. Repository Structure and Current Source Responsibilities
 
@@ -2210,10 +2419,16 @@ evaluated almost exclusively on point data and several return approximate
 results, whereas this project's data is extended objects and its query is exact
 nearest neighbour. Milestone 4 therefore asks whether learned indexing extends
 to exact nearest-neighbour search over line segments and polygon boundaries,
-and as of B5 its answer on this workload is a measured negative — the ported
-model reproduces its control's evidence byte for byte and runs the countywide
-query 3.85 percent slower, because the value of an exact seed position here is
-the quality of the search bound it yields rather than the lookups it saves —
+and as of B6d its answer on this workload is a measured negative that is
+CONDITIONAL and now fully characterized — the ported model reproduces its
+control's evidence byte for byte and runs the countywide query 7.2 percent slower
+at the shipped operating point, because the value of an exact seed position here
+is the quality of the search bound it yields rather than the lookups it saves,
+but that penalty falls to 0.002 percent by seed window 2048 and reverses outright
+under split-geometry verification, where the learned rung is 0.125 percent
+FASTER; the transferable claim is therefore not that learning failed but that the
+reported benefit of a learned spatial index depends on parameters this literature
+holds fixed and does not report —
 characterizes the search-radius inflation that representative-point ordering
 imposes on extended objects, isolates the contribution of learning from the
 contribution of dimensionality reduction using a binary-search control, and
