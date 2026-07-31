@@ -1,0 +1,205 @@
+{
+  "task": "C4_item2_pipeline_cost_boundary",
+  "schema_version": "c4_pipeline_boundary_v1",
+  "tool_version": "caprm.pipeline_cost/c4.0",
+  "generated_utc": "2026-07-31T01:01:38.762203+00:00",
+  "timing_boundary": {
+    "declared_in_source_before_any_run": true,
+    "warm_or_cold": {
+      "choice": "warm",
+      "detail": "Caches are staged and every stage gets one discarded warm-up invocation at each workload size before the timed repeats.",
+      "not_claimed": "Cold start is a different number. C4 does not measure it and does not claim it."
+    },
+    "what_is_inside": {
+      "choice": "two columns, reported separately",
+      "setup_s": "config load, cached property GeoJSON read, NFHL shapefile read, CRS normalization, the hydrography GeoPackage sha256 and its read, DEM open, and the evidence/terrain CSV reads",
+      "compute_s": "the per-property kernel call only, timed with perf_counter",
+      "why": "A reader wants the marginal cost and the total, and they differ by a large factor. run_water_baseline.py digests a 21.2 MB GeoPackage on every invocation; that is a fixed I/O cost of the shipped CLI and not a cost of the algorithm."
+    },
+    "marginal_or_total": {
+      "choice": "both, via a + b*N fitted over three workload sizes",
+      "a": "fixed cost in seconds, independent of property count",
+      "b": "marginal cost in seconds per additional property",
+      "why": "Total seconds over properties is not the marginal cost of one more property when setup is fixed.",
+      "caveat": "Three points is the MINIMUM for a linearity claim, not a comfortable number of them. The residual is reported with the fit; a fit reported without its residual is an assertion that the model is linear."
+    },
+    "stages_timed": [
+      {
+        "stage": "fema_point_in_polygon",
+        "entry_point": "caprm.baseline.run_fema_point_in_polygon",
+        "workload_selection": "config YAML"
+      },
+      {
+        "stage": "nearest_water_python",
+        "entry_point": "caprm.water_distance.nearest_water_reference",
+        "workload_selection": "config YAML"
+      },
+      {
+        "stage": "terrain_sampling",
+        "entry_point": "caprm.terrain.build_terrain_evidence",
+        "workload_selection": "scratch subset of the countywide evidence CSV"
+      },
+      {
+        "stage": "scoring",
+        "entry_point": "caprm.scoring.build_exposure_index",
+        "workload_selection": "scratch subsets of the evidence and terrain CSVs"
+      }
+    ],
+    "stages_cited_not_measured": [
+      {
+        "stage": "nearest_water_cpp",
+        "source": "outputs/validation/b6_analysis.json, docs/benchmark_results.md",
+        "operating_point": "25 m entry-extent cap, original verification, disk predicate",
+        "why": "B6 already measured it at the shipped operating point. Re-running it here would add a second measurement of the same thing under a different harness. B1's cap=100 figures belong to a different operating point and are not quoted."
+      }
+    ],
+    "stages_skipped": [
+      {
+        "stage": "property_cache_refresh",
+        "why": "network; --refresh-properties is never passed"
+      },
+      {
+        "stage": "evidence_merge",
+        "script": "build_property_evidence.py",
+        "why": "It asserts the water benchmark summary's algorithm set and has no workload flag. Subsetting replaces it, so it is outside the boundary and named here rather than silently omitted."
+      },
+      {
+        "stage": "cpp_input_export",
+        "why": "export is not part of the per-property computation"
+      },
+      {
+        "stage": "figure_generation",
+        "why": "presentation, not pipeline"
+      },
+      {
+        "stage": "cpp_compilation",
+        "why": "build cost, measured nowhere in this project"
+      }
+    ],
+    "two_clocks": {
+      "in_process_s": "perf_counter around the library call, inside one interpreter",
+      "process_wall_clock_s": "the shipped CLI run as a subprocess, including interpreter startup and the geopandas import",
+      "why_both": "Interpreter startup plus the geopandas import is a real fixed cost of the shipped CLI and a meaningless fixed cost of the algorithm. Both belong in the table, labelled."
+    }
+  },
+  "workloads": [
+    {
+      "name": "10000",
+      "config": "configs/monroe_fema_spike_10000.yaml",
+      "property_points": "data/processed/monroe_property_points_sample_10000.geojson",
+      "expected_rows": 10000
+    },
+    {
+      "name": "100000",
+      "config": "configs/monroe_fema_spike_100000.yaml",
+      "property_points": "data/processed/monroe_property_points_sample_100000.geojson",
+      "expected_rows": 100000
+    },
+    {
+      "name": "countywide",
+      "config": "configs/monroe_fema_spike_countywide.yaml",
+      "property_points": "data/processed/monroe_property_points_countywide.geojson",
+      "expected_rows": 267362
+    }
+  ],
+  "nesting": {
+    "checked_first_because_it_can_fail": {
+      "subset": "100000",
+      "superset": "countywide",
+      "n_subset": 100000,
+      "n_superset": 267362,
+      "n_missing_from_superset": 0,
+      "nested": true,
+      "examples_missing": []
+    },
+    "guaranteed_by_construction_checked_anyway": {
+      "subset": "10000",
+      "superset": "100000",
+      "n_subset": 10000,
+      "n_superset": 100000,
+      "n_missing_from_superset": 0,
+      "nested": true,
+      "examples_missing": []
+    },
+    "subset_key": "property_id",
+    "never_subset_by": "sample_order, which is per-workload and renumbered from zero in every build"
+  },
+  "scratch_subsets": {
+    "evidence": {
+      "10000": {
+        "path": "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\scratch\\c4\\evidence_10000.csv",
+        "rows": 10000,
+        "columns": 24,
+        "sha256": "c3847b4823bfb75dd4c935ada4c40efbaf80e51fd95e9ef6c6d6eaa219b60889"
+      },
+      "100000": {
+        "path": "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\scratch\\c4\\evidence_100000.csv",
+        "rows": 100000,
+        "columns": 24,
+        "sha256": "7ddc17a7b9f5d0a7407f920189b2d943c17d19866b82ca874c93baf46fbf36a8"
+      },
+      "countywide": {
+        "path": "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\scratch\\c4\\evidence_countywide.csv",
+        "rows": 267362,
+        "columns": 24,
+        "sha256": "46efc85e0be60550b610e1b10785a61d8ba718af51ad11abcd3d3fc6805a5bcf"
+      }
+    },
+    "terrain": {
+      "10000": {
+        "path": "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\scratch\\c4\\terrain_10000.csv",
+        "rows": 10000,
+        "columns": 7,
+        "sha256": "1611535c7e0805f4bad7700ed37f833c3c064368acc07e114780285e3f9009a0"
+      },
+      "100000": {
+        "path": "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\scratch\\c4\\terrain_100000.csv",
+        "rows": 100000,
+        "columns": 7,
+        "sha256": "e3c3cec5b71612ccc9be18f76534384b4943ad38b2bd39ee45a9f76709f95575"
+      },
+      "countywide": {
+        "path": "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\scratch\\c4\\terrain_countywide.csv",
+        "rows": 267362,
+        "columns": 7,
+        "sha256": "d941e22f8ae7e71f23669b2019aed4628fe13b588a2b864291c108627b868188"
+      }
+    }
+  },
+  "inputs": {
+    "property_points": {
+      "10000": {
+        "path": "data/processed/monroe_property_points_sample_10000.geojson",
+        "rows": 10000
+      },
+      "100000": {
+        "path": "data/processed/monroe_property_points_sample_100000.geojson",
+        "rows": 100000
+      },
+      "countywide": {
+        "path": "data/processed/monroe_property_points_countywide.geojson",
+        "rows": 267362
+      }
+    },
+    "evidence": {
+      "path": "outputs/evidence/property_flood_evidence_countywide.csv",
+      "sha256": "4e0d27e14b30aba4c2afb350b9c58d6b4384f951db7252831c29df8487bd75f2",
+      "rows": 267362
+    },
+    "terrain": {
+      "path": "outputs/evidence/property_terrain_evidence_countywide.csv",
+      "sha256": "e7768c538b41639032af176bd789bec76137c29348bc9be931ca7b4c44e5d3de",
+      "rows": 267362
+    }
+  },
+  "scratch_directory": "outputs/scratch/c4",
+  "frozen_paths_not_written": [
+    "outputs/evidence/property_flood_evidence_countywide.csv",
+    "outputs/evidence/property_terrain_evidence_countywide.csv",
+    "outputs/index/property_exposure_index_countywide.csv",
+    "outputs/validation/property_terrain_evidence_countywide_manifest.json",
+    "outputs/validation/property_exposure_index_countywide_manifest.json",
+    "outputs/validation/water_cpp_benchmark_summary.json",
+    "outputs/validation/water_bruteforce_agreement.csv"
+  ]
+}
