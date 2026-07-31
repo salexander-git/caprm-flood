@@ -254,6 +254,10 @@ def peak_memory(
 # rung specifications
 # ---------------------------------------------------------------------------
 
+VERIFICATION_MODES: tuple[str, ...] = ("original", "split")
+DEFAULT_VERIFICATION_MODE = "original"
+
+
 @dataclass(frozen=True)
 class RungSpec:
     """One rung of the ladder: which binary, which arguments, what it must emit."""
@@ -266,6 +270,12 @@ class RungSpec:
     wants_query_stats: bool = False
     seed_mode: str | None = None
     wants_manifest: bool = False
+    # Index into ``trailing_positionals`` holding the verification mode, or None
+    # for a rung that has no such argument. Rungs 1 and 2 verify over original
+    # geometry by construction -- brute force scans original segments and the
+    # feature BVH rescans each candidate feature's original geometry -- so there
+    # is no fork to select and no cell to run under `split`.
+    verification_mode_position: int | None = None
 
 
 COMMON_REQUIRED = frozenset(
@@ -326,6 +336,7 @@ LADDER: tuple[RungSpec, ...] = (
             "index_construction_seconds",
             "verification_mode",
         },
+        verification_mode_position=2,
     ),
     RungSpec(
         number=4,
@@ -355,6 +366,7 @@ LADDER: tuple[RungSpec, ...] = (
         wants_query_stats=True,
         wants_manifest=True,
         seed_mode="binary",
+        verification_mode_position=2,
     ),
     RungSpec(
         number=5,
@@ -386,6 +398,7 @@ LADDER: tuple[RungSpec, ...] = (
         wants_query_stats=True,
         wants_manifest=True,
         seed_mode="rmi",
+        verification_mode_position=2,
     ),
 )
 
@@ -449,6 +462,49 @@ def sha256_file(path: Path) -> str:
 # command construction
 # ---------------------------------------------------------------------------
 
+def verification_positionals(
+    rung: RungSpec, verification_mode: str | None
+) -> tuple[str, ...]:
+    """Return the rung's trailing positionals with the verification mode set.
+
+    B6's kickoff document names the Option A / Option B cross-product as the
+    primary deliverable: the ROW difference is index quality and the COLUMN
+    difference is the cost of exactness. Substituting one slot is all it takes,
+    because B2 implemented both modes behind a single flag on one code path
+    rather than forking the implementation.
+
+    The current value of the slot is asserted to be a known mode, so a change to
+    the positional order fails here instead of silently rewriting the segment
+    length cap or the region predicate.
+    """
+    positionals = list(rung.trailing_positionals)
+    if verification_mode is None:
+        return tuple(positionals)
+    if rung.verification_mode_position is None:
+        if verification_mode != DEFAULT_VERIFICATION_MODE:
+            raise ValueError(
+                f"{rung.name} has no verification-mode argument; it verifies "
+                f"over original geometry by construction. Requested "
+                f"{verification_mode!r}."
+            )
+        return tuple(positionals)
+    if verification_mode not in VERIFICATION_MODES:
+        raise ValueError(
+            f"Unknown verification mode {verification_mode!r}; "
+            f"expected one of {VERIFICATION_MODES}."
+        )
+    position = rung.verification_mode_position
+    current = positionals[position]
+    if current not in VERIFICATION_MODES:
+        raise ValueError(
+            f"{rung.name}: positional {position} holds {current!r}, which is "
+            f"not a verification mode. The positional order has changed and "
+            f"substituting here would corrupt the command."
+        )
+    positionals[position] = verification_mode
+    return tuple(positionals)
+
+
 def build_command(
     rung: RungSpec,
     executable: Path,
@@ -460,6 +516,7 @@ def build_command(
     query_stats_path: Path | None = None,
     rmi_model_path: Path | None = None,
     rmi_probes: str | None = None,
+    verification_mode: str | None = None,
 ) -> list[str]:
     """Assemble one benchmark-eligible invocation.
 
@@ -474,7 +531,7 @@ def build_command(
         str(Path(features_path).resolve()),
         str(Path(vertices_path).resolve()),
         str(Path(output_path).resolve()),
-        *rung.trailing_positionals,
+        *verification_positionals(rung, verification_mode),
     ]
 
     if rung.wants_manifest:
@@ -921,7 +978,7 @@ def parse_expected_digests(specifications: Sequence[str]) -> dict[str, str]:
         name, digest = specification.split("=", maxsplit=1)
         name = name.strip()
         digest = digest.strip().lower()
-        rung_part = name.split("@", maxsplit=1)[0]
+        rung_part = name.split("@", maxsplit=1)[0]  # rung, rung@workload, or cell key
         if rung_part not in LADDER_BY_NAME:
             raise ValueError(f"Unknown rung in --expect-digest: {rung_part!r}.")
         if len(digest) != 64 or any(c not in "0123456789abcdef" for c in digest):
@@ -931,9 +988,35 @@ def parse_expected_digests(specifications: Sequence[str]) -> dict[str, str]:
 
 
 def expected_digest_for(
-    rung_name: str, workload: str, expected: Mapping[str, str]
+    rung_name: str,
+    workload: str,
+    expected: Mapping[str, str],
+    cell_key: str | None = None,
+    allow_unqualified: bool = True,
 ) -> str | None:
-    """Most specific match: ``rung@workload`` before bare ``rung``."""
+    """Most specific match: full cell key, then ``rung@workload``, then ``rung``.
+
+    The fallback is legitimate across a BYTE-NEUTRAL dimension and illegitimate
+    across a byte-changing one, and the ladder has one of each:
+
+    - The seed window is byte-neutral. B6b proved it at nine window sizes on two
+      workloads: every emitted counter comes from the tight descent, which is
+      seed-invariant, and the only seed-dependent columns do not vary with window
+      size. So one ``hilbert_binary=<digest>`` correctly gates all nine windows.
+    - The verification mode is NOT byte-neutral. B2 measured 8.82e-10 to 9.17e-10
+      m under split against 4.658e-10 under original, so Option A and Option B
+      outputs differ by design.
+
+    ``allow_unqualified`` encodes that distinction. A bare ``rung`` or
+    ``rung@workload`` key means "the canonical answer," which is the DEFAULT
+    verification mode by definition; a non-default cell must be named explicitly
+    by its full cell key or it carries no expectation. Without this, B6c-2's
+    Option B cells inherited the Option A digests and failed on the first run.
+    """
+    if cell_key and cell_key in expected:
+        return expected[cell_key]
+    if not allow_unqualified:
+        return None
     qualified = f"{rung_name}@{workload}"
     if qualified in expected:
         return expected[qualified]
@@ -945,6 +1028,8 @@ def assert_expected_digest(
     measured: str,
     expected_by_rung: Mapping[str, str],
     workload: str = "",
+    cell_key: str | None = None,
+    allow_unqualified: bool = True,
 ) -> None:
     """Fail a run whose output does not reproduce a known-good digest.
 
@@ -956,15 +1041,19 @@ def assert_expected_digest(
     at no cost. A build that does not is either mis-built or non-neutral, and
     either way its timings are meaningless.
     """
-    expected = expected_digest_for(rung_name, workload, expected_by_rung)
+    expected = expected_digest_for(
+        rung_name, workload, expected_by_rung, cell_key, allow_unqualified
+    )
     if expected is None:
         return
     if measured.lower() != expected.lower():
         raise RuntimeError(
-            f"{rung_name}"
-            f"{'@' + workload if workload else ''}: output sha256 {measured} "
-            f"does not match the expected {expected}. The seed window is "
-            f"byte-neutral, so this is a changed answer, not a changed cost."
+            f"{cell_key or rung_name}: output sha256 {measured} does not match "
+            f"the expected {expected}. Every dimension this digest is asserted "
+            f"across is byte-neutral, so this is a changed answer rather than a "
+            f"changed cost. If the configuration legitimately changes the bytes "
+            f"-- a different verification mode does -- name the cell key "
+            f"explicitly instead of the rung."
         )
 
 

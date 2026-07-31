@@ -1,0 +1,291 @@
+{
+  "task": "C3_error_analysis",
+  "schema_version": "c3_error_analysis_v1",
+  "tool_version": "caprm.error_analysis/c3.0",
+  "generated_utc": "2026-07-30T23:08:30.275614+00:00",
+  "python": "3.14.0",
+  "numpy": "2.4.6",
+  "pandas": "3.0.3",
+  "crs": "EPSG:26918",
+  "inputs": {
+    "dataset": "outputs\\training\\supervised_dataset_v2.csv",
+    "dataset_sha256": "2e3132faf5ce2dc0f31bd4d7ff40041171f4f68d99e91b5a5c2f350151ba7799",
+    "index": "outputs\\index\\property_exposure_index_countywide.csv",
+    "index_sha256": "3cae2e830a5867bee4d51a36f1c5c04f05ee0a6a26d64dace27da75d3c4911b0",
+    "surrogate_manifest": "outputs/validation/c2_surrogate_manifest.json",
+    "surrogate_manifest_sha256": "33f3801b51b3092ca8398e6d4d942cbee9e24864c2a58c93bc9ef41483218366",
+    "seeds": [
+      20260722,
+      20260723,
+      20260724,
+      20260725,
+      20260726
+    ]
+  },
+  "declared_prediction": "FEMA zones are discontinuities. 98.1 percent of properties sit at the same FEMA component and the index steps sharply across a zone boundary. A smooth network cannot represent a step, only a ramp, so residuals should spike along zone boundaries and stay small elsewhere. Confirming or refuting this is C3's result and the prediction is not to be adjusted afterwards.",
+  "configuration": {
+    "distance_edges_m": [
+      0.0,
+      25.0,
+      50.0,
+      100.0,
+      200.0,
+      400.0,
+      800.0,
+      1600.0,
+      3200.0,
+      null
+    ],
+    "coarse_edges_m": [
+      0.0,
+      100.0,
+      400.0,
+      1600.0,
+      null
+    ],
+    "k_neighbours": 9,
+    "bootstrap_resamples": 200,
+    "bootstrap_seed": 20260730
+  },
+  "base_rates": {
+    "majority_class": 10.0,
+    "majority_count": 262297,
+    "majority_share": 0.9810556473994061,
+    "per_class": {
+      "0.0": {
+        "n": 4,
+        "share": 1.4960989220607266e-05
+      },
+      "10.0": {
+        "n": 262297,
+        "share": 0.9810556473994061
+      },
+      "80.0": {
+        "n": 388,
+        "share": 0.0014512159543989048
+      },
+      "90.0": {
+        "n": 408,
+        "share": 0.0015260209005019411
+      },
+      "95.0": {
+        "n": 4226,
+        "share": 0.015806285111571578
+      },
+      "100.0": {
+        "n": 39,
+        "share": 0.00014586964490092086
+      }
+    },
+    "n_properties": 267362
+  },
+  "boundary_proxy": {
+    "definition": "distance to the nearest property carrying a different FEMA component, per-class cKDTree",
+    "limitations": [
+      "bounded below by property spacing (C1 median nearest-neighbour distance 24.4 m), so a parcel on a polygon edge does not read 0",
+      "locates a boundary only as precisely as the parcels sample it",
+      "an SFHA polygon containing no parcels is invisible to it"
+    ],
+    "min_m": 4.552129559164965,
+    "median_m": 966.3431676596508,
+    "max_m": 4223.958071496478
+  },
+  "results": {
+    "blocked_kfold": {
+      "label_recovery": {
+        "label_span": 25.730433865480094,
+        "predicted_span": 3.1658888500208207,
+        "recovery_ratio": 0.12304063221678402,
+        "n_bins": 9
+      },
+      "per_seed": [
+        {
+          "seed": 20260722,
+          "n_test_rows": 89344,
+          "rmse": 12.298874374360842,
+          "majority_mean_abs_within_100m": 10.11534419195596,
+          "n_within_100m": 2360,
+          "majority_mean_abs_beyond_3200m": 12.48502579345918,
+          "n_beyond_3200m": 995,
+          "minority_mean_abs": 44.584481645661114,
+          "n_minority": 1984
+        },
+        {
+          "seed": 20260723,
+          "n_test_rows": 100257,
+          "rmse": 13.3394438006077,
+          "majority_mean_abs_within_100m": 10.522318079361588,
+          "n_within_100m": 2925,
+          "majority_mean_abs_beyond_3200m": 15.659464473440835,
+          "n_beyond_3200m": 996,
+          "minority_mean_abs": 44.266306102666796,
+          "n_minority": 2524
+        },
+        {
+          "seed": 20260724,
+          "n_test_rows": 130187,
+          "rmse": 15.377040183509978,
+          "majority_mean_abs_within_100m": 10.369325022135367,
+          "n_within_100m": 2970,
+          "majority_mean_abs_beyond_3200m": 18.571868554871514,
+          "n_beyond_3200m": 5576,
+          "minority_mean_abs": 42.90556850979089,
+          "n_minority": 2128
+        },
+        {
+          "seed": 20260725,
+          "n_test_rows": 118357,
+          "rmse": 14.596412994634008,
+          "majority_mean_abs_within_100m": 10.374968168374721,
+          "n_within_100m": 3208,
+          "majority_mean_abs_beyond_3200m": 17.567716988812926,
+          "n_beyond_3200m": 1022,
+          "minority_mean_abs": 44.09776363530087,
+          "n_minority": 2262
+        },
+        {
+          "seed": 20260726,
+          "n_test_rows": 126177,
+          "rmse": 16.06232359947586,
+          "majority_mean_abs_within_100m": 11.177464381385974,
+          "n_within_100m": 2518,
+          "majority_mean_abs_beyond_3200m": 19.568668251879537,
+          "n_beyond_3200m": 5599,
+          "minority_mean_abs": 43.33630342317323,
+          "n_minority": 2015
+        }
+      ],
+      "verdict": {
+        "verdict": "REFUTED",
+        "mechanism_confirmed": true,
+        "spatial_prediction_confirmed": false,
+        "class_effect": true,
+        "proximity_effect": false,
+        "small_elsewhere": false,
+        "proximity_correct_sign": false,
+        "proximity_clears_floor": true,
+        "proximity_is_strongest_candidate": false,
+        "strongest_candidate": "local_range__water_component_0_100",
+        "rho_floor": 0.1,
+        "minority_rmse": 45.13260320711109,
+        "majority_rmse": 13.285427056647613,
+        "minority_row_share": 0.01933825014796517,
+        "minority_sse_share": 0.1853869049885047,
+        "far_field_mean_abs": 18.261583496394337,
+        "interior_min_mean_abs": 8.099496544739543,
+        "boundary_spearman_within_label": 0.11183131329151998,
+        "label_spearman_within_label": -0.06257785193652522
+      },
+      "n_test_rows": 564322,
+      "n_unique_properties": 164905,
+      "n_majority_rows": 553409,
+      "majority_row_share": 0.9806617498520348,
+      "prediction_sources": [
+        "01919111051afdd044d15537cd85247e867d1b8b958757331e505053a321c71b",
+        "77b2db670880e77274de6c7a90ad648b81588961cc3fb91dd179b6f8d8fd30e8",
+        "917484ccc120223b24a955b5a29a6712519b2a56159cbbdd88371f966e08f19d",
+        "97ecad0427c451d78cf1977963eb61cbbb67878b3644f5d1cb9242efadf5a328",
+        "cb7c0e4a8880215b09794960dc36ed34845a7317bea164a315965ff2094bc231"
+      ],
+      "training_distance_computed": true
+    },
+    "random_control": {
+      "label_recovery": {
+        "label_span": 24.1628514686839,
+        "predicted_span": 12.435972555344446,
+        "recovery_ratio": 0.5146732194030164,
+        "n_bins": 9
+      },
+      "per_seed": [
+        {
+          "seed": 20260722,
+          "n_test_rows": 40205,
+          "rmse": 10.810784073762438,
+          "majority_mean_abs_within_100m": 8.63648924192863,
+          "n_within_100m": 849,
+          "majority_mean_abs_beyond_3200m": 6.211128847734509,
+          "n_beyond_3200m": 1001,
+          "minority_mean_abs": 41.056089346052154,
+          "n_minority": 802
+        },
+        {
+          "seed": 20260723,
+          "n_test_rows": 40590,
+          "rmse": 10.684568187539023,
+          "majority_mean_abs_within_100m": 8.9330259527444,
+          "n_within_100m": 931,
+          "majority_mean_abs_beyond_3200m": 6.526651139718376,
+          "n_beyond_3200m": 947,
+          "minority_mean_abs": 41.545322236370346,
+          "n_minority": 780
+        },
+        {
+          "seed": 20260724,
+          "n_test_rows": 40010,
+          "rmse": 10.706066606015668,
+          "majority_mean_abs_within_100m": 8.918611865645325,
+          "n_within_100m": 923,
+          "majority_mean_abs_beyond_3200m": 5.79481885304152,
+          "n_beyond_3200m": 955,
+          "minority_mean_abs": 42.230032559745794,
+          "n_minority": 712
+        },
+        {
+          "seed": 20260725,
+          "n_test_rows": 40372,
+          "rmse": 10.667971623143707,
+          "majority_mean_abs_within_100m": 8.812165926387623,
+          "n_within_100m": 943,
+          "majority_mean_abs_beyond_3200m": 6.04066748098177,
+          "n_beyond_3200m": 986,
+          "minority_mean_abs": 41.88496465010232,
+          "n_minority": 726
+        },
+        {
+          "seed": 20260726,
+          "n_test_rows": 39850,
+          "rmse": 10.703431546677812,
+          "majority_mean_abs_within_100m": 9.392163263234602,
+          "n_within_100m": 907,
+          "majority_mean_abs_beyond_3200m": 5.961196172612566,
+          "n_beyond_3200m": 967,
+          "minority_mean_abs": 41.781663951567815,
+          "n_minority": 766
+        }
+      ],
+      "verdict": {
+        "verdict": "REFUTED",
+        "mechanism_confirmed": true,
+        "spatial_prediction_confirmed": false,
+        "class_effect": true,
+        "proximity_effect": false,
+        "small_elsewhere": true,
+        "proximity_correct_sign": true,
+        "proximity_clears_floor": false,
+        "proximity_is_strongest_candidate": false,
+        "strongest_candidate": "training_distance_m",
+        "rho_floor": 0.1,
+        "minority_rmse": 42.885654198761614,
+        "majority_rmse": 9.039020383976615,
+        "minority_row_share": 0.018833291050455905,
+        "minority_sse_share": 0.301715277555902,
+        "far_field_mean_abs": 6.106405569545835,
+        "interior_min_mean_abs": 6.900905165431701,
+        "boundary_spearman_within_label": -0.056871295127781225,
+        "label_spearman_within_label": 0.006692079974510888
+      },
+      "n_test_rows": 201027,
+      "n_unique_properties": 149101,
+      "n_majority_rows": 197241,
+      "majority_row_share": 0.981166708949544,
+      "prediction_sources": [
+        "1ab5a106e28c4065e0d4953641836c36c84dab70a3a1eedc48bbd09c606fd1ba",
+        "8fcb3595d6f16e20f9739163ef416873fb5ad5a432bf32aae677f90590468e1a",
+        "954cf80d2fd609ba37a1621f9fff245e60a720e94b1c7406412237c7b3c3a911",
+        "cb05dd1ccac2d2bf97a33d1841b23d2a595260cf778a76f1c7bf73fe6378c742",
+        "dd8c109031ecd6717ccf4e8c8a84a1b2cacfae04826b598917f231fe70aaf59b"
+      ],
+      "training_distance_computed": true
+    }
+  }
+}

@@ -70,6 +70,14 @@ Total candidate feature checks: 54976
 Average candidate features per property: 5.497569
 """
 
+# Every `Total X` line divided by `Properties` must equal its `Average X per
+# property` line, as it does in BRUTE_FORCE_STDOUT and FEATURE_BVH_STDOUT. This
+# fixture briefly violated that: `Total segment checks` still encoded B1's
+# cap=100 figure of 9,716.87 per property after the average had been corrected
+# to the cap=25 operating point measured by B2 and re-measured by B6c
+# (9,407.617649). The two disagreed by 3.3 percent and nothing failed, because
+# the parser reads the fields independently. `Index bytes` and the timing lines
+# remain deliberately synthetic; the counter lines are measured values.
 SEGMENT_BVH_STDOUT = """
 Properties: 10000
 Water features: 8572
@@ -90,7 +98,7 @@ Input loading seconds: 1.700000
 Index construction seconds: 1.100000
 Segment-BVH computation seconds: 0.359000
 Properties per second: 27855.153203
-Total segment checks: 97168700
+Total segment checks: 94076176
 Average segment checks per property: 9407.617649
 Average segment box tests per property: 6.490000
 Total index node visits: 282900

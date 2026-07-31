@@ -65,8 +65,10 @@ import pandas as pd  # noqa: E402
 
 from caprm.ingest import repository_path  # noqa: E402
 from caprm.ladder_benchmark import (  # noqa: E402
+    DEFAULT_VERIFICATION_MODE,
     LADDER,
     LADDER_BY_NAME,
+    VERIFICATION_MODES,
     RunRecorder,
     RungSpec,
     assert_expected_digest,
@@ -99,11 +101,12 @@ PYTHON_REFERENCES = {
 
 @dataclass(frozen=True)
 class Cell:
-    """One (rung, workload, seed window) configuration."""
+    """One (rung, workload, verification mode, seed window) configuration."""
 
     key: str
     rung: RungSpec
     workload: str
+    verification_mode: str
     seed_window: int | None
     executable: str
     repetitions: int
@@ -114,53 +117,78 @@ class Cell:
 
 
 def build_cells(
-    rung_names, workloads, windows, executables, template, repetitions,
+    rung_names, workloads, modes, windows, executables, template, repetitions,
     brute_force_repetitions,
-) -> list[Cell]:
-    """Expand the matrix.
+) -> tuple[list[Cell], list[str]]:
+    """Expand the matrix. Returns the cells and any notes about what was skipped.
 
-    Rungs 1-3 have no seed window, so they get ONE cell per workload however
-    many windows are swept. Scheduling them once per window would multiply the
-    most expensive rung in the ladder by nine for no measurement.
+    Three dimensions, each of which suppresses itself where it is meaningless:
+
+    - Rungs 1-3 have no seed window, so they get ONE cell per workload and mode
+      however many windows are swept. Scheduling rung 1 nine times countywide
+      would cost 2.8 hours for no measurement.
+    - Rungs 1-2 have no verification-mode argument. They verify over original
+      geometry by construction, so a `split` request for them is skipped with a
+      note rather than silently producing a duplicate Option A cell.
+    - The cell key omits `@original`, so the keys B6c already recorded --
+      `segment_bvh@countywide`, `hilbert_binary@countywide@w64` -- are unchanged
+      and remain comparable with the new Option B cells beside them.
     """
     cells: list[Cell] = []
+    notes: list[str] = []
     for workload in workloads:
-        for name in rung_names:
-            rung = LADDER_BY_NAME[name]
-            count = (
-                brute_force_repetitions
-                if name == "brute_force"
-                else repetitions
-            )
-            if rung.seed_mode is None:
-                cells.append(
-                    Cell(
-                        key=f"{name}@{workload}",
-                        rung=rung,
-                        workload=workload,
-                        seed_window=None,
-                        executable=executables[rung.executable_key],
-                        repetitions=count,
+        for mode in modes:
+            for name in rung_names:
+                rung = LADDER_BY_NAME[name]
+                if (
+                    rung.verification_mode_position is None
+                    and mode != DEFAULT_VERIFICATION_MODE
+                ):
+                    notes.append(
+                        f"skipped {name}@{workload}@{mode}: no "
+                        f"verification-mode argument; verifies over original "
+                        f"geometry by construction"
                     )
+                    continue
+                count = (
+                    brute_force_repetitions
+                    if name == "brute_force"
+                    else repetitions
                 )
-                continue
-            for window in windows:
-                executable = (
-                    template.format(window=window)
-                    if template
-                    else executables[rung.executable_key]
+                mode_segment = (
+                    "" if mode == DEFAULT_VERIFICATION_MODE else f"@{mode}"
                 )
-                cells.append(
-                    Cell(
-                        key=f"{name}@{workload}@w{window}",
-                        rung=rung,
-                        workload=workload,
-                        seed_window=window,
-                        executable=executable,
-                        repetitions=count,
+                if rung.seed_mode is None:
+                    cells.append(
+                        Cell(
+                            key=f"{name}@{workload}{mode_segment}",
+                            rung=rung,
+                            workload=workload,
+                            verification_mode=mode,
+                            seed_window=None,
+                            executable=executables[rung.executable_key],
+                            repetitions=count,
+                        )
                     )
-                )
-    return cells
+                    continue
+                for window in windows:
+                    executable = (
+                        template.format(window=window)
+                        if template
+                        else executables[rung.executable_key]
+                    )
+                    cells.append(
+                        Cell(
+                            key=f"{name}@{workload}{mode_segment}@w{window}",
+                            rung=rung,
+                            workload=workload,
+                            verification_mode=mode,
+                            seed_window=window,
+                            executable=executable,
+                            repetitions=count,
+                        )
+                    )
+    return cells, notes
 
 
 def main() -> int:
@@ -181,6 +209,15 @@ def main() -> int:
         type=int,
         default=[64],
         help="Window(s) the hilbert binaries were BUILT with; asserted per run.",
+    )
+    parser.add_argument(
+        "--verification-mode",
+        nargs="+",
+        default=[DEFAULT_VERIFICATION_MODE],
+        choices=list(VERIFICATION_MODES),
+        help="Option A is 'original' (byte-identical to the reference); Option B "
+             "is 'split' (verify over split geometry, ~1e-9 m). B6's primary "
+             "deliverable is the cross-product.",
     )
     parser.add_argument("--hilbert-executable", default=None)
     parser.add_argument(
@@ -217,6 +254,7 @@ def main() -> int:
     arguments = parser.parse_args()
 
     workloads = list(dict.fromkeys(arguments.workload))
+    modes = list(dict.fromkeys(arguments.verification_mode))
     windows = list(dict.fromkeys(arguments.seed_window))
     template = arguments.hilbert_executable_template
 
@@ -254,10 +292,14 @@ def main() -> int:
         else None
     )
 
-    cells = build_cells(
-        arguments.rungs, workloads, windows, executables, template,
+    cells, skip_notes = build_cells(
+        arguments.rungs, workloads, modes, windows, executables, template,
         arguments.repetitions, arguments.repetitions_brute_force,
     )
+    for note in skip_notes:
+        print(f"note: {note}")
+    if not cells:
+        parser.error("the requested matrix contains no runnable cells")
     by_key = {cell.key: cell for cell in cells}
 
     inputs = {
@@ -295,6 +337,7 @@ def main() -> int:
             ),
             rmi_model_path=rmi_model_path if cell.rung.seed_mode == "rmi" else None,
             rmi_probes=rmi_probes if cell.rung.seed_mode == "rmi" else None,
+            verification_mode=cell.verification_mode,
         )
 
     expected_digests = parse_expected_digests(arguments.expect_digest)
@@ -307,7 +350,8 @@ def main() -> int:
 
     if arguments.dry_run:
         for cell in cells:
-            print(f"\n[{cell.key}]  n={cell.repetitions}")
+            print(f"\n[{cell.key}]  n={cell.repetitions}  "
+                  f"mode={cell.verification_mode}")
             print("  " + " ".join(commands[cell.key]))
         print(f"\n{len(cells)} cells, {len(schedule)} runs scheduled")
         return 0
@@ -345,6 +389,7 @@ def main() -> int:
                 "cell_key": entry.cell_key,
                 "session_id": session_id,
                 "workload": cell.workload,
+                "verification_mode_requested": cell.verification_mode,
                 "seed_window_build": cell.seed_window,
                 "executable": cell.executable,
                 "repetition": entry.repetition,
@@ -368,11 +413,24 @@ def main() -> int:
                 f"but the cell claims {cell.seed_window}. The binary is not the "
                 f"build this run claims."
             )
+        reported_mode = metrics.get("verification_mode")
+        if reported_mode is not None and reported_mode != cell.verification_mode:
+            raise RuntimeError(
+                f"{entry.cell_key} self-reports verification_mode="
+                f"{reported_mode!r} but the cell claims "
+                f"{cell.verification_mode!r}."
+            )
         assert_expected_digest(
             cell.rung.name,
             metrics["output_sha256"],
             expected_digests,
             cell.workload,
+            cell_key=entry.cell_key,
+            # An unqualified digest means the canonical answer, which is the
+            # default verification mode. A split-mode cell must be named.
+            allow_unqualified=(
+                cell.verification_mode == DEFAULT_VERIFICATION_MODE
+            ),
         )
         recorder.append(metrics)
 
@@ -394,8 +452,8 @@ def main() -> int:
         "started_at_utc": started_at,
         "ended_at_utc": datetime.now(timezone.utc).isoformat(),
         "workloads": workloads,
+        "verification_modes": modes,
         "seed_windows": windows,
-        "verification_mode": "original",
         "region_mode": "disk",
         "max_segment_length_cap_m": 25.0,
         "protocol": {
@@ -442,10 +500,12 @@ def main() -> int:
             )
             if repository_path(path).exists()
         },
+        "skipped": skip_notes,
         "cells": {
             cell.key: {
                 **summarize_cell(timed_by_cell[cell.key]),
                 "workload": cell.workload,
+                "verification_mode": cell.verification_mode,
                 "seed_window": cell.seed_window,
                 "executable": cell.executable,
                 "command": commands[cell.key],
