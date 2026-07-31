@@ -64,7 +64,11 @@ FIGSIZE_LANDSCAPE = (13.0, 5.4)
 #: Matched case-insensitively against source_name. Anything not found is
 #: reported rather than silently omitted; a missing label on a poster figure is
 #: a caption that cannot be trusted.
-NAMED_FEATURES = ("Lake Ontario", "Genesee River", "Erie Canal")
+#: The source names one of its largest features. The next five are unnamed
+#: waterbodies, and the Genesee is carried as split flowline reaches rather than
+#: one object, so naming three would mean inventing two labels the data does not
+#: support. One named outlier against the distribution is the argument anyway.
+NAMED_FEATURES = ("Lake Ontario",)
 
 BOX_FEATURE = "Lake Ontario"
 
@@ -167,10 +171,12 @@ def main() -> int:
         f"{(county_maxx - county_minx) / 1000:,.1f} km x "
         f"{(county_maxy - county_miny) / 1000:,.1f} km"
     )
+    span_km = (maxx - minx) / 1000
+    buffer_limit_km = (county_maxx - county_minx) / 1000 + 40
     print(
-        "\nCAPTION MUST SAY: the cache was retrieved for the county plus a "
-        "20,000 m buffer,\nso this is the bounding box of the CACHED feature, "
-        "not of the whole lake."
+        f"\nCLIP CHECK: the box spans {span_km:,.1f} km against a "
+        f"county-plus-20 km ceiling of {buffer_limit_km:,.1f} km. "
+        f"{'Complete geometry, not clipped.' if span_km > buffer_limit_km else 'CLIPPED — say so in the caption.'}"
     )
 
     with plt.rc_context(style.rc_params()):
@@ -181,6 +187,13 @@ def main() -> int:
         # -- left: the distribution -------------------------------------------
         bins = np.logspace(np.log10(positive.min()), np.log10(positive.max()), 60)
         left.hist(positive, bins=bins, color=style.PRIMARY, alpha=style.PRIMARY_ALPHA)
+        ceiling = left.get_ylim()[1]
+        for value, label in ((np.median(positive), "median"),
+                             (np.percentile(positive, 99), "99th percentile")):
+            left.axvline(value, color=style.INK, linewidth=1.0, alpha=0.55)
+            left.annotate(f"{label}\n{value:,.0f} m", xy=(value, ceiling*0.55),
+                          ha="center", va="top", fontsize=style.SIZE_ANNOTATION - 2,
+                          color=style.INK)
         left.set_xscale("log")
         left.set_xlabel("Bounding-box diagonal (m, log scale)", fontsize=style.SIZE_AXIS_LABEL)
         left.set_ylabel("Water features", fontsize=style.SIZE_AXIS_LABEL)
@@ -189,7 +202,7 @@ def main() -> int:
         for spine in ("top", "right"):
             left.spines[spine].set_visible(False)
 
-        ceiling = left.get_ylim()[1]
+       
         for offset, (name, value) in enumerate(sorted(located.items(), key=lambda kv: -kv[1])):
             left.axvline(
                 value, color=style.ACCENT, linewidth=style.LINEWIDTH_DASHED,
