@@ -114,16 +114,16 @@ Milestone 4 builds a five-rung ladder of nearest-water implementations over the 
 
 The path was forced by the project's own measurement rather than chosen to accommodate machine learning. The Feature BVH examines only 5.498 candidate features per property yet still performs 70,771 segment checks, because it indexes features rather than geometry and the largest water features are near almost everything in the county — the selected features are roughly 104 times larger than the average water feature. Rebuilding at segment granularity is what makes a learned index possible at all, and ~1.19M entries is squarely learned-index scale.
 
-Complete and validated countywide through chunk B5c:
+Complete and validated countywide through chunk B6c-2:
 
-- **B1** — segment-granularity BVH with distance-exact splitting. `L = 5,748.2396 m` measured before anything was built on it. 267,362/267,362 field-for-field agreement at `4.658e-10 m`. Phase-2 work fell from 70,771 to 9,716.87 segment checks per property, **7.28x**.
+- **B1** — segment-granularity BVH with distance-exact splitting. `L = 5,748.2396 m` measured before anything was built on it. 267,362/267,362 field-for-field agreement at `4.658e-10 m`. Phase-2 work fell from 70,771 to 9,716.87 segment checks per property, **7.28x**, at B1's uncapped-equivalent 100 m entry-extent cap. At the 25 m operating point B2 selected, the countywide figure is **9,407.62** checks per property under original-geometry verification and **6,453.70** under split; the B6 tables report both.
 - **B2** — entry-extent sweep under both verification strategies, 14/14 points at full agreement. The cap is *not* a performance dial: across a 575-fold range of maximum entry extent, median query time varies under 10 percent. It is chosen for its only downstream consumer, the `L/2` inflation radius. Operating point: 25 m cap.
 - **B3** — Hilbert ordering of entry midpoints, exact inflated-disk query by recursive quadrant decomposition, and a binary-search control. Capping at 25 m costs 11.89 percent more entries and returns a **546x** reduction in admitted entries per query.
 - **B4** — a two-stage recursive model index after Kraska et al., SIGMOD 2018. 131,072 linear second-stage models, 4,194,400 bytes, with a per-model error bound verified exhaustively over all 1,189,589 keys. The finding is the equi-depth diagnostic: **the router binds, not the leaves.**
 - **B5** — inference ported to C++. Output byte-identical to the control on 267,362 properties.
 - **B5c** — resolve-descent instrumentation, so the learned rung's cost is counted rather than inferred.
 
-**The measured result is negative, and it is reported because the phase said in advance that it would be.** The learned rung produces identical evidence and runs the countywide query slower:
+**The measured result is negative, and it is reported because the phase said in advance that it would be.** At the shipped configuration — countywide, seed window W = 64, original-geometry verification — the learned rung produces identical evidence and runs the query 6.48 percent slower:
 
 ```text
                               binary        rmi
@@ -137,7 +137,16 @@ The model saves about 20 key probes per property and spends about 211 extra poin
 
 A second finding is not about the model at all: the exact binary-search control misses its ±64 seed window on 38.62 percent of queries, which makes the window a query-design parameter for both rungs.
 
-Remaining: **B6**, the five-implementation benchmark, reported as three adjacent comparisons with a repetition protocol and a scaling curve.
+**That percentage is conditional, and B6 measured the conditions.** Across nine seed windows the learned-to-control wall-clock ratio moves from 1.11620 at W = 8 to 1.00002 at W = 2048, so the sign of 5 vs 4 is set by the seed window rather than by the model. Under split-geometry verification the same countywide gap reads +12.52 percent — the absolute penalty per property is unchanged and the denominator shrank, so the counted quantity is the invariant and the percentage is the artifact. The durable finding is therefore not “learning did not help” but that the reported benefit of a learned spatial index depends on parameters the literature holds fixed and does not report. See Nucleus 18.26 and 18.27.
+
+Also complete and validated:
+
+- **B6a** — a measurement harness with a repetition and warm-up protocol declared before measuring, blocked and cyclically rotated ordering, session guards, and crash-safe append-and-fsync recording. Two sittings of an identical rung-1 configuration were measured 11.02 percent apart on provably identical work, which is the evidence behind the session guard.
+- **B6b** — `SEED_WINDOW` as a compile-time parameter across nine windows, byte-neutral at every one. The first attempt built seven binaries against source that never referenced the macro and the neutrality gate passed on them; the rule extracted is that a neutrality gate requires a positive control (Nucleus 18.25).
+- **B6c** — the five-rung ladder at three workloads and a nine-window seed sweep at two workloads. 252 timed runs, exactness closed for all fifteen ladder cells.
+- **B6c-2** — the Option A / Option B verification cross-product. Both pre-declared predictions held: 4 vs 3 predicted ~5.5x and measured 5.774x countywide; 5 vs 4 predicted +12.8 percent and measured +12.52.
+
+Remaining: **B6d** — the published tables and the canonical-document pass. No measurement remains.
 
 ## Architecture
 
@@ -367,7 +376,18 @@ outputs/validation/water_hilbert_query_stats_b5c_{binary,rmi}.json
 outputs/validation/water_hilbert_seed_error_b5_{binary,rmi}.json
 
 outputs/analysis/water_hilbert_inflation_by_decile.csv
+
+outputs/benchmark/water_ladder_runs_{ladder,sweep,b6c2,sweepB,gridAB}.csv and .jsonl
+outputs/validation/water_ladder_summary_{ladder,sweep,b6c2,sweepB,gridAB}.json
+outputs/validation/b6c_{ladder,sweep}_counters.csv
+outputs/validation/{b6c2,gridAB}_counters.csv
+outputs/validation/b6b_window_sweep_counters_10000.csv
+outputs/validation/ladder_{agreement,summary}_*.{csv,json}
+outputs/validation/b6_analysis.json
+outputs/validation/b6_benchmark_tables.md
 ```
+
+`b6_analysis.json` and `b6_benchmark_tables.md` are generated by `python/scripts/analyze_b6_results.py` and must not be hand-edited. Every derived number in the benchmark tables is computed there and nowhere else, so an analysis performed in conversation is not reportable until it lands in that script with a test.
 
 The three canonical countywide C++ inputs for the water family are:
 
@@ -605,20 +625,23 @@ Tests:
 ```text
 tests/test_rmi.py
 tests/test_hilbert_inflation.py
+tests/test_ladder_benchmark.py
 tests/cpp/test_water_segment_bvh.cpp
 tests/cpp/test_water_segment_bvh_verify_modes.cpp
 ```
 
 ## Current roadmap
 
-Immediate work — Milestone 4 chunk B6:
+Immediate work — Milestone 4 chunk B6d, the close-out. No measurement remains:
 
-1. benchmark the five-implementation ladder as **three adjacent comparisons** — granularity (3 vs 2), dimensionality reduction (4 vs 3), machine learning (5 vs 4) — never one global comparison, which would confound the last two;
-2. state a repetition and warm-up protocol and report dispersion, since two runs of the same configuration have been measured 3.85 percent apart;
-3. report a scaling curve across the 10K, 100K, and countywide workloads, because learned indexes are argued to win as N grows;
-4. sweep the seed window upward and downward for both seeders at matched sizes;
-5. measure peak memory per rung rather than reasoning about it;
-6. report inflation as a first-class axis, since it is the cost of extended objects and the thing the point-data literature has not measured.
+1. give `python/caprm/ladder_analysis.py` a verification-mode dimension, so that pointing the analysis at the cross-product invocations cannot mix Option A and Option B inside one comparison;
+2. close the six outstanding exactness cells — the `_10000` and `_100000` Option B cells have digests but have not been run through `compare_python_cpp_water.py`, and the completion gate requires exact agreement for every implementation claiming exactness at every workload;
+3. publish the benchmark table as three adjacent comparisons per workload **and** per verification mode, with wall clock beside counts, `n` beside every figure, and any comparison whose gap sits inside its cells' own range marked NOT RESOLVED rather than printed as though it carried a claim;
+4. report search and verification as separate columns throughout, and report 4 vs 3 in both modes with Option A labelled diluted;
+5. report inflation as a first-class axis, including the uncounted `2W` window scan and its ~7.8x locality premium over a resolve-descent entry;
+6. update `docs/benchmark_results.md` and the three canonical documents, and verify this README does not contradict them.
+
+Complete: B6a (harness and protocol), B6b (`SEED_WINDOW` as a compile-time parameter), B6c (the ladder and the nine-window sweep), B6c-2 (the verification cross-product).
 
 After Milestone 4 Phase B:
 
@@ -640,12 +663,12 @@ Current repository documentation includes:
 - [Validation](docs/validation.md)
 - [Milestone 1](docs/milestone_1.md)
 
-The three living canonical documents are tracked under `docs/` and are reviewed at the end of every completed chunk:
+The three living canonical documents are tracked under `docs/canon/` and are reviewed at the end of every completed chunk:
 
 ```text
-docs/CAPRM_Flood_Project_Nucleus_2026-07-15.md   durable architecture, decisions, methodology
-docs/CAPRM_Flood_Current_Status.md               exact present state, current commit, next task
-docs/CAPRM_Flood_Roadmap.md                      remaining work in dependency order
+docs/canon/CAPRM_Flood_Project_Nucleus_2026-07-15.md   durable architecture, decisions, methodology
+docs/canon/CAPRM_Flood_Current_Status.md               exact present state, current commit, next task
+docs/canon/CAPRM_Flood_Roadmap.md                      remaining work in dependency order
 ```
 
 Where they conflict with each other, prefer current validated code and generated artifacts first, then Current Status, then the Nucleus, then the Roadmap.
@@ -660,10 +683,12 @@ The current index is intended for comparative screening and analysis. It does no
 
 - The exposure index remains **preliminary**. It is frozen and characterized as moderately sensitive to weight choice, not calibrated.
 - Precipitation evidence has not yet been added and is gated behind Milestone 4.
-- Peak memory is not yet measured per implementation. Only the Hilbert key array (9,516,712 bytes) and the trained model (4,194,400 bytes) are measured, against the segment BVH's 119.8 MB index; both paths also carry the ~1.19M segment array.
-- **Wall-clock figures are single unrepeated runs.** Two runs of the same binary configuration have been measured 3.85 percent apart, which is the order of the effects being discussed. No timing claim in this repository should be read as a benchmark result until B6's repetition protocol lands.
+- Memory is measured per rung on three instruments that disagree in direction, and none may be quoted alone (Nucleus 18.24). Countywide, on persistent structure the Hilbert path is 8.74x smaller than the segment BVH — a 9,516,712-byte key array plus a 4,194,400-byte model against 119,768,836 bytes of BVH; on peak resident memory the segment BVH is 1.25x smaller; on peak committed memory the Hilbert path is 1.20x smaller. Peak resident memory is the wrong instrument for a model's size cost specifically, because the peak occurs during index construction before the model is loaded. A ~160 MB transient in the Hilbert path's resident peak is constant across a 27x range of query count, which places it in index construction, and remains unattributed beyond that.
+- **Wall-clock figures follow B6a's repetition protocol** — 3+1 warm-up at rung 1 and 7+1 at rungs 2-5, blocked by repetition and cyclically rotated by block index, with dispersion reported as min/median/max and relative spread always. Absolutes move about 1 percent between invocations while adjacent ratios agree to 0.116 percentage points, so ratios are reported within an invocation and absolutes with their invocation named. `brute_force@countywide` carries a 31.71 percent spread at n=3, five times any other cell, so its figure is an order-of-magnitude statement and rung 1 appears in no adjacent comparison.
 - C++ `computation_seconds` includes geometry queries, CSV row writing, and progress logging; query-only and output-only time are not separated.
 - Runs carrying `--verify-counts`, `--uncapped-half` or `--seed-error-stats` are not benchmark-eligible: each adds work per property. `--query-stats` is free and is eligible.
+- **The Milestone 4 negative result is measured at one index size**, 1,189,589 entries. The `_10000`/`_100000`/`_countywide` workloads vary query COUNT, not index size: the exporter writes the whole feature table regardless of the property set, so all three build the identical index. The learned-index literature's central claim is that the advantage grows with index size, and this project does not test that; a true index-size axis needs a defensible hydrography subsetting scheme, a reference recomputed at each subset, and the model retrained at each N. It is deferred as a stretch chunk.
+- Below roughly twelve thousand properties the Hilbert path spends more time constructing its index than using it. Index construction is 0.912181 s and is constant across every workload while query cost is linear in the property count, so build equals query at Q = 12,301 under original-geometry verification and Q = 24,749 under split. Any end-to-end claim about this path states whether construction is included, and at what query count.
 - The Python pipeline that produces every Milestone 3 result has no runtime instrumentation.
 - The C++ path does not itself verify the trained model's training-array SHA-256; it verifies a fingerprint (array length, five sampled keys, and the full inference chain) while the trainer verifies the digest. The provenance chain closes across the two languages but not inside either alone.
 - The C++ source is functional but is not organized as a reusable CMake library. Two native unit suites exist for geometric invariants that have no Python counterpart; the primary correctness claim still rests on field-by-field comparison against the Python reference.
