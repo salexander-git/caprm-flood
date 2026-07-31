@@ -93,7 +93,7 @@ Precipitation is retained as a gated stretch goal. See section 8b.
 ```text
 PHASE A   Finish Milestone 3                                COMPLETE
 PHASE B   Learned indexing of extended spatial objects      COMPLETE
-PHASE C   Neural surrogate                                  current (C1 done)
+PHASE C   Neural surrogate                                  current (C1, C2, C3 done)
 PHASE D   Engineering hardening
 PHASE E   Final academic deliverables
 PHASE S   Precipitation — gated stretch goal
@@ -1268,48 +1268,92 @@ size. See Nucleus 18.34.
 
 ---
 
-## C2. Train the Surrogate
+## C2. Train the Surrogate — COMPLETE 2026-07-30
 
-### Goal
-
-A model that maps coordinates to the index.
-
-### Implementation
-
-A small MLP. Coordinates normalized. A Fourier or random-feature encoding of
-position is worth trying, because raw coordinates make it hard for a small
-network to represent sharp spatial structure — and this target has sharp
-structure by construction.
-
-Record the architecture, the seed, the split-manifest digest, the loss curve,
-and a checksum of the weights. A model is an artifact (Nucleus 18.20).
-
-### What C1 fixed, and C2 must not relitigate
-
-Consume `outputs/validation/c1_kfold_manifest.json`. Do not rebuild the
-partition. The split files store `fold` and a `dropped_mask` bitmask;
-`caprm.spatial_kfold.roles_from_codes` rebuilds the full role matrix and is
-tested to do so exactly.
-
-Train and evaluate once per recorded seed, five in all, and report the range.
-A single-seed figure is a diagnostic, never a claim (Nucleus 18.32).
-
-### The bar
+### Delivered
 
 ```text
-nearest-training-neighbour, blocked K-fold   RMSE 14.05 … 16.53   R^2 -0.542 … -0.147
-nearest-training-neighbour, random split     RMSE  4.933          R^2  0.853 … 0.867
+modules      python/caprm/surrogate.py
+             python/caprm/surrogate_data.py
+             python/caprm/surrogate_run.py
+CLIs         python/scripts/train_surrogate.py
+             python/scripts/sweep_surrogate_scale.py
+             python/scripts/measure_trivial_baselines.py
+tests        58, across three modules
+run          outputs/validation/c2_surrogate_manifest.json
+sweep        outputs/validation/c2_scale_sweep.json
+models       outputs/models/c2_surrogate_*.npz   30, untracked, checksummed
+predictions  outputs/training/c2_predictions_*.csv   untracked, C3's input
 ```
 
-The first row is the floor: a surrogate that does not beat it has learned the
-neighbourhood, not the function. Beating it on some seeds and not others is not
-beating it. The second row is the memorization gap and exists so C2 can report
-what the partition bought — run the same model under the random control and
-publish both numbers.
+A small MLP over a Gaussian random Fourier encoding of position, written in
+numpy so the gradient is checked against a central finite difference rather
+than trusted to a dependency. One model per fold, five folds per seed, five
+seeds, aggregated over the union of each seed's fold test sets exactly as the
+declared floor was computed — an average of per-fold RMSEs would weight a small
+fold like a large one and would not be the same quantity.
 
-If a hyperparameter — the Fourier feature scale is the likely one — moves the
-headline, sweep it and report the curve. A result at one operating point is one
-point on a curve (Nucleus 18.27).
+### Result — the floor was not beaten
+
+```text
+rung 2  surrogate                      RMSE 12.2989 … 16.0623   R^2 -0.4558 … 0.1281
+rung 0  constant, fold training mean   RMSE 13.3908 … 15.9218
+rung 1  nearest training neighbour     RMSE 14.0489 … 16.5297   R^2 -0.5418 … -0.1465
+```
+
+Reported as measured (Nucleus 18.18). The surrogate was not retuned after its
+test number was read.
+
+The third rung was added during C2 because C1's floor carries negative R^2 on
+every seed, which means a constant clears it. Clearing that floor is therefore
+not evidence of learning, and the rung that shows this is now reported beside it
+rather than left for a reader to derive (Nucleus 18.37).
+
+### What C2 found instead
+
+```text
+random control, identical model and protocol
+    surrogate                  RMSE 10.6680 … 10.8108   R^2 0.3204 … 0.3369
+    nearest training neighbour RMSE  4.9329             R^2 0.8586
+```
+
+1. The partition choice REVERSES the method ranking. The trivial predictor wins
+   under random splitting and loses under blocked splitting on four of five
+   seeds. Nucleus 18.36.
+2. Random splitting understates seed variance 26-fold: 3.76 RMSE points blocked
+   against 0.14 random.
+3. Variance ratio 0.152 … 0.341 blocked and 0.413 … 0.432 random — the model
+   emits real spatial variation that is misplaced at distance rather than
+   collapsing to the mean. Nucleus 18.37.
+4. The surrogate reaches only R^2 ~0.33 even under random splitting, where the
+   median holdout sits 24.4 m from training data. Failure at interpolation
+   distance is representational, and C3 should explain it with the same
+   mechanism as the main prediction.
+
+### The Fourier scale was swept, not fixed silently
+
+Ten scales, 12.7 km to 24.8 m of characteristic wavelength, five seeds at
+fold 0, selected on mean validation RMSE by a rule declared before the sweep ran;
+the test curve was published as sensitivity and not used to select. The first
+pass minimised at the boundary and the declared response — extend rather than
+select from the edge — was followed, giving an interior minimum at scale 256.
+
+The sweep stops at 24.8 m because C1 measured median nearest-neighbour property
+spacing at 24.4 m. The stopping point is a measurement, not the point where
+improvement stopped.
+
+Its limits are on the record: validation and test disagree on the optimum
+(256 against 512), and the selection sits in a plateau narrower than the seed
+spread. The defensible claim is that wavelengths below ~800 m beat those above
+~3 km, not that the optimum is 99 m. The curve moves 2.50 test points end to
+end while the seed moves 3.54 … 10.00 at fixed scale — Nucleus 18.27 recurring.
+
+### What C2 hands C3
+
+- Per-property predictions on tested rows, five seeds, both partitions, carrying
+  `property_id`, `x`, `y`, `fold`, `actual`, `predicted`, `residual`.
+- A prediction fixed in writing before training, stored in the run manifest.
+- The anomaly at item 4 above, which the same mechanism should explain.
 
 ### Do not
 
@@ -1325,16 +1369,49 @@ point on a curve (Nucleus 18.27).
   figure is error at that separation.
 - Do not attribute residuals to label noise. C1 measured the coordinate-label
   ambiguity at zero.
+- Do not retune the surrogate to improve the C2 result. The architecture was
+  fixed before the headline existed and the negative result stands.
 
 ---
 
-## C3. Error Analysis
+## C3. Error Analysis — COMPLETE 2026-07-30
 
 ### Goal
 
 Not "what is the RMSE." Where does it fail, and why.
 
-### The expected finding
+### Result — the prediction was REFUTED as a spatial claim, CONFIRMED as a mechanism
+
+```text
+delivered   python/caprm/error_analysis.py, python/caprm/chart_style.py
+            python/scripts/analyze_c3_residuals.py
+            python/scripts/plot_c3_residuals.py
+            tests/test_error_analysis.py               32 tests
+run         outputs/validation/c3_error_analysis.json  + 14 CSVs
+figure      outputs/figures/c3_residual_structure.{png,svg}
+```
+
+CONFIRMED: the discontinuity dominates the error. 1.9 percent of test rows carry
+18.5 percent of squared error under blocking and 30.2 percent under the random
+control, and every one of them is under-predicted — 100.00 percent of 10,897 and
+of 3,784 rows.
+
+REFUTED: it is not a spatial effect. Inside the majority class, after label
+stratification, the boundary candidate scores rho = +0.112 under blocking — the
+WRONG SIGN, error growing with distance from a boundary — and loses to
+water-component roughness. Under the control it is -0.057, below the declared
+0.10 floor and fifth of eight. And "stay small elsewhere" is false: blocked
+residuals rise from an interior minimum of 8.10 to 18.26 beyond 3,200 m, while
+the control at the same distances falls to 6.11.
+
+The explanation is a flat prediction, not a boundary artifact. Across nine
+distance bins the label's mean sweeps 25.73 points and the prediction's sweeps
+3.17, a recovery ratio of 0.123 blocked and 0.515 under the control. This is
+C2's variance ratio localised, and it explains both arms of the U and the
+R^2 ~ 0.33 anomaly with one mechanism. Full figures in `CAPRM_Flood_Current_Status.md`,
+C3 result subsection; the durable methodological point is Nucleus 18.38.
+
+### The expected finding, as written before the chunk ran
 
 **FEMA zones are discontinuities.** The index jumps by 34 points across a zone
 boundary — a step function. A smooth network cannot represent a step; it can
@@ -1349,7 +1426,59 @@ it is the phase's real result.
 - residuals mapped in space;
 - residual distribution split by distance to the nearest zone boundary;
 - residual distribution split by FEMA zone;
-- the worst cases, inspected individually rather than summarized.
+- the worst cases, inspected individually rather than summarized;
+- one poster-grade figure, `.png` and `.svg`, matching the sizing already used
+  by `presentation_assets/charts/slide07` … `slide11`.
+
+### Method note added after C2
+
+Distance to a zone boundary need not require new data. For each property, the
+distance to the nearest property carrying a DIFFERENT FEMA component is a
+data-derived proxy, computable with a cKDTree per component class. Its limits
+must be stated: it is bounded below by property spacing and it locates a
+boundary only as precisely as the parcels sample it. If the FEMA polygons are
+readily available and exact distance-to-boundary is affordable, prefer them and
+say why.
+
+### What C3 must not do
+
+- Do not analyse training rows. Their residuals were fitted and mean nothing.
+- Do not report a per-bin statistic without its count. 98.1 percent of
+  properties share one FEMA component, so the near-boundary set is small and a
+  spike over 40 properties is not the claim a spike over 4,000 would be.
+- Do not confuse signed and absolute residuals. A ramp across a step is positive
+  on one side and negative on the other, so the mean signed residual near a
+  boundary may be ~0 while the absolute residual spikes. A signed-only analysis
+  would miss the effect entirely.
+- Do not stop at one explanation. Residuals may spike at water or terrain
+  component boundaries, at the county edge, or simply where the label is
+  extreme. Test the FEMA account against at least one competitor and against
+  residual-versus-label-magnitude, or the finding is "the index is large near
+  water," which is already known.
+- Do not re-select the operating point or retrain. C3 explains a result; it does
+  not improve one.
+
+### Newly required work discovered at C3
+
+- **A pre-commit hash check.** `CAPRM_Flood_Current_Status.md` section 2 has now
+  been stale at four consecutive chunks. The mechanical fix is specified in
+  section 2 itself and belongs in PHASE D.
+- **`presentation_assets/charts/` has no generating code.** Five poster figures
+  exist as PNG and SVG with no script anywhere in the repository, so they cannot
+  be regenerated and their numbers cannot be traced to an artifact. This
+  contradicts the project's own reproducibility standard.
+  `python/caprm/chart_style.py` records the style MEASURED out of slide07 so C3's
+  figure matches the set, but it does not fix the five. Either reconstruct their
+  scripts or state in the report that they are unreproducible. PHASE D5.
+- **Poster format constraints**, supplied 2026-07-30 and belonging in
+  `Professor_Milestone_Requirements.txt`, which the chunking plan still records
+  as NOT READ this cycle: the RIT brand logos policy applies and the campus seal
+  is reserved for official presidential communications; top headers may occupy
+  at most 25 percent of the poster and may use a darker background; the
+  background must be a light colour covering less than 75 percent of the page;
+  maximum size 24 by 36 inches. Reading that file is a live blocker on PHASE E
+  rather than a future one, because poster work is already running alongside
+  PHASE C.
 
 ### Why this matters
 
@@ -1360,12 +1489,24 @@ by failing, exactly where the exactness was load-bearing.
 
 ---
 
-## C4. Benchmark and Document the Surrogate
+## C4. Benchmark and Document the Surrogate — NEXT
 
 ### Measure
 
 Inference time per property against the exact pipeline. Model size. Accuracy on
 the held-out blocks. Accuracy as a function of distance to a discontinuity.
+
+Distance to a discontinuity is already computed and checksummed:
+`fema_boundary_distance_m` in `outputs/training/c3_property_features.csv`, built
+over all 267,362 properties by `analyze_c3_residuals.py`. Read it; do not
+recompute it, and do not compute it over the tested subset alone, which would
+make the quantity depend on the partition.
+
+C3 also fixes what "accuracy against distance to a discontinuity" can honestly
+claim. The relationship is not monotone under blocking — it is a U whose far arm
+belongs to the partition — so a C4 table that reports accuracy falling with
+distance and stops there would be reporting the sort rather than the model.
+Report `mean_predicted` beside `mean_label` in any such table (Nucleus 18.38).
 
 ### Honest framing
 
@@ -1921,7 +2062,7 @@ related-work check on learned radius completed before any novelty claim
 
 ```text
 spatial-block partition verified, not assumed              DONE at C1
-surrogate trained, weights checksummed, seed recorded
+surrogate trained, weights checksummed, seed recorded     DONE at C2
 residuals mapped and analyzed by distance to a zone boundary
 the discontinuity prediction confirmed or refuted, on the record
 inference benchmarked against the exact pipeline

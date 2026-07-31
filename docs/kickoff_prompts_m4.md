@@ -1,6 +1,9 @@
 # CAPRM-Flood — Milestone 4 Kickoff Prompts (B2 onward)
 
 Revised 2026-07-22, after B1 completed and was validated countywide.
+Revised 2026-07-29, after B6a-B6c: the ladder measured, the nine-window sweep run,
+and the phase's contribution recorded as Nucleus 18.27. The canonical documents now
+live under `docs/canon/`.
 
 Splice this over the B2-and-later sections of the existing prompts file. The B1
 prompt is obsolete and may be retained as a historical record or deleted.
@@ -10,14 +13,20 @@ prompt is obsolete and may be retained as a historical record or deleted.
 ## Phase status
 
 ```text
-B1  Segment BVH + distance-exact splitting     COMPLETE, committed 998c859
-B2  Entry-extent sweep                         next
-B3a Hilbert ordering + inflation + query       blocked on B2 operating point
-B3b Binary-search control + validation         blocked on B3a
-B4  Train the RMI                              blocked on B3b
-B5  Port RMI inference to C++                  blocked on B4
-B6  Benchmark the ladder                       blocked on B5
-C   Neural surrogate                           scoped, runs alongside B4-B6
+B1    Segment BVH + distance-exact splitting   COMPLETE, 998c859
+B2    Entry-extent sweep + verification fork   COMPLETE, 27031d9
+B3a   Hilbert ordering + inflation + query     COMPLETE, 97bfb1e
+B3b   Binary-search control + validation      COMPLETE, 97bfb1e
+B4    Train the RMI                            COMPLETE, 97bfb1e
+B5    Port RMI inference to C++                COMPLETE, f2e2e00
+B5c   Instrument the resolve descent           COMPLETE, ff8121f
+B6a   Ladder harness + protocol                COMPLETE, 664a431
+B6b   SEED_WINDOW as a build parameter         COMPLETE, 664a431
+B6c   Ladder + nine-window sweep, countywide   COMPLETE, 664a431
+B6c-2 Option A / Option B cross-product        IN PROGRESS
+B6d   Benchmark close-out + document pass      blocked on B6c-2
+B7    Learned radius                           stretch, after PHASE C
+C     Neural surrogate                         next after B6d
 ```
 
 ---
@@ -31,13 +40,19 @@ B1 measured, countywide, per property:
 
 ```text
 phase 1  search        28.29 node visits  +  6.49 segment box tests  ~= 35 operations
-phase 2  verification  9,716.87 segment checks
+phase 2  verification  9,716.87 segment checks     <- B1, at a 100 m entry cap
 ```
 
 Search is roughly 0.4 percent of query work. Verification dominates, because B1
 computes the reported distance with the unchanged exact kernel over each candidate
 feature's *entire original geometry* — about 6,490 segments per candidate — in order to
 guarantee output byte-identical to the reference.
+
+OPERATING POINT, since B2. B1 measured at a 100 m cap. B2 swept the cap and chose
+25 m, where the same quantities are 9,407.6 checks over 1.466 candidate features,
+about 6,417 segments each. B6c confirmed it countywide at 9,407.617649. Both figures
+are correct; they are different operating points, and every later comparison uses the
+25 m one. Do not quote 9,716.87 as the segment BVH's cost in the ladder.
 
 ### The ceiling, stated correctly
 
@@ -52,8 +67,12 @@ verification indirectly. That is exactly how B1 earned its 7.28x:
 
 ```text
 Feature BVH   5.498 candidates x 12,872 segments  =  70,771 checks
-Segment BVH   1.497 candidates x  6,490 segments  =   9,717 checks
+Segment BVH   1.497 candidates x  6,490 segments  =   9,717 checks   <- cap 100 m
 floor         1.000 candidate  x  6,490 segments  =   6,490 checks
+
+at the cap-25 operating point the ladder actually runs (B2's choice, B6c measured):
+
+Segment BVH   1.466 candidates x  6,417 segments  =   9,407.6 checks
 ```
 
 At least one feature must be verified. So under Option A the remaining headroom for
@@ -485,13 +504,24 @@ This cross-product is B6's primary deliverable. The row difference is index qual
 COLUMN difference is the cost of exactness, which is the half of the Nucleus section 14b
 research question the literature has never measured.
 
-                              Option A (byte-identical)   Option B (~1e-9 m)
-  brute force                       n/a                        n/a
-  Feature BVH                    70,771 checks                  -
-  Segment BVH                     9,717 checks                  ?
-  Hilbert + binary search             ?                         ?
-  Hilbert + RMI                       ?                         ?
+                              Option A (byte-identical)  Option B (~1e-9 m)
+  brute force                1,063,159 chk  1067.82 s        n/a
+  Feature BVH                 70,770.6 chk    62.95 s          n/a
+  Segment BVH                  9,407.6 chk     9.1167 s        ?   1.705 s  <- B2
+  Hilbert + binary search     11,021.8 chk    17.7500 s        ?         ?
+  Hilbert + RMI               11,021.8 chk    18.9003 s        ?         ?
   columns: checks, wall clock, index bytes, candidates/property, inflation cost
+
+  index bytes    Segment BVH 119,768,836   Hilbert keys 9,516,712
+                 + RMI model 4,194,400  =  13,711,112   (8.74x smaller)
+  candidates/p   Feature BVH 5.498   Segment BVH 1.466
+  inflation      capped geometric N_disk_infl / N_true_r = 6.397 countywide
+
+  Option A measured at B6c, 2026-07-29, 7 reps + 1 warm-up, blocked, countywide.
+  Segment BVH Option B wall clock from B2 (cap 25, 7 reps); its check count is
+  not in B2's recorded table and is a B6c-2 deliverable. Option B for rungs 4
+  and 5 is unmeasured and is the reason B6 is not closed.
+  A check count is NOT comparable across the two columns (Nucleus 18.19, B2).
 
 FRAME THE RESULT BEFORE INTERPRETING IT
 Under Option A the combined search-side headroom is ~1.50x (verification floor ~6,490
@@ -506,6 +536,35 @@ set and identical verification cost by construction, so verification cancels and
 learned-versus-control comparison is clean in both columns. Report it in probes per query,
 search-window size, position error, index bytes, and search-phase time — not only in
 end-to-end wall clock.
+
+MEASURED, 2026-07-29. Record of how the framing above fared. The predictions are left
+unedited on purpose (Nucleus 18.12); this is the outcome beside them.
+
+HELD. Implementation 4 admits more work than implementation 3: 11,021.83 checks per
+property against 9,407.62, +17.2 percent countywide and +17.1 percent at _10000 against
+baselines that differ 7.4-fold. The regression 4-vs-3 exists to produce was produced.
+
+HELD. 5-vs-4 is small in wall clock and does sit near noise: +6.48 percent countywide
+against cell spreads of 4.6 to 14.2 percent. It was resolved anyway, by counting rather
+than by timing. B5c's independently isolated 20.40 ns per resolve-descent entry predicts
+the measured gap to within 0.2 percent, and a least-squares slope over twelve matched
+pairs returns 20.33 ns/entry.
+
+DID NOT HOLD. 4-vs-3 is not small: 1.947x slower countywide, 4.732x at _10000. The ~1.50x
+headroom argument bounds how much FASTER an implementation can get by improving search; it
+does not bound how much slower one can get by admitting more verification. Implementation
+4 lost on the phase-2 side, about which the headroom figure says nothing.
+
+INCOMPLETE. "Clean in both columns" is untested, because only Option A was run. Lines
+124-126 of this document predict Option B is where the comparison becomes visible in wall
+clock; B6c's inability to resolve either seeder's optimal window is the predicted
+consequence of measuring only in the diluted column. B6c-2 tests it.
+
+NOT FRAMED AT ALL, and the phase's actual contribution. 5-vs-4 has no fixed sign. It moves
+from +11.6 percent at a +/-8 seed window to +0.001 percent at +/-2048, monotone across
+nine points, and is predicted to roughly double under split verification. The seed window
+was treated here as an implementation detail; it is the parameter that determines the
+answer. See Nucleus 18.26 and 18.27.
 
 Do not tune to force a learned win. A negative result, stated in advance and measured
 against an exact baseline, is a result (Nucleus 18.18).
@@ -525,18 +584,291 @@ ON COMPLETION
 
 ---
 
+## PROMPT — B6c-2 · The Option A / Option B cross-product
+
+The B6 prompt above is retained as the historical record. It was answered in three
+chunks — B6a (harness and protocol), B6b (SEED_WINDOW as a build parameter), B6c
+(the ladder and a nine-window sweep) — which together overshot its task list and
+undershot its headline table by one column. B6c-2 closes that column.
+
+```text
+CAPRM-Flood, Milestone 4 chunk B6c-2. Read Nucleus sections 14b, 18.16, 18.18, 18.19,
+18.22, 18.24, 18.25, 18.26 and 18.27; docs/canon/CAPRM_Flood_Current_Status.md sections 2,
+19b and 21 including the B2, B3b, B5c, B6a, B6b and B6c subsections; the B2 and B6 prompts
+in this document. Confirm section 2's commit against `git log -1 --oneline` before
+continuing.
+
+OBJECTIVE
+Measure the Option B column for rungs 4 and 5 and publish the cross-product. This is B6's
+primary deliverable per the B6 prompt above, and the conversation-level prompt that ran
+B6a-B6c restricted the ladder to Option A.
+
+It is not a cosmetic gap. Lines 124-126 of this document state that under Option B the
+verification ceiling lifts and the learned rung's advantage or disadvantage becomes visible
+in WALL CLOCK rather than only in component metrics. B6c measured 5-vs-4 at +6.48 percent
+against cell spreads of 4.6 to 14.2 percent and could not resolve either seeder's optimal
+window. That is the predicted consequence of measuring only in the diluted column.
+
+ALREADY MEASURED — do not re-run
+  rung 3 under both modes, 7 caps, 7 reps + 1 warmup, countywide (B2)
+    cap 25:  checks/property A 9,407.6   sec A 9.596   sec B 1.705   5.63x
+    the 5.63x decomposes as 1.43x fewer checks x 4.21x cheaper per check, because an
+    Option A check is projection plus parity and an Option B check is parity only
+  Option B exactness for rungs 3, 4 and 5 (B3b: 267,362 field agreements, split included)
+  the boundary hazard, closed (B2: minimum nonzero distance 0.002166405818047 m, about
+    1.8e6 times the 1e-9 m snapping band, so no property is classified differently)
+
+RUN
+Rungs 3, 4 and 5 under BOTH verification modes, countywide, W=64, in ONE invocation, so the
+column comparison carries no between-invocation term. B6c measured that term at ~1 percent,
+negligible against a predicted ~5x column effect but not to be left implicit.
+
+Verification mode is a third cell dimension in python/scripts/benchmark_water_ladder.py as
+of B6c-2. The cell key omits `@original`, so B6c's recorded keys stay comparable. Rungs 1
+and 2 have no verification-mode argument and are skipped under `split` with a note; they
+verify over original geometry by construction.
+
+GATING
+Option B output is NOT byte-identical to Option A. B2 measured 8.82e-10 to 9.17e-10 m under
+split against 4.658e-10 under original, so the Option B cells gate on
+compare_python_cpp_water.py at 1e-6 m and these runs ESTABLISH the canonical Option B
+digests. Confirm specifically that no feature_id disagreements appear. If one does, that is
+the most important finding of the chunk; stop and report it rather than proceeding.
+The Option A cells gate on the digests B6c recorded.
+
+PREDICTIONS, DECLARED BEFORE RUNNING (Nucleus 18.12)
+From B2's decomposition — verification work falls ~6.02x while search is untouched —
+applied to B6c's Option A countywide medians:
+
+                        A measured    B predicted
+  segment_bvh              9.1167 s       ~1.62 s
+  hilbert_binary          17.7500 s       ~8.97 s
+  hilbert_rmi             18.9003 s      ~10.12 s
+
+  4 v 3   1.947x slower  ->  ~5.5x slower
+  5 v 4   +6.48%         ->  ~+12.8%
+
+If these hold, two things follow. The cost of dimensionality reduction is currently
+under-reported by ~2.8x, because implementation 4's search overhead is masked by a
+verification cost it shares with implementation 3. And 5-vs-4 becomes resolvable on the
+clock at countywide scale for the first time. If they do not hold, report the discrepancy
+and explain it; do not adjust the prediction afterwards.
+
+Watch the counter, not only the clock: rung 3's segment checks should fall roughly 30
+percent under split, NOT 6x. The 6x is wall clock. Confusing the two is precisely the error
+B2 warned about.
+
+REPORT search and verification as SEPARATE columns, using this document's taxonomy
+  TRAVERSAL      node visits/property and segment box tests/property (rungs 2-3);
+                 seed probes, resolve-descent entries and nodes, range nodes, and the
+                 uncounted 2W window scan (rungs 4-5)
+  VERIFICATION   candidate features/property and segment checks/property
+A segment check is NOT comparable across the two columns. The COLUMN difference is the cost
+of exactness; the ROW difference is index quality.
+
+OPTIONAL, only if the prediction holds
+Repeat the nine-window sweep under Option B at countywide. Under B, search is a large
+fraction of query time, so the window curve and the rmi/binary ratio are both sharpest
+there. About 30 minutes; 18 cells.
+
+ACCEPTANCE
+  six cells complete in one invocation, one output digest per cell, no counter drift
+  three Option A cells reproduce the digests B6c recorded
+  three Option B cells exit 0 against the countywide reference with zero feature_id
+    disagreements, and their digests are recorded as canonical
+  every run's self-reported verification_mode matches the cell that claims it
+  the cross-product published with wall clock beside counts in BOTH columns
+```
+
+---
+
+## PROMPT — B6d · Close out the benchmark
+
+```text
+CAPRM-Flood, Milestone 4 chunk B6d. Read Nucleus 14b and 18.18-18.27,
+docs/canon/CAPRM_Flood_Current_Status.md sections 2, 19b and 21, and
+docs/canon/CAPRM_Flood_Roadmap.md PHASE B. Confirm section 2's commit against
+`git log -1 --oneline`.
+
+B6d writes no new measurements. Every derived number in the benchmark tables is computed by
+python/scripts/analyze_b6_results.py and nowhere else; if an analysis is performed in
+conversation it must land in that script with a test before it is quoted.
+
+INPUTS, all generated
+  outputs/benchmark/water_ladder_runs_{ladder,sweep,b6c2}.csv and .jsonl
+  outputs/validation/water_ladder_summary_{ladder,sweep,b6c2}.json
+  outputs/validation/b6_analysis.json, b6_benchmark_tables.md
+  outputs/validation/b6*_counters*.csv
+  outputs/validation/ladder_summary_*.json  (exactness, every cell)
+
+PRODUCE
+1. The benchmark table as THREE ADJACENT COMPARISONS — 3v2, 4v3, 5v4 — per workload and per
+   verification mode. Never one global 5v3: that confounds the dimensionality reduction
+   with the learning. Wall clock beside counts on every row, n beside every figure, and any
+   comparison whose gap sits inside its cells' range marked NOT RESOLVED rather than
+   printed as though it carried a claim.
+2. Search and verification as separate columns throughout.
+3. The seed-window result. 5-vs-4 has no fixed sign; any statement of it names its window,
+   its verification mode and its workload (Nucleus 18.27).
+4. Inflation as a first-class axis, including that the capped geometric inflation RISES on
+   the near-water _10000 subset (6.92x) against countywide (6.40x) while phase-2 checks
+   FALL 7.4x, and that the 2W window scan is an uncounted additive term whose per-entry
+   cost differs from a resolve-descent entry's by ~7.8x.
+5. Memory: persistent structure, peak resident, peak committed. They disagree in direction
+   and none may be quoted alone.
+6. docs/benchmark_results.md updated, and the three canonical documents updated. Verify
+   README.md does not contradict them.
+
+ACCEPTANCE
+  the cross-product published, both columns, wall clock beside counts
+  no number in any table computed outside analyze_b6_results.py
+  the three canonical documents current, committed, and pushed, with the commit hash
+  recorded in Current Status section 2 in a follow-up commit
+```
+
+---
+
+## PROMPT — B7 · Learned radius (stretch)
+
+```text
+CAPRM-Flood, Milestone 4 chunk B7. STRETCH. Read docs/canon/CAPRM_Flood_Roadmap.md B7 and
+Nucleus 14b, 18.26 and 18.27. Do NOT open this chunk before PHASE C is complete: it depends
+on C's distance-field machinery and competes with C for the same remaining time. The
+Roadmap lists it as not required.
+
+BEFORE ANY IMPLEMENTATION — the literature check
+Learned cost and cardinality estimation is established. Whether a learned RADIUS has been
+applied to EXACT nearest-neighbour search over EXTENDED objects is the open question, and
+it must be answered from primary sources before any novelty claim is written. If it has
+been done, B7 becomes a replication; scope it as one or drop it.
+
+THE DESIGN, if it proceeds
+Predict r_hat; search disk(r_hat + L/2). A candidate at d <= r_hat proves disk(d) was fully
+covered, so d is correct. Nothing found means double r_hat and retry. Overestimating is safe
+and merely slower; underestimating costs a retry. Bias the model to overestimate and it is
+admissible. The exact kernel still decides, and the tie rule does not change.
+
+THE CONSTRAINT B6 IMPOSES
+The seed seam's value is the QUALITY of the region it produces, and a wide-enough window
+makes any seed irrelevant (Nucleus 18.26). A learned radius is the same bet at a different
+seam. It must therefore be compared against a NON-LEARNED radius rule at matched
+configuration, reported as an adjacent comparison, and stated with its window, its
+verification mode and its workload named (Nucleus 18.27). A learned-radius result reported
+at one operating point is one point on a curve.
+
+ACCEPTANCE
+  exact agreement countywide under both verification modes
+  a measured retry rate, not an assumed one
+  a comparison against implementation 5 that isolates the radius model's own contribution
+  rather than the region size it happens to produce
+```
+
+---
+
 ## PROMPTS — C1..C4 · Neural surrogate
 
 Finalize when Phase B outputs exist. Compact briefs, updated for B1:
 
-- **C1 (spatial-block split).** Grid roughly kilometre blocks; assign whole blocks to
-  train/validation/test; record block size, seed, and counts; VERIFY that no test property
-  lies within one block of a training property rather than assuming it. Deliverable: split
-  file plus manifest. Note: `python/caprm/spatial_split.py`,
-  `python/caprm/build_spatial_split.py`, and `tests/test_spatial_split.py` already exist
-  untracked in the working tree and import `scipy.spatial.cKDTree`, which is not installed.
-  Start by reading them rather than rewriting, and land scipy in `requirements.txt` in the
-  same change that commits them.
+C1 · Training data and a spatial-block split
+
+```text
+CAPRM-Flood, Milestone 4 chunk C1. Read Nucleus 14b and 18.25, and 18.18-18.27
+for the defect shape named below; docs/canon/CAPRM_Flood_Current_Status.md
+sections 2, 19b and 21; docs/canon/CAPRM_Flood_Roadmap.md PHASE C. Confirm
+section 2's commit against `git log -1 --oneline`.
+
+PHASE C abandons exactness deliberately. The error is the point. C1 builds no
+model — it builds the dataset and the split, and the split is the whole chunk.
+
+THE DEFECT SHAPE THIS CHUNK IS EXPOSED TO
+  PHASE B spent B6d on one recurring failure: a dimension the code does not know
+  is a dimension. `by_algorithm[row["algorithm"]] = row` kept the last write and
+  silently dropped an entire verification mode; the same shape then appeared for
+  invocation in four more functions. Each time the code produced a plausible
+  number and no error.
+
+  A random train/test split is that shape exactly. Adjacent parcels share a FEMA
+  polygon, sit metres apart on the same DEM cells, and frequently select the same
+  nearest water feature. A random split places near-identical records on both
+  sides and reports memorization as generalization — plausibly, silently, with a
+  good score. The target makes this worse, not better: water carries 65 percent
+  of the index variance and 98.1 percent of properties are tied at the same FEMA
+  component, so the label is dominated by distance-to-water, which is about as
+  spatially autocorrelated as a field gets.
+
+  Therefore: block membership is part of the partition key from the start, not a
+  filter applied afterwards, and the gate is MEASURED rather than asserted.
+
+INPUTS, all generated, none to be modified
+  outputs/index/property_exposure_index_countywide.csv
+      the frozen v2 index. Label column `exposure_index_0_100`, key
+      `property_id`, and every row carries `scoring_policy_version` — assert it
+      reads `preliminary_exposure_index_v2` rather than trusting the path.
+  outputs/validation/property_exposure_index_countywide_manifest.json
+      policy, weights, checksums. Verify the CSV against it before using either.
+  outputs/cpp_input/water_properties_projected_countywide.csv
+      x, y in EPSG:26918. The join to the index is on `property_id` and is NOT
+      assumed to be clean: verify the key matches, verify both sides carry
+      267,362 rows, and report any asymmetry rather than dropping it with an
+      inner join.
+  python/caprm/scoring.py                    read only; scoring stays frozen
+PRODUCE
+1. A supervised dataset: input (x, y) in EPSG:26918, target
+   exposure_index_0_100 at preliminary_exposure_index_v2, 267,362 rows, unique
+   property IDs verified, no nulls. Row count and unique-ID count checked, not
+   assumed. Scoring is frozen at v2 and C1 does not touch it; if a label cannot
+   be produced without changing scoring.py, stop and say so.
+
+2. A spatial-block partition. Whole blocks assigned to train / validation /
+   test. Record block edge length in metres, the RNG seed, the block grid origin,
+   the per-split row counts and the per-split block counts. The block size is a
+   parameter with a defensible justification, not a magic constant — state what
+   spatial correlation length it is chosen against and how that length was
+   estimated from the data rather than assumed.
+
+3. The gate, measured. For every test property, the metric distance to the
+   nearest TRAINING property, and the block-grid Chebyshev separation. Report the
+   minimum, the distribution, and the count of violations. Define "within one
+   block" precisely and in one place; do not let a metric criterion and a grid
+   criterion drift apart. Same for train/validation.
+
+4. A POSITIVE CONTROL for the gate. Nucleus 18.25: a neutrality gate requires a
+   positive control — B6b built seven binaries against source that never
+   referenced the macro and the gate passed on all of them. So: build a random
+   split as well, run the identical gate on it, and confirm the gate FAILS.
+   A gate that passes on both partitions is not measuring anything, and its
+   passing on the block split means nothing until the random split fails it.
+
+5. Both splits persisted, with a manifest: seed, block size, grid origin, row
+   and block counts per split, and a checksum of each assignment file. The random
+   split is kept deliberately — C2 reports the memorization gap between the two,
+   and that number is what the discipline bought.
+
+6. Baseline for C2 to beat, declared NOW, before any model exists. A
+   nearest-training-neighbour predictor: copy the index of the geometrically
+   closest training property. On a target this autocorrelated it will score well,
+   and it is the honest floor. Record its test error under the block split. A
+   surrogate that does not beat it has learned nothing about the function, only
+   about the neighbourhood.
+
+7. All of the above computed in python/caprm/, called from a thin CLI in
+   python/scripts/, with tests. No number reported in conversation is reportable
+   until it lands in the module with a test — the rule
+   analyze_b6_results.py exists to enforce.
+
+ACCEPTANCE
+  267,362 rows, unique IDs verified, no nulls in input or target
+  block size justified against a measured correlation length, not asserted
+  gate measured on the block split and PASSED
+  gate measured on the random split and FAILED  (the positive control)
+  both splits deterministic under a recorded seed, verified by rerun
+  nearest-neighbour baseline error recorded before any model is trained
+  scoring.py unmodified; the v2 index and its manifests unmodified
+  the three canonical documents updated, committed, pushed, hash recorded in
+    Current Status section 2 in a follow-up commit
+```
+
+
 - **C2 (train surrogate).** Small MLP on normalized coordinates, optionally with Fourier
   features. Target the pipeline's own deterministic output — nearest-water distance and/or
   the index — never flood outcomes. Do not replace the scoring layer. Record architecture,
@@ -560,10 +892,22 @@ read this cycle. Writing them in detail now would be speculation.
 
 Two items already queued for **D4 (repository cleanup)** from B1:
 
-- `outputs/validation/*.json` summaries match the `outputs/` ignore rule and were excluded
-  from commit 998c859, so the C++ artifacts of record live outside the repository. Decide
-  the policy deliberately: force-add, add a `.gitignore` exception, or accept that the
-  canonical documents carry the numbers.
-- `docs/CAPRM_Flood_Current_Status.md` section 2 recorded commit `0dd85ab` while the remote
-  had advanced to `b3ec90d`, so at least one commit went unrecorded. The staleness check in
-  the document's own preamble did not catch it because nothing enforces it.
+- **RESOLVED at B6c; policy set.** `outputs/` is ignored wholesale, so the C++ artifacts of
+  record lived outside the repository. The policy is now: force-add the measurement of
+  record and the derived analysis — the ladder and sweep runs CSVs and JSONL (0.63 MB
+  total), the summary JSONs, the counter CSVs, `b6_analysis.json` and
+  `b6_benchmark_tables.md` — and keep out `outputs/benchmark/ladder_work/` (1.056 GB of
+  regenerable per-cell CSVs) and the per-property agreement details. Anything a number in
+  the canonical documents rests on is tracked; anything regenerable from it is not.
+- **RECURRED, and is the reason the staleness check exists.** Current Status section 2 read
+  `0dd85ab` while the remote was at `b3ec90d` after B1. It happened again at B5c: section 2
+  read `f2e2e00` with "B5c pending" while HEAD was `86ff32b`, and it also had B2 at the
+  wrong commit. Nothing enforces the check, so the mitigation is procedural and lives in
+  the recommended first prompt: a new assistant diffs section 2 against
+  `git log -1 --oneline` and says so before trusting anything else in the document. A
+  pre-commit check is the real fix and is still unwritten.
+- **NEW from B6c.** Two files carry a figure the ladder does not use. B1's 9,716.87 checks
+  per property is its cap=100 measurement; the ladder runs at cap=25, where the value is
+  9,407.6. Corrected in this document; verify `tests/test_ladder_benchmark.py`'s
+  `SEGMENT_BVH_STDOUT` fixture and `docs/benchmark_results.md` before the report is
+  written.

@@ -2220,6 +2220,10 @@ Library modules:
 
 ```text
 python/caprm/audit.py            Product structure and provenance auditing
+python/caprm/chart_style.py      Presentation chart house style, measured from
+                                 the existing slides (Milestone 4 C3)
+python/caprm/error_analysis.py   Residual structure, boundary proxy, competing
+                                 explanations, cluster bootstrap (Milestone 4 C3)
 python/caprm/rmi.py              Recursive model index: fit, exhaustive bound,
                                  domain bound, serialization (Milestone 4 B4)
 python/caprm/baseline.py         FEMA point-in-polygon reference
@@ -2455,11 +2459,21 @@ As of July 28, 2026:
   sensitive. The suite passed at 181 tests then and passes at 257 now, the
   growth being Milestone 4's own tests.
 - **Milestone 4 is index structure and learned approximation.** See section
-  14b. It adds no evidence family. PHASE B chunks B1 through B5 are complete
-  and validated countywide: the five-rung ladder is built and every rung that
-  claims exactness has been shown to produce byte-identical evidence. The
-  learned rung is measured SLOWER than its control, for a reason recorded in
-  18.22, and the benchmark that reports it is B6.
+  14b. It adds no evidence family. PHASE B is COMPLETE and validated
+  countywide: the five-rung ladder is built, every rung that claims exactness
+  has been shown to produce byte-identical evidence, and B6 delivered the
+  phase's finding — the reported benefit of a learned spatial index depends on
+  parameters this literature holds fixed and does not report, and the sign of
+  the headline comparison crosses when one of them moves (18.27, 18.30).
+- **PHASE C is the neural surrogate, and its results are negative and
+  measured.** C1 built a blocked K-fold partition with a declared floor; C2
+  trained under it and under a random control and did not beat that floor,
+  finding instead that the partition choice REVERSES the method ranking
+  (18.36) and that RMSE alone cannot distinguish learning from collapse
+  (18.37); C3 tested the prediction declared before C2 trained and REFUTED it
+  as a spatial claim while confirming its mechanism, establishing that a
+  residual curve cannot distinguish a local artifact from a flat prediction
+  (18.38). C4 benchmarks and documents the surrogate.
 - **Precipitation is a gated stretch goal**, permitted only after the Milestone 4
   computational work is complete and documented. See section 14b.
 - The exposure index is frozen as-is and remains preliminary. It is no longer
@@ -2556,3 +2570,121 @@ imposes on extended objects, isolates the contribution of learning from the
 contribution of dimensionality reduction using a binary-search control, and
 verifies exactness field-by-field against an independent implementation rather
 than assuming it. Precipitation remains a gated stretch goal behind that depth.
+
+## 18.36 A partition choice can reverse which method wins, not merely inflate both
+
+C2 trained a coordinate surrogate under the C1 blocked partition and under the
+random control, through one code path, and compared each against the
+nearest-training-neighbour predictor C1 had declared as the floor before any
+model existed.
+
+```text
+random split     neighbour R^2  0.859           surrogate R^2  0.320 … 0.337
+blocked split    neighbour R^2 -0.542 … -0.147  surrogate R^2 -0.456 … 0.128
+```
+
+Under random splitting the trivial predictor wins by a wide margin. Under
+blocked splitting the ordering inverts on four of five seeds. The received
+caution about spatially autocorrelated holdouts is that scores come out
+optimistic. The stronger and less often stated fact is that the RANKING is not
+preserved: a study that selects a method on a random split has not merely
+overstated that method's accuracy, it may have selected the wrong method.
+
+This is 18.30's sign crossing in a different experiment with a different
+mechanism, which is why it is recorded separately. There, an unreported
+parameter moved the sign of a benchmark comparison. Here, an unreported
+evaluation protocol moves the sign of a method comparison.
+
+The variance is understated by more than the mean is. Blocked aggregate RMSE
+spans 3.76 points across the five seeds; the random control spans 0.14. A single
+random-split figure therefore looks both better and roughly twenty-six times
+more reproducible than the quantity it estimates.
+
+## 18.37 RMSE cannot distinguish a model that learned from one that gave up
+
+On a holdout whose labels are spatially non-stationary, a predictor that emits a
+constant scores the holdout standard deviation, and that can beat a
+neighbourhood-copying predictor outright. C1's declared floor carries negative
+R^2 on every seed, which means the floor is cleared by predicting a constant.
+Clearing it is therefore not evidence of learning, and a claim built on clearing
+it is a claim about arithmetic rather than about a model.
+
+Two models with the same RMSE are not the same model. The statistic that
+separates them is the ratio of prediction variance to label variance. C2
+measured 0.152 … 0.341 blocked and 0.413 … 0.432 random: the surrogate emits
+real spatial variation that is misplaced at distance, rather than collapsing
+toward the mean. Reported without that ratio, the two readings would have been
+indistinguishable, and the weaker one is the one a reader assumes.
+
+Corollary for baselines: report the rung BELOW the one being claimed. A floor
+that a constant clears is a floor whose passing means nothing, and the cheapest
+way to find out is to score the constant on identical rows through identical
+aggregation — in C2's case, each fold's own training mean, carried through the
+same union-of-folds aggregate as the model itself.
+
+Corollary observed rather than designed: under the random split the constant
+rung's RMSE equalled the label standard deviation to three decimals on every
+seed, which is what it must do when training and test means coincide. A control
+that reproduces a known identity for free is worth keeping.
+
+## 18.38 A residual curve cannot tell a local artifact from a flat prediction
+
+Reason:
+
+C3 predicted that surrogate residuals would spike along FEMA zone boundaries,
+because a smooth network can approximate a step only with a ramp. Binned against
+distance to the nearest property carrying a different FEMA component, the
+blocked residual curve is a U: 12.47 index points inside 25 m, 8.10 at 200 to
+400 m, 18.26 beyond 3,200 m. Read alone, the near arm confirms the prediction.
+
+It does not. Across the same nine bins the label's mean sweeps 25.73 points
+while the PREDICTION's mean sweeps 3.17 — a recovery ratio of 0.123. The model
+emits a nearly flat field, and a flat prediction produces a rising residual at
+BOTH extremes of any variable correlated with the label. Distance to a boundary
+is such a variable, because boundaries sit near water. The U is a property of
+the sort, not of the boundary.
+
+The general shape: **a residual is a difference, and a difference cannot say
+which of its two terms moved.** Every statistic computed from the residual alone
+— mean, absolute mean, RMSE, the signed and absolute pair, the whole binned
+table — is invariant to that distinction. The separating statistic is the
+prediction's own conditional mean placed beside the label's, and it costs one
+column.
+
+This is 18.37 in a second place. There, RMSE could not separate a model that
+learned from one that collapsed, and prediction variance over label variance
+did. Here, a residual curve cannot separate a local artifact from a global
+shortfall, and predicted span over label span does. Both times the fix is the
+same in kind: report the prediction's own distribution, not only its error.
+
+Where the error actually was, since the mechanism was real even though the
+spatial reading was not: 1.9 percent of test rows — the properties FEMA places
+outside the majority component — carry 18.5 percent of squared error under
+blocking and 30.2 percent under the random control, and 100.00 percent of them
+are under-predicted, without a single exception across 10,897 and 3,784 rows.
+The discontinuity is unrepresentable exactly as predicted. It is a property of a
+POPULATION, not of a NEIGHBOURHOOD, and those are different claims that the same
+residual spike is consistent with.
+
+Corollary on directional predictions. C3's decision rule required the boundary
+candidate to carry the predicted SIGN, not merely a large magnitude. The blocked
+partition scored rho = +0.112 — error GROWING with distance from a boundary,
+the opposite of the claim — which a magnitude-only rule would have counted as
+support. A prediction that does not state its sign cannot be refuted by the data
+that contradicts it.
+
+Corollary on the ramp's symmetry. The chunk brief anticipated that a ramp across
+a step gives a mean signed residual near zero beside a spiking absolute one, and
+that a signed-only analysis would therefore miss the effect. It does not hold
+here. Because the high class is 1.9 percent of the workload, the ramp is pulled
+to the majority level everywhere and every minority property is under-predicted,
+so mean signed is approximately minus mean absolute. The symmetric case is the
+one where both sides of the step are comparably populated. State the population
+balance before predicting the residual's symmetry.
+
+Corollary on competitor rankings. A candidate with no spread cannot rank, and a
+ranking table that omits spread invites a misreading. C3's blocked test set is
+at least 2,125 m from training by construction, so distance-to-nearest-training
+is range-compressed there and range-free under the random control; its rank
+difference between the two partitions is partly an artifact of that rather than
+a fact about either. Report each candidate's quantiles beside its correlation.
