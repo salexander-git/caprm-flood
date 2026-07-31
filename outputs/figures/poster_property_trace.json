@@ -1,0 +1,64 @@
+{
+  "property_id": "0870400001030000SPEN",
+  "coordinates": {
+    "x_m": 275477.13119962695,
+    "y_m": 4785231.713095873,
+    "crs": "EPSG:26918"
+  },
+  "components": [
+    {
+      "component": "fema",
+      "label": "FEMA flood zone",
+      "evidence": {
+        "fema_zone": "A",
+        "is_sfha": "True",
+        "matched_fema_polygon": "True",
+        "source_geometry_id": "36055C_16614"
+      },
+      "score_0_100": 90.0,
+      "weight": 0.4,
+      "contribution": 36.0
+    },
+    {
+      "component": "water",
+      "label": "Distance to water",
+      "evidence": {
+        "nearest_water_distance_m": 4.581480691652,
+        "nearest_water_name": "Larkin Creek",
+        "nearest_water_source_id": "7AGPW"
+      },
+      "score_0_100": 99.608396107151,
+      "weight": 0.35,
+      "contribution": 34.86293863750284
+    },
+    {
+      "component": "terrain_absolute",
+      "label": "Elevation",
+      "evidence": {
+        "terrain_elevation_m": 159.770690917969
+      },
+      "score_0_100": 31.651842819847,
+      "weight": 0.15,
+      "contribution": 4.74777642297705
+    },
+    {
+      "component": "terrain_relative",
+      "label": "Relative elevation",
+      "evidence": {
+        "terrain_relative_elevation_m": 3.19728434514
+      },
+      "score_0_100": 1.436254965178,
+      "weight": 0.1,
+      "contribution": 0.14362549651780002
+    }
+  ],
+  "exposure_index_0_100": 75.754340557,
+  "exposure_percentile": 98.631069486314,
+  "scoring_policy_version": "preliminary_exposure_index_v2",
+  "composite_check": {
+    "recomputed": 75.7543405569977,
+    "stored": 75.754340557,
+    "abs_difference": 2.3021584638627246e-12,
+    "tolerance": 1e-06
+  }
+}

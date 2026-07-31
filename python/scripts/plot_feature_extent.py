@@ -143,6 +143,15 @@ def main() -> int:
             f"{located[name] / positive.mean():>7,.1f}x the mean"
         )
 
+    largest = features.nlargest(12, "bbox_diagonal_m")
+    print("\nTwelve largest features by bounding-box diagonal:")
+    for _, feature in largest.iterrows():
+        name = feature["source_name"]
+        name = "(no source_name)" if pd.isna(name) or not str(name).strip() else str(name)
+        print(
+            f"  {feature['bbox_diagonal_m']:>12,.1f} m   {feature['layer']:<12} {name}"
+        )
+
     if BOX_FEATURE not in located:
         raise SystemExit(f"cannot draw the box: {BOX_FEATURE!r} not found in source_name")
     box_rows = find_named(features, BOX_FEATURE)
@@ -201,7 +210,8 @@ def main() -> int:
                 (minx, miny), maxx - minx, maxy - miny,
                 facecolor=style.ACCENT, alpha=0.16,
                 edgecolor=style.ACCENT, linewidth=style.LINEWIDTH_DASHED,
-                dashes=style.DASHES,
+                # Patch wants a linestyle tuple; `dashes` is a Line2D keyword.
+                linestyle=(0, style.DASHES),
             )
         )
         pad = 0.04 * max(maxx - minx, maxy - miny)
