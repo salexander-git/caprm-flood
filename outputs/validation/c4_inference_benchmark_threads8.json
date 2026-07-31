@@ -1,0 +1,1249 @@
+{
+  "task": "C4_item1_surrogate_inference_cost",
+  "schema_version": "c4_inference_v1",
+  "tool_version": "caprm.c4_benchmark/c4.0",
+  "generated_utc": "2026-07-31T00:45:39.766368+00:00",
+  "randomness": "none used in this section; no seed to record",
+  "environment": {
+    "python_version": "3.14.0 (tags/v3.14.0:ebf955d, Oct  7 2025, 10:15:03) [MSC v.1944 64 bit (AMD64)]",
+    "python_implementation": "CPython",
+    "numpy_version": "2.4.6",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "machine": "AMD64",
+    "processor_string": "AMD64 Family 25 Model 97 Stepping 2, AuthenticAMD",
+    "processor_identifier_env": "AMD64 Family 25 Model 97 Stepping 2, AuthenticAMD",
+    "logical_cores_os_cpu_count": 16,
+    "operator_declared": {
+      "cpu_name": "AMD Ryzen 7 7700X 8-Core Processor",
+      "physical_cores": 8,
+      "source": "operator-declared, not read by this process"
+    },
+    "blas": {
+      "name": "scipy-openblas",
+      "version": "0.3.31.188.0",
+      "openblas_configuration": "OpenBLAS 0.3.31.188.0  USE64BITINT DYNAMIC_ARCH NO_AFFINITY SkylakeX MAX_THREADS=24"
+    },
+    "thread_environment": {
+      "OPENBLAS_NUM_THREADS": "8",
+      "OMP_NUM_THREADS": "8",
+      "MKL_NUM_THREADS": "8",
+      "NUMEXPR_NUM_THREADS": "8"
+    },
+    "thread_environment_note": "Set before numpy import by the CLI preamble. A null value means OpenBLAS selected a thread count that this process did not record."
+  },
+  "inputs": {
+    "dataset": "outputs/training/supervised_dataset_v2.csv",
+    "dataset_sha256": "2e3132faf5ce2dc0f31bd4d7ff40041171f4f68d99e91b5a5c2f350151ba7799",
+    "n_properties": 267362,
+    "surrogate_manifest": "outputs/validation/c2_surrogate_manifest.json",
+    "surrogate_manifest_sha256": "33f3801b51b3092ca8398e6d4d942cbee9e24864c2a58c93bc9ef41483218366",
+    "models_verified": 30,
+    "timed_model_label": "blocked_kfold_seed20260722_fold0"
+  },
+  "architecture": {
+    "n_models": 30,
+    "layer_shapes": [
+      [
+        130,
+        128
+      ],
+      [
+        128,
+        128
+      ],
+      [
+        128,
+        1
+      ]
+    ],
+    "n_mlp_parameters": 33409,
+    "n_stored_values": 33537,
+    "identical_across_models": true,
+    "licenses": "inference cost is architecture-determined, so one model may be timed for the set; accuracy is not, and is reported per seed"
+  },
+  "batch_sweep": [
+    {
+      "batch_label": "1",
+      "batch_size": 1,
+      "is_full_array": false,
+      "n_properties": 267362,
+      "n_batches": 267362,
+      "timing": {
+        "n_warmup": 1,
+        "n_repeat": 11,
+        "seconds": [
+          4.794180400000187,
+          4.710946100007277,
+          4.801912100010668,
+          4.731330900001922,
+          4.7535769999958575,
+          4.714112799993018,
+          4.727497500003665,
+          4.7467130000004545,
+          4.767838700005086,
+          4.718420300006983,
+          4.762541499992949
+        ],
+        "median_s": 4.7467130000004545,
+        "min_s": 4.710946100007277,
+        "max_s": 4.801912100010668,
+        "mean_s": 4.748097300001643,
+        "stdev_s": 0.03125913010776187,
+        "relative_spread": 0.01916399832966144
+      },
+      "properties_per_second_median": 56325.71423635143,
+      "properties_per_second_fastest": 56753.35576426718,
+      "microseconds_per_property_median": 17.753880506580796,
+      "microseconds_per_property_fastest": 17.620103455267678
+    },
+    {
+      "batch_label": "64",
+      "batch_size": 64,
+      "is_full_array": false,
+      "n_properties": 267362,
+      "n_batches": 4178,
+      "timing": {
+        "n_warmup": 1,
+        "n_repeat": 11,
+        "seconds": [
+          0.7373495000065304,
+          0.7642861999920569,
+          0.7395130999939283,
+          0.6884411000064574,
+          0.7054107000003569,
+          0.6958005000051344,
+          0.6828684999927646,
+          0.6863819999998668,
+          0.6891286000027321,
+          0.6942820999975083,
+          0.6917134999966947
+        ],
+        "median_s": 0.6942820999975083,
+        "min_s": 0.6828684999927646,
+        "max_s": 0.7642861999920569,
+        "mean_s": 0.706834163635821,
+        "stdev_s": 0.027302431528310148,
+        "relative_spread": 0.11726890265438872
+      },
+      "properties_per_second_median": 385091.30510632426,
+      "properties_per_second_fastest": 391527.79781587946,
+      "microseconds_per_property_median": 2.5967867535308247,
+      "microseconds_per_property_fastest": 2.554097066871001
+    },
+    {
+      "batch_label": "4096",
+      "batch_size": 4096,
+      "is_full_array": false,
+      "n_properties": 267362,
+      "n_batches": 66,
+      "timing": {
+        "n_warmup": 1,
+        "n_repeat": 11,
+        "seconds": [
+          0.5381105999986175,
+          0.5353561999945669,
+          0.5370000999973854,
+          0.5300608999968972,
+          0.5329200999985915,
+          0.529518299998017,
+          0.5347383000043919,
+          0.5351074000063818,
+          0.5395843000005698,
+          0.5607882000040263,
+          0.5737440000084462
+        ],
+        "median_s": 0.5353561999945669,
+        "min_s": 0.529518299998017,
+        "max_s": 0.5737440000084462,
+        "mean_s": 0.540629854546172,
+        "stdev_s": 0.013824433364446337,
+        "relative_spread": 0.0826098586527586
+      },
+      "properties_per_second_median": 499409.5520005435,
+      "properties_per_second_fastest": 504915.5052828226,
+      "microseconds_per_property_median": 2.0023645843259956,
+      "microseconds_per_property_fastest": 1.9805293945961544
+    },
+    {
+      "batch_label": "65536",
+      "batch_size": 65536,
+      "is_full_array": false,
+      "n_properties": 267362,
+      "n_batches": 5,
+      "timing": {
+        "n_warmup": 1,
+        "n_repeat": 11,
+        "seconds": [
+          0.5480433999910019,
+          0.5446030000020983,
+          0.5435908000072232,
+          0.5385535000095842,
+          0.5290103000006638,
+          0.5265954000060447,
+          0.5280933999893023,
+          0.5269163000048138,
+          0.5284286999958567,
+          0.5288694000046235,
+          0.5304227999877185
+        ],
+        "median_s": 0.5290103000006638,
+        "min_s": 0.5265954000060447,
+        "max_s": 0.5480433999910019,
+        "mean_s": 0.5339206363635391,
+        "stdev_s": 0.008107033683484451,
+        "relative_spread": 0.04054363399905515
+      },
+      "properties_per_second_median": 505400.36744022655,
+      "properties_per_second_fastest": 507718.06969246414,
+      "microseconds_per_property_median": 1.978629348975037,
+      "microseconds_per_property_fastest": 1.9695970257779514
+    },
+    {
+      "batch_label": "full",
+      "batch_size": 267362,
+      "is_full_array": true,
+      "n_properties": 267362,
+      "n_batches": 1,
+      "timing": {
+        "n_warmup": 1,
+        "n_repeat": 11,
+        "seconds": [
+          0.5249266000028001,
+          0.5244151000079,
+          0.5255180999956792,
+          0.5300811000051908,
+          0.5264353000093251,
+          0.5255267999891657,
+          0.526129600009881,
+          0.5253525000007357,
+          0.539369699996314,
+          0.5271231000078842,
+          0.5315819999959785
+        ],
+        "median_s": 0.526129600009881,
+        "min_s": 0.5244151000079,
+        "max_s": 0.539369699996314,
+        "mean_s": 0.5278599909109868,
+        "stdev_s": 0.004410384163099919,
+        "relative_spread": 0.028423795179235534
+      },
+      "properties_per_second_median": 508167.56934979296,
+      "properties_per_second_fastest": 509828.95037914114,
+      "microseconds_per_property_median": 1.9678548185975604,
+      "microseconds_per_property_fastest": 1.9614421645854685
+    }
+  ],
+  "batch_agreement": {
+    "reference_batch": "full",
+    "tolerance_index_points": 3.87e-06,
+    "tolerance_provenance": "C2 measured this between batches of 37 and 10,000; its use across a wider batch range is an extrapolation",
+    "max_abs_deviation_index_points": 1.8654153109309846e-05,
+    "all_within_tolerance": false,
+    "per_batch": {
+      "1": {
+        "max_abs_deviation": 1.8654153109309846e-05,
+        "within_tolerance": false
+      },
+      "64": {
+        "max_abs_deviation": 7.77256378370339e-07,
+        "within_tolerance": true
+      },
+      "4096": {
+        "max_abs_deviation": 7.77256378370339e-07,
+        "within_tolerance": true
+      },
+      "65536": {
+        "max_abs_deviation": 7.772563819230527e-07,
+        "within_tolerance": true
+      },
+      "full": {
+        "max_abs_deviation": 0.0,
+        "within_tolerance": true
+      }
+    }
+  },
+  "stage_split": {
+    "batch_label": "65536",
+    "batch_size": 65536,
+    "n_properties": 267362,
+    "fourier_encoding": {
+      "n_warmup": 1,
+      "n_repeat": 11,
+      "seconds": [
+        0.39303880000079516,
+        0.3942640000022948,
+        0.4014537000039127,
+        0.39848150000034366,
+        0.39634490000025835,
+        0.3931109999975888,
+        0.3945317000034265,
+        0.39558240000042133,
+        0.39380329998675734,
+        0.39253709999320563,
+        0.3955046999908518
+      ],
+      "median_s": 0.3945317000034265,
+      "min_s": 0.39253709999320563,
+      "max_s": 0.4014537000039127,
+      "mean_s": 0.3953320999981687,
+      "stdev_s": 0.0026577086755849005,
+      "relative_spread": 0.022600465338094764
+    },
+    "mlp_forward": {
+      "n_warmup": 1,
+      "n_repeat": 11,
+      "seconds": [
+        0.12901880001300015,
+        0.1310854999901494,
+        0.13026239999453537,
+        0.12965170000097714,
+        0.1283426000009058,
+        0.12934169999789447,
+        0.12929860000440385,
+        0.13066180000896566,
+        0.12996999999450054,
+        0.13131380001141224,
+        0.12697500000649597
+      ],
+      "median_s": 0.12965170000097714,
+      "min_s": 0.12697500000649597,
+      "max_s": 0.13131380001141224,
+      "mean_s": 0.1296292636384764,
+      "stdev_s": 0.0012572669020027565,
+      "relative_spread": 0.03346504523182932
+    },
+    "full_predict": {
+      "n_warmup": 1,
+      "n_repeat": 11,
+      "seconds": [
+        0.5253365999960806,
+        0.532212599995546,
+        0.5394554000085918,
+        0.5471974999964004,
+        0.5543076999892946,
+        0.574615299992729,
+        0.545098099988536,
+        0.5529145999898901,
+        0.5762325000105193,
+        0.5584891000034986,
+        0.5485212999919895
+      ],
+      "median_s": 0.5485212999919895,
+      "min_s": 0.5253365999960806,
+      "max_s": 0.5762325000105193,
+      "mean_s": 0.5503982454511888,
+      "stdev_s": 0.01568872563092904,
+      "relative_spread": 0.09278746334040618
+    },
+    "fourier_microseconds_per_property": 1.475646127734781,
+    "mlp_microseconds_per_property": 0.4849294215370065,
+    "full_microseconds_per_property": 2.05160531411341,
+    "fourier_over_mlp_ratio": 3.04301216258987,
+    "sum_of_parts_s": 0.5241834000044037,
+    "full_predict_s": 0.5485212999919895,
+    "parts_minus_whole_s": -0.024337899987585843,
+    "parts_minus_whole_fraction_of_whole": -0.04437001806117879,
+    "decomposition_is_not_additive": "Timed in isolation, encoding loses the allocator reuse it gets inside predict and is overstated; forward runs on resident blocks and is understated. Read the ratio, not a share of the total.",
+    "feature_matrix_bytes": 139028240,
+    "feature_dtype": "float32",
+    "encoding_dtype_note": "fourier_features computes in float64 and casts once at the end; the MLP runs in float32, so this split is partly a dtype comparison"
+  },
+  "model_size": {
+    "one_model": {
+      "path": "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\models\\c2_surrogate_blocked_kfold_seed20260722_fold0.npz",
+      "disk_bytes": 153006,
+      "memory_bytes": 134660,
+      "disk_to_memory_ratio": 1.13623941779296,
+      "n_mlp_parameters": 33409,
+      "n_stored_values": 33537,
+      "arrays": [
+        {
+          "name": "frequencies",
+          "shape": [
+            2,
+            64
+          ],
+          "dtype": "float64",
+          "bytes": 1024,
+          "values": 128
+        },
+        {
+          "name": "W0",
+          "shape": [
+            130,
+            128
+          ],
+          "dtype": "float32",
+          "bytes": 66560,
+          "values": 16640
+        },
+        {
+          "name": "b0",
+          "shape": [
+            128
+          ],
+          "dtype": "float32",
+          "bytes": 512,
+          "values": 128
+        },
+        {
+          "name": "W1",
+          "shape": [
+            128,
+            128
+          ],
+          "dtype": "float32",
+          "bytes": 65536,
+          "values": 16384
+        },
+        {
+          "name": "b1",
+          "shape": [
+            128
+          ],
+          "dtype": "float32",
+          "bytes": 512,
+          "values": 128
+        },
+        {
+          "name": "W2",
+          "shape": [
+            128,
+            1
+          ],
+          "dtype": "float32",
+          "bytes": 512,
+          "values": 128
+        },
+        {
+          "name": "b2",
+          "shape": [
+            1
+          ],
+          "dtype": "float32",
+          "bytes": 4,
+          "values": 1
+        }
+      ]
+    },
+    "model_set": {
+      "n_models": 30,
+      "why_thirty": "the C2 protocol fits one model per fold per seed",
+      "disk_bytes_total": 4569532,
+      "memory_bytes_total": 4039800
+    },
+    "models": [
+      {
+        "label": "blocked_kfold_seed20260722_fold0",
+        "partition": "blocked_kfold",
+        "seed": 20260722,
+        "fold": 0,
+        "path": "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\models\\c2_surrogate_blocked_kfold_seed20260722_fold0.npz",
+        "expected_weights_sha256": "3a3f7e86d8bceca5217b4797543bcd6f2654a8b260b37810aba7315f360d6d31",
+        "observed_weights_sha256": "3a3f7e86d8bceca5217b4797543bcd6f2654a8b260b37810aba7315f360d6d31",
+        "n_mlp_parameters": 33409,
+        "n_stored_values": 33537,
+        "layer_shapes": [
+          [
+            130,
+            128
+          ],
+          [
+            128,
+            128
+          ],
+          [
+            128,
+            1
+          ]
+        ],
+        "disk_bytes": 153006,
+        "memory_bytes": 134660
+      },
+      {
+        "label": "blocked_kfold_seed20260722_fold1",
+        "partition": "blocked_kfold",
+        "seed": 20260722,
+        "fold": 1,
+        "path": "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\models\\c2_surrogate_blocked_kfold_seed20260722_fold1.npz",
+        "expected_weights_sha256": "8d58d86439f249ff73ec481fe56c037671ffe0c7b3b5df15414795ef029e4426",
+        "observed_weights_sha256": "8d58d86439f249ff73ec481fe56c037671ffe0c7b3b5df15414795ef029e4426",
+        "n_mlp_parameters": 33409,
+        "n_stored_values": 33537,
+        "layer_shapes": [
+          [
+            130,
+            128
+          ],
+          [
+            128,
+            128
+          ],
+          [
+            128,
+            1
+          ]
+        ],
+        "disk_bytes": 152746,
+        "memory_bytes": 134660
+      },
+      {
+        "label": "blocked_kfold_seed20260722_fold2",
+        "partition": "blocked_kfold",
+        "seed": 20260722,
+        "fold": 2,
+        "path": "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\models\\c2_surrogate_blocked_kfold_seed20260722_fold2.npz",
+        "expected_weights_sha256": "793f73443490bdda8e5964801a296ed70fa177273f7ff8c4d403fc279ec71dbf",
+        "observed_weights_sha256": "793f73443490bdda8e5964801a296ed70fa177273f7ff8c4d403fc279ec71dbf",
+        "n_mlp_parameters": 33409,
+        "n_stored_values": 33537,
+        "layer_shapes": [
+          [
+            130,
+            128
+          ],
+          [
+            128,
+            128
+          ],
+          [
+            128,
+            1
+          ]
+        ],
+        "disk_bytes": 150430,
+        "memory_bytes": 134660
+      },
+      {
+        "label": "blocked_kfold_seed20260722_fold3",
+        "partition": "blocked_kfold",
+        "seed": 20260722,
+        "fold": 3,
+        "path": "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\models\\c2_surrogate_blocked_kfold_seed20260722_fold3.npz",
+        "expected_weights_sha256": "c379ae2386d3815f2ac121fb5723c7d6164cebb0faa2f742ec6382b0e8a2bd34",
+        "observed_weights_sha256": "c379ae2386d3815f2ac121fb5723c7d6164cebb0faa2f742ec6382b0e8a2bd34",
+        "n_mlp_parameters": 33409,
+        "n_stored_values": 33537,
+        "layer_shapes": [
+          [
+            130,
+            128
+          ],
+          [
+            128,
+            128
+          ],
+          [
+            128,
+            1
+          ]
+        ],
+        "disk_bytes": 152442,
+        "memory_bytes": 134660
+      },
+      {
+        "label": "blocked_kfold_seed20260722_fold4",
+        "partition": "blocked_kfold",
+        "seed": 20260722,
+        "fold": 4,
+        "path": "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\models\\c2_surrogate_blocked_kfold_seed20260722_fold4.npz",
+        "expected_weights_sha256": "792269e78d01dc67d64b9fdf8e1a02cc39e1671ac19017f421b760db1c03a7ef",
+        "observed_weights_sha256": "792269e78d01dc67d64b9fdf8e1a02cc39e1671ac19017f421b760db1c03a7ef",
+        "n_mlp_parameters": 33409,
+        "n_stored_values": 33537,
+        "layer_shapes": [
+          [
+            130,
+            128
+          ],
+          [
+            128,
+            128
+          ],
+          [
+            128,
+            1
+          ]
+        ],
+        "disk_bytes": 153006,
+        "memory_bytes": 134660
+      },
+      {
+        "label": "blocked_kfold_seed20260723_fold0",
+        "partition": "blocked_kfold",
+        "seed": 20260723,
+        "fold": 0,
+        "path": "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\models\\c2_surrogate_blocked_kfold_seed20260723_fold0.npz",
+        "expected_weights_sha256": "51d501f47ae6b8ccd08dfd7a63955fbcbfd0fcf028dc493b4cf0e9579bcc87b2",
+        "observed_weights_sha256": "51d501f47ae6b8ccd08dfd7a63955fbcbfd0fcf028dc493b4cf0e9579bcc87b2",
+        "n_mlp_parameters": 33409,
+        "n_stored_values": 33537,
+        "layer_shapes": [
+          [
+            130,
+            128
+          ],
+          [
+            128,
+            128
+          ],
+          [
+            128,
+            1
+          ]
+        ],
+        "disk_bytes": 154766,
+        "memory_bytes": 134660
+      },
+      {
+        "label": "blocked_kfold_seed20260723_fold1",
+        "partition": "blocked_kfold",
+        "seed": 20260723,
+        "fold": 1,
+        "path": "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\models\\c2_surrogate_blocked_kfold_seed20260723_fold1.npz",
+        "expected_weights_sha256": "17b8e40ce9db7156e33a840d8d179399ad94e88d0789a6c625b77562efe212a6",
+        "observed_weights_sha256": "17b8e40ce9db7156e33a840d8d179399ad94e88d0789a6c625b77562efe212a6",
+        "n_mlp_parameters": 33409,
+        "n_stored_values": 33537,
+        "layer_shapes": [
+          [
+            130,
+            128
+          ],
+          [
+            128,
+            128
+          ],
+          [
+            128,
+            1
+          ]
+        ],
+        "disk_bytes": 150514,
+        "memory_bytes": 134660
+      },
+      {
+        "label": "blocked_kfold_seed20260723_fold2",
+        "partition": "blocked_kfold",
+        "seed": 20260723,
+        "fold": 2,
+        "path": "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\models\\c2_surrogate_blocked_kfold_seed20260723_fold2.npz",
+        "expected_weights_sha256": "59f42d64ad5406d2d23c2ba1fb9542bad6c554e449b874cec85e33301424d71c",
+        "observed_weights_sha256": "59f42d64ad5406d2d23c2ba1fb9542bad6c554e449b874cec85e33301424d71c",
+        "n_mlp_parameters": 33409,
+        "n_stored_values": 33537,
+        "layer_shapes": [
+          [
+            130,
+            128
+          ],
+          [
+            128,
+            128
+          ],
+          [
+            128,
+            1
+          ]
+        ],
+        "disk_bytes": 152246,
+        "memory_bytes": 134660
+      },
+      {
+        "label": "blocked_kfold_seed20260723_fold3",
+        "partition": "blocked_kfold",
+        "seed": 20260723,
+        "fold": 3,
+        "path": "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\models\\c2_surrogate_blocked_kfold_seed20260723_fold3.npz",
+        "expected_weights_sha256": "d241d61e57b40e70597e1a000f8c96e3d6cc75a6102ef426e9c6a4c07c9b4c44",
+        "observed_weights_sha256": "d241d61e57b40e70597e1a000f8c96e3d6cc75a6102ef426e9c6a4c07c9b4c44",
+        "n_mlp_parameters": 33409,
+        "n_stored_values": 33537,
+        "layer_shapes": [
+          [
+            130,
+            128
+          ],
+          [
+            128,
+            128
+          ],
+          [
+            128,
+            1
+          ]
+        ],
+        "disk_bytes": 148690,
+        "memory_bytes": 134660
+      },
+      {
+        "label": "blocked_kfold_seed20260723_fold4",
+        "partition": "blocked_kfold",
+        "seed": 20260723,
+        "fold": 4,
+        "path": "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\models\\c2_surrogate_blocked_kfold_seed20260723_fold4.npz",
+        "expected_weights_sha256": "eab02b82df762693870c7cf077093fedd6eca469cb400cc1fc9cb043a0fcb86a",
+        "observed_weights_sha256": "eab02b82df762693870c7cf077093fedd6eca469cb400cc1fc9cb043a0fcb86a",
+        "n_mlp_parameters": 33409,
+        "n_stored_values": 33537,
+        "layer_shapes": [
+          [
+            130,
+            128
+          ],
+          [
+            128,
+            128
+          ],
+          [
+            128,
+            1
+          ]
+        ],
+        "disk_bytes": 150734,
+        "memory_bytes": 134660
+      },
+      {
+        "label": "blocked_kfold_seed20260724_fold0",
+        "partition": "blocked_kfold",
+        "seed": 20260724,
+        "fold": 0,
+        "path": "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\models\\c2_surrogate_blocked_kfold_seed20260724_fold0.npz",
+        "expected_weights_sha256": "347ab6e4331c00618dc0709499172a3eed57b3038c4b21f7aad8840b7c6360f8",
+        "observed_weights_sha256": "347ab6e4331c00618dc0709499172a3eed57b3038c4b21f7aad8840b7c6360f8",
+        "n_mlp_parameters": 33409,
+        "n_stored_values": 33537,
+        "layer_shapes": [
+          [
+            130,
+            128
+          ],
+          [
+            128,
+            128
+          ],
+          [
+            128,
+            1
+          ]
+        ],
+        "disk_bytes": 150226,
+        "memory_bytes": 134660
+      },
+      {
+        "label": "blocked_kfold_seed20260724_fold1",
+        "partition": "blocked_kfold",
+        "seed": 20260724,
+        "fold": 1,
+        "path": "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\models\\c2_surrogate_blocked_kfold_seed20260724_fold1.npz",
+        "expected_weights_sha256": "a63a775376ea182d9b3efcfe628a4acb27f6a98e0fe095401918783ce1cf1cc7",
+        "observed_weights_sha256": "a63a775376ea182d9b3efcfe628a4acb27f6a98e0fe095401918783ce1cf1cc7",
+        "n_mlp_parameters": 33409,
+        "n_stored_values": 33537,
+        "layer_shapes": [
+          [
+            130,
+            128
+          ],
+          [
+            128,
+            128
+          ],
+          [
+            128,
+            1
+          ]
+        ],
+        "disk_bytes": 156010,
+        "memory_bytes": 134660
+      },
+      {
+        "label": "blocked_kfold_seed20260724_fold2",
+        "partition": "blocked_kfold",
+        "seed": 20260724,
+        "fold": 2,
+        "path": "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\models\\c2_surrogate_blocked_kfold_seed20260724_fold2.npz",
+        "expected_weights_sha256": "b45a551de2463d3466f304f27006109508b4a4d07aa74268edf654fd767d44ed",
+        "observed_weights_sha256": "b45a551de2463d3466f304f27006109508b4a4d07aa74268edf654fd767d44ed",
+        "n_mlp_parameters": 33409,
+        "n_stored_values": 33537,
+        "layer_shapes": [
+          [
+            130,
+            128
+          ],
+          [
+            128,
+            128
+          ],
+          [
+            128,
+            1
+          ]
+        ],
+        "disk_bytes": 151730,
+        "memory_bytes": 134660
+      },
+      {
+        "label": "blocked_kfold_seed20260724_fold3",
+        "partition": "blocked_kfold",
+        "seed": 20260724,
+        "fold": 3,
+        "path": "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\models\\c2_surrogate_blocked_kfold_seed20260724_fold3.npz",
+        "expected_weights_sha256": "4a0aed2459f06a4cae6807c2985030c97e88a3791e6ab9aa37f1b977947d1c54",
+        "observed_weights_sha256": "4a0aed2459f06a4cae6807c2985030c97e88a3791e6ab9aa37f1b977947d1c54",
+        "n_mlp_parameters": 33409,
+        "n_stored_values": 33537,
+        "layer_shapes": [
+          [
+            130,
+            128
+          ],
+          [
+            128,
+            128
+          ],
+          [
+            128,
+            1
+          ]
+        ],
+        "disk_bytes": 149454,
+        "memory_bytes": 134660
+      },
+      {
+        "label": "blocked_kfold_seed20260724_fold4",
+        "partition": "blocked_kfold",
+        "seed": 20260724,
+        "fold": 4,
+        "path": "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\models\\c2_surrogate_blocked_kfold_seed20260724_fold4.npz",
+        "expected_weights_sha256": "75242c43f0a4ddfdbf40790cb0723e690c780c2296da12270deb43331e4bfeeb",
+        "observed_weights_sha256": "75242c43f0a4ddfdbf40790cb0723e690c780c2296da12270deb43331e4bfeeb",
+        "n_mlp_parameters": 33409,
+        "n_stored_values": 33537,
+        "layer_shapes": [
+          [
+            130,
+            128
+          ],
+          [
+            128,
+            128
+          ],
+          [
+            128,
+            1
+          ]
+        ],
+        "disk_bytes": 149398,
+        "memory_bytes": 134660
+      },
+      {
+        "label": "blocked_kfold_seed20260725_fold0",
+        "partition": "blocked_kfold",
+        "seed": 20260725,
+        "fold": 0,
+        "path": "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\models\\c2_surrogate_blocked_kfold_seed20260725_fold0.npz",
+        "expected_weights_sha256": "ff2a79dd9620254b250bebb8d1e4f910e026f749df6a4978d43594019f80cdb7",
+        "observed_weights_sha256": "ff2a79dd9620254b250bebb8d1e4f910e026f749df6a4978d43594019f80cdb7",
+        "n_mlp_parameters": 33409,
+        "n_stored_values": 33537,
+        "layer_shapes": [
+          [
+            130,
+            128
+          ],
+          [
+            128,
+            128
+          ],
+          [
+            128,
+            1
+          ]
+        ],
+        "disk_bytes": 158250,
+        "memory_bytes": 134660
+      },
+      {
+        "label": "blocked_kfold_seed20260725_fold1",
+        "partition": "blocked_kfold",
+        "seed": 20260725,
+        "fold": 1,
+        "path": "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\models\\c2_surrogate_blocked_kfold_seed20260725_fold1.npz",
+        "expected_weights_sha256": "3883c0eb4071fdc3dd191aaa0ca720d4b04b10a9bb53c7099d4fbfdb855b7501",
+        "observed_weights_sha256": "3883c0eb4071fdc3dd191aaa0ca720d4b04b10a9bb53c7099d4fbfdb855b7501",
+        "n_mlp_parameters": 33409,
+        "n_stored_values": 33537,
+        "layer_shapes": [
+          [
+            130,
+            128
+          ],
+          [
+            128,
+            128
+          ],
+          [
+            128,
+            1
+          ]
+        ],
+        "disk_bytes": 152266,
+        "memory_bytes": 134660
+      },
+      {
+        "label": "blocked_kfold_seed20260725_fold2",
+        "partition": "blocked_kfold",
+        "seed": 20260725,
+        "fold": 2,
+        "path": "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\models\\c2_surrogate_blocked_kfold_seed20260725_fold2.npz",
+        "expected_weights_sha256": "31adb438b9418df3d12266961708ba5f646e49f3d4dc883831ac4224ffe2847c",
+        "observed_weights_sha256": "31adb438b9418df3d12266961708ba5f646e49f3d4dc883831ac4224ffe2847c",
+        "n_mlp_parameters": 33409,
+        "n_stored_values": 33537,
+        "layer_shapes": [
+          [
+            130,
+            128
+          ],
+          [
+            128,
+            128
+          ],
+          [
+            128,
+            1
+          ]
+        ],
+        "disk_bytes": 154770,
+        "memory_bytes": 134660
+      },
+      {
+        "label": "blocked_kfold_seed20260725_fold3",
+        "partition": "blocked_kfold",
+        "seed": 20260725,
+        "fold": 3,
+        "path": "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\models\\c2_surrogate_blocked_kfold_seed20260725_fold3.npz",
+        "expected_weights_sha256": "8e1cdd6a86016b8ad77528b5038566883e34d2dc6f851e0e4dd5d4c0f927efb7",
+        "observed_weights_sha256": "8e1cdd6a86016b8ad77528b5038566883e34d2dc6f851e0e4dd5d4c0f927efb7",
+        "n_mlp_parameters": 33409,
+        "n_stored_values": 33537,
+        "layer_shapes": [
+          [
+            130,
+            128
+          ],
+          [
+            128,
+            128
+          ],
+          [
+            128,
+            1
+          ]
+        ],
+        "disk_bytes": 150426,
+        "memory_bytes": 134660
+      },
+      {
+        "label": "blocked_kfold_seed20260725_fold4",
+        "partition": "blocked_kfold",
+        "seed": 20260725,
+        "fold": 4,
+        "path": "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\models\\c2_surrogate_blocked_kfold_seed20260725_fold4.npz",
+        "expected_weights_sha256": "3ed9b2ad5f8b9913d8a1e44f6ed5c41fcbde5009deae55b5eae3e8ecec4d8b4f",
+        "observed_weights_sha256": "3ed9b2ad5f8b9913d8a1e44f6ed5c41fcbde5009deae55b5eae3e8ecec4d8b4f",
+        "n_mlp_parameters": 33409,
+        "n_stored_values": 33537,
+        "layer_shapes": [
+          [
+            130,
+            128
+          ],
+          [
+            128,
+            128
+          ],
+          [
+            128,
+            1
+          ]
+        ],
+        "disk_bytes": 150810,
+        "memory_bytes": 134660
+      },
+      {
+        "label": "blocked_kfold_seed20260726_fold0",
+        "partition": "blocked_kfold",
+        "seed": 20260726,
+        "fold": 0,
+        "path": "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\models\\c2_surrogate_blocked_kfold_seed20260726_fold0.npz",
+        "expected_weights_sha256": "369ed3834f0ae0be9907f16dc1a26c623cac431ce3a28a50dfea01b95045c9d5",
+        "observed_weights_sha256": "369ed3834f0ae0be9907f16dc1a26c623cac431ce3a28a50dfea01b95045c9d5",
+        "n_mlp_parameters": 33409,
+        "n_stored_values": 33537,
+        "layer_shapes": [
+          [
+            130,
+            128
+          ],
+          [
+            128,
+            128
+          ],
+          [
+            128,
+            1
+          ]
+        ],
+        "disk_bytes": 148506,
+        "memory_bytes": 134660
+      },
+      {
+        "label": "blocked_kfold_seed20260726_fold1",
+        "partition": "blocked_kfold",
+        "seed": 20260726,
+        "fold": 1,
+        "path": "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\models\\c2_surrogate_blocked_kfold_seed20260726_fold1.npz",
+        "expected_weights_sha256": "38828c3a4566314e86ae2b95a914f89806004c1a722d6baf3ca28db52fff9cf5",
+        "observed_weights_sha256": "38828c3a4566314e86ae2b95a914f89806004c1a722d6baf3ca28db52fff9cf5",
+        "n_mlp_parameters": 33409,
+        "n_stored_values": 33537,
+        "layer_shapes": [
+          [
+            130,
+            128
+          ],
+          [
+            128,
+            128
+          ],
+          [
+            128,
+            1
+          ]
+        ],
+        "disk_bytes": 149454,
+        "memory_bytes": 134660
+      },
+      {
+        "label": "blocked_kfold_seed20260726_fold2",
+        "partition": "blocked_kfold",
+        "seed": 20260726,
+        "fold": 2,
+        "path": "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\models\\c2_surrogate_blocked_kfold_seed20260726_fold2.npz",
+        "expected_weights_sha256": "959d7a633ab224286836d1481bfe630a719ec7663e0f26d3392fd33c19c60a82",
+        "observed_weights_sha256": "959d7a633ab224286836d1481bfe630a719ec7663e0f26d3392fd33c19c60a82",
+        "n_mlp_parameters": 33409,
+        "n_stored_values": 33537,
+        "layer_shapes": [
+          [
+            130,
+            128
+          ],
+          [
+            128,
+            128
+          ],
+          [
+            128,
+            1
+          ]
+        ],
+        "disk_bytes": 159750,
+        "memory_bytes": 134660
+      },
+      {
+        "label": "blocked_kfold_seed20260726_fold3",
+        "partition": "blocked_kfold",
+        "seed": 20260726,
+        "fold": 3,
+        "path": "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\models\\c2_surrogate_blocked_kfold_seed20260726_fold3.npz",
+        "expected_weights_sha256": "61f16991f6181daeefbc0b1fa253c7a8aa82ca17129d77364f48b26387f593f6",
+        "observed_weights_sha256": "61f16991f6181daeefbc0b1fa253c7a8aa82ca17129d77364f48b26387f593f6",
+        "n_mlp_parameters": 33409,
+        "n_stored_values": 33537,
+        "layer_shapes": [
+          [
+            130,
+            128
+          ],
+          [
+            128,
+            128
+          ],
+          [
+            128,
+            1
+          ]
+        ],
+        "disk_bytes": 150434,
+        "memory_bytes": 134660
+      },
+      {
+        "label": "blocked_kfold_seed20260726_fold4",
+        "partition": "blocked_kfold",
+        "seed": 20260726,
+        "fold": 4,
+        "path": "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\models\\c2_surrogate_blocked_kfold_seed20260726_fold4.npz",
+        "expected_weights_sha256": "2aaeee39217b68cdf872e24022ac2604bcb49dbfef4f562ad586b59277a2c369",
+        "observed_weights_sha256": "2aaeee39217b68cdf872e24022ac2604bcb49dbfef4f562ad586b59277a2c369",
+        "n_mlp_parameters": 33409,
+        "n_stored_values": 33537,
+        "layer_shapes": [
+          [
+            130,
+            128
+          ],
+          [
+            128,
+            128
+          ],
+          [
+            128,
+            1
+          ]
+        ],
+        "disk_bytes": 151482,
+        "memory_bytes": 134660
+      },
+      {
+        "label": "random_control_seed20260722_fold0",
+        "partition": "random_control",
+        "seed": 20260722,
+        "fold": 0,
+        "path": "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\models\\c2_surrogate_random_control_seed20260722_fold0.npz",
+        "expected_weights_sha256": "31d24f04f74daa21867a9b884b477f48c69c13cc338fe44997d31298f90db7d7",
+        "observed_weights_sha256": "31d24f04f74daa21867a9b884b477f48c69c13cc338fe44997d31298f90db7d7",
+        "n_mlp_parameters": 33409,
+        "n_stored_values": 33537,
+        "layer_shapes": [
+          [
+            130,
+            128
+          ],
+          [
+            128,
+            128
+          ],
+          [
+            128,
+            1
+          ]
+        ],
+        "disk_bytes": 154742,
+        "memory_bytes": 134660
+      },
+      {
+        "label": "random_control_seed20260723_fold0",
+        "partition": "random_control",
+        "seed": 20260723,
+        "fold": 0,
+        "path": "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\models\\c2_surrogate_random_control_seed20260723_fold0.npz",
+        "expected_weights_sha256": "6527b6ab718ea3f9ed475f78ba33aea8722f91f0821394212a1152a2f637e541",
+        "observed_weights_sha256": "6527b6ab718ea3f9ed475f78ba33aea8722f91f0821394212a1152a2f637e541",
+        "n_mlp_parameters": 33409,
+        "n_stored_values": 33537,
+        "layer_shapes": [
+          [
+            130,
+            128
+          ],
+          [
+            128,
+            128
+          ],
+          [
+            128,
+            1
+          ]
+        ],
+        "disk_bytes": 153250,
+        "memory_bytes": 134660
+      },
+      {
+        "label": "random_control_seed20260724_fold0",
+        "partition": "random_control",
+        "seed": 20260724,
+        "fold": 0,
+        "path": "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\models\\c2_surrogate_random_control_seed20260724_fold0.npz",
+        "expected_weights_sha256": "6ebf0eab98965efb38e4d89c3ba5d821a91862ac0e0cb5bae5825a5f1a0eb4ec",
+        "observed_weights_sha256": "6ebf0eab98965efb38e4d89c3ba5d821a91862ac0e0cb5bae5825a5f1a0eb4ec",
+        "n_mlp_parameters": 33409,
+        "n_stored_values": 33537,
+        "layer_shapes": [
+          [
+            130,
+            128
+          ],
+          [
+            128,
+            128
+          ],
+          [
+            128,
+            1
+          ]
+        ],
+        "disk_bytes": 153226,
+        "memory_bytes": 134660
+      },
+      {
+        "label": "random_control_seed20260725_fold0",
+        "partition": "random_control",
+        "seed": 20260725,
+        "fold": 0,
+        "path": "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\models\\c2_surrogate_random_control_seed20260725_fold0.npz",
+        "expected_weights_sha256": "c2a69a052d85b0b7d13fffea3d30a0ac56798455d0e27cab9fad460c4da121cd",
+        "observed_weights_sha256": "c2a69a052d85b0b7d13fffea3d30a0ac56798455d0e27cab9fad460c4da121cd",
+        "n_mlp_parameters": 33409,
+        "n_stored_values": 33537,
+        "layer_shapes": [
+          [
+            130,
+            128
+          ],
+          [
+            128,
+            128
+          ],
+          [
+            128,
+            1
+          ]
+        ],
+        "disk_bytes": 152974,
+        "memory_bytes": 134660
+      },
+      {
+        "label": "random_control_seed20260726_fold0",
+        "partition": "random_control",
+        "seed": 20260726,
+        "fold": 0,
+        "path": "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\models\\c2_surrogate_random_control_seed20260726_fold0.npz",
+        "expected_weights_sha256": "6953ec97de7eb2340b2f26f4d19b92ac66b2868f6d5a7fd41ae5fe46df410859",
+        "observed_weights_sha256": "6953ec97de7eb2340b2f26f4d19b92ac66b2868f6d5a7fd41ae5fe46df410859",
+        "n_mlp_parameters": 33409,
+        "n_stored_values": 33537,
+        "layer_shapes": [
+          [
+            130,
+            128
+          ],
+          [
+            128,
+            128
+          ],
+          [
+            128,
+            1
+          ]
+        ],
+        "disk_bytes": 153794,
+        "memory_bytes": 134660
+      }
+    ]
+  },
+  "cannot_produce": "The surrogate emits one scalar. It does not produce the four components, their provenance, or the source-feature identifiers the pipeline produces, and no ratio in this file should be read without that sentence beside it."
+}
