@@ -76,8 +76,10 @@ The single audit warning is recorded, not suppressed: two manifest key
 conventions coexist across the products, so any tool reading manifests
 generically must handle both.
 
-Every number above traces to a tracked file. **[`docs/evidence_index.md`](docs/evidence_index.md)**
-maps each claim to the artifact and the field that establishes it.
+Every figure above except the test count traces to a tracked artifact; the test
+count you reproduce by running the suite.
+**[`docs/evidence_index.md`](docs/evidence_index.md)** maps each claim to the
+file and the field that establishes it.
 
 ## What to look at
 
