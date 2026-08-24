@@ -287,6 +287,7 @@ CAPRM-Flood does not use longitude/latitude degrees as metric distance units. CR
 ```text
 configs/                   Workload-specific YAML configurations
 
+cpp/spatial_core/          CMakeLists.txt builds all fourteen binaries
 cpp/spatial_core/src/      C++ FEMA and nearest-water implementations
                            - fema_pip_dev.cpp
                            - water_distance_bruteforce.cpp        (1)
@@ -315,6 +316,10 @@ python/caprm/              Reusable Python modules
                            - product auditing
                            - Hilbert inflation instrumentation
                            - recursive model index (fit, bounds, serialization)
+                           - spatial correlation, blocked split, leakage gate
+                           - neural surrogate (data, training, evaluation)
+                           - error analysis against the registered prediction
+                           - inference and pipeline cost measurement
 
 python/scripts/            Command-line workflow entry points
                            - workload materialization
@@ -356,6 +361,16 @@ outputs/validation/        Manifests, summaries, and agreement reports
 
 docs/                      Project methods, milestones, data sources,
                            CRS policy, validation, and benchmark documentation
+                           - evidence_index.md   claim -> artifact -> field
+                           - milestones.md       what each milestone delivered
+                           - errata.md           report vs repository
+                           - canon/              long-form working record
+
+LICENSE                    MIT. The ingested public datasets are not covered
+                           by it; their terms are in docs/data_sources.md.
+pyproject.toml             Installs caprm from python/ and configures pytest.
+.github/workflows/         CI: Python suite, plus all fourteen C++ binaries
+                           and the native invariant suites under ctest.
 ```
 
 ## Current core outputs
