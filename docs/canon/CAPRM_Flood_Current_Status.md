@@ -11,7 +11,7 @@
 >
 > | This document says | Actual, as of 2026-08-24 |
 > | --- | --- |
-> | `575 passed` (sections 0, 1067, 3980) | **653 passed**, 0 failed |
+> | `575 passed` (sections 0, 1067, 3980) | **656 passed**, 0 failed |
 > | "Milestone 4 — PHASE C, chunk C4 next" | All four milestones complete. C4 item 1 published; item 2 measured and published. |
 > | "PHASE E final academic deliverables. Poster draft exists; report body drafted." | Report written, submitted, and accepted. Poster final. |
 > | "several B6-era files are modified in the working tree and are NOT yet committed" | Committed. The working tree is clean. |

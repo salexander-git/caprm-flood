@@ -64,7 +64,7 @@ Reporting the two negative results is what makes the positive ones credible.
 ## Verified state
 
 ```text
-Python test suite     653 passed, 0 failed
+Python test suite     656 passed, 0 failed
 Artifact audit        49 pass, 1 warn, 0 fail
 Cross-implementation  5 designs x 267,362 properties x 10 fields, full agreement
 Max distance error    4.658e-10 m against a 1e-6 m tolerance
@@ -123,7 +123,7 @@ centroids. They are hundreds of megabytes and are public.
 py -3 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install --upgrade pip
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
-.\.venv\Scripts\python.exe -m pytest          # 653 passed
+.\.venv\Scripts\python.exe -m pytest          # 656 passed
 ```
 
 That is the whole verification loop for the Python side. To exercise the
@@ -430,7 +430,7 @@ Current status:
 
 ```text
 python -m pytest -q
-653 passed
+656 passed
 ```
 
 No flags are required. Python 3.14.0; every dependency including `scipy` is pinned in `requirements.txt`.

@@ -106,18 +106,22 @@ believed, planned, and decided at each point in development, including
 predictions later refuted. Rewriting them to match the finished state would
 destroy the property that makes them worth keeping. Each now opens with a
 currency notice stating what it is current through and tabulating the claims
-that have since changed. The largest was the test count: the canon says 575, the
-suite is 653.
+that have since changed. The largest was the test count: the canon says 575,
+the report said 653, and the suite is now 656.
 
 ## 4. Claims that reconciled exactly
 
 Checked and confirmed against artifacts, listed so the scope of the audit is
 visible rather than implied: the workload counts (267,362 / 8,572 / 1,063,159 /
 1,189,589); the scoring policy and all four weights; the variance decomposition;
-the sensitivity verdict and its worst-case scenario; the test count; the audit's
+the sensitivity verdict and its worst-case scenario; the audit's
 49/1/0 and the content of its one warning; five-rung cross-implementation
 agreement including the six split-mode cells at 10K and 100K; the maximum
 absolute error in both verification modes; the FEMA tie share (262,297 of
 267,362, 98.11 percent); the resolve-descent entry counts and seed-quality
 statistics; and the surrogate's non-separability from a constant predictor
 together with the refuted registered prediction.
+
+The report's test count of 653 was correct at submission. The suite is now 656:
+three tests were added afterwards, covering the analysis step that produces the
+pipeline-cost table. Every count stated in this repository is the current one.
