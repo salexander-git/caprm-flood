@@ -714,6 +714,72 @@ tests/cpp/test_water_segment_bvh.cpp
 tests/cpp/test_water_segment_bvh_verify_modes.cpp
 ```
 
+## Milestone 4 Phase C workflow entry points
+
+Phase C asks whether the pipeline's own output can be predicted from
+coordinates alone. Its result is negative, and the order below is the order that
+makes the negative reportable: the partition is built and gated *before* any
+model exists, and the prediction about error structure is registered in C2's
+artifact *before* C3 runs.
+
+```powershell
+# C1. The supervised dataset, the correlation study that sets the buffer width,
+#     and the blocked K-fold partition with its leakage gate.
+.\.venv\Scripts\python.exe python\scriptsuild_supervised_dataset.py
+.\.venv\Scripts\python.exe python\scripts\measure_spatial_correlation.py
+.\.venv\Scripts\python.exe python\scriptsuild_spatial_kfold.py
+```
+
+The gate requires both negative controls to FAIL. A partition that passes
+alongside its controls has not demonstrated anything, and
+`c1_kfold_manifest.json` records `controls.blocked_unbuffered.failed_as_expected`
+so the check is visible rather than assumed.
+
+```powershell
+# C2. Train against that partition and against the random control.
+.\.venv\Scripts\python.exe python\scripts	rain_surrogate.py --tag headline
+
+# C3. Error analysis against the prediction registered in C2's manifest.
+.\.venv\Scripts\python.exe python\scriptsnalyze_c3_residuals.py
+
+# C4. Inference cost, then the exact pipeline's own cost.
+.\.venv\Scripts\python.exe python\scriptsenchmark_c4_inference.py --blas-threads 8
+.\.venv\Scripts\python.exe python\scriptsenchmark_c4_pipeline.py --workloads 10000 100000
+.\.venv\Scripts\python.exe python\scriptsenchmark_c4_pipeline.py --workloads countywide
+```
+
+The pipeline harness writes every stage output under `outputs/scratch/c4/` and
+asserts it is there before the stage runs, so a timing run cannot touch a frozen
+product, manifest or fixture.
+
+Reusable implementation:
+
+```text
+python/caprm/spatial_correlation.py
+python/caprm/spatial_split.py
+python/caprm/spatial_kfold.py
+python/caprm/split_gate.py
+python/caprm/supervised_dataset.py
+python/caprm/surrogate.py
+python/caprm/surrogate_data.py
+python/caprm/surrogate_run.py
+python/caprm/error_analysis.py
+python/caprm/c4_benchmark.py
+python/caprm/c4_analysis.py
+python/caprm/pipeline_cost.py
+```
+
+Tests:
+
+```text
+tests/test_spatial_correlation.py   tests/test_surrogate.py
+tests/test_spatial_split.py         tests/test_surrogate_data.py
+tests/test_spatial_kfold.py         tests/test_surrogate_run.py
+tests/test_split_gate.py            tests/test_error_analysis.py
+tests/test_supervised_dataset.py    tests/test_c4_benchmark.py
+tests/test_pipeline_cost.py         tests/test_c4_analysis.py
+```
+
 ## Project status
 
 All four milestones are complete. The capstone report is written, submitted, and
