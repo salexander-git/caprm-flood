@@ -161,6 +161,25 @@ Every manifest listed above records the SHA-256 of the file it describes, so a
 regenerated table can be checked against the run that produced the published
 numbers rather than merely resembling it.
 
+## 8. Two properties of the tracked artifacts
+
+**Absolute paths appear in the run records.** Twenty-three tracked artifacts —
+the ladder summaries, the C4 benchmark records, the cap-sweep run table, and the
+Milestone 1 environment capture — embed the absolute path of the machine they
+were produced on inside their recorded command lines and environment blocks.
+They are left byte-identical. These are measurement records, and a manifest
+whose bytes were edited after the fact to look tidier is a manifest whose
+digests attest to something other than the run.
+
+**Two manifest key conventions coexist.** The flood-evidence manifest nests its
+summary under one key; the terrain and index manifests use another. The artifact
+audit reports this as its single warning rather than a failure, because no
+individual artifact is wrong — what is wrong is that they are not uniform. Any
+tool reading these manifests generically must handle both. Recorded in
+`outputs/validation/milestone3_audit.json` under `checks[0]`.
+
+---
+
 `models/water_hilbert_rmi.bin` (4,194,400 bytes) *is* tracked, deliberately:
 the C++ query path loads the model at run time, so the repository would not
 build a working rung 5 without it.
