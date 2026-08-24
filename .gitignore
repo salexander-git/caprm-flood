@@ -1,10 +1,16 @@
+# --- environment ------------------------------------------------------------
 .venv/
 __pycache__/
 *.pyc
+.env
 
+# --- source data ------------------------------------------------------------
+# Rasters, parcels and hydrography are re-acquired from docs/data_sources.md.
+# The two exceptions already tracked are the 1K sample workload and the
+# hydrography GeoPackage, both small enough to carry and both needed to run
+# anything at all.
 data/raw/
 data/processed/
-outputs/
 
 *.gpkg
 *.shp
@@ -16,21 +22,54 @@ outputs/
 *.tiff
 *.zip
 
+# --- generated outputs ------------------------------------------------------
+# outputs/ is ignored wholesale because the per-property tables are 30-90 MB
+# each. The manifests, summaries and timing-run tables that carry the published
+# claims are kilobytes and ARE tracked, added explicitly with `git add -f`.
+# docs/evidence_index.md maps every claim to the file that establishes it and
+# lists what is not tracked beside the command that regenerates it.
+#
+# Adding a new artifact to the tracked set is a deliberate act: `git add -f`,
+# then a row in the evidence index. Do not weaken this rule to a glob; the
+# whole point is that what a clone carries was chosen.
+outputs/
+
+# --- build ------------------------------------------------------------------
 build/
 cmake-build-*/
 *.exe
 *.obj
 *.pdb
 
-.env
+# --- editor and tooling state -----------------------------------------------
 .DS_Store
-
-# Editor state
+__MACOSX/
 .vscode/
 .idea/
 .pytest_cache/
+*.egg-info/
+dist/
 
-# Regenerable scratch output
+# --- regenerable inventories ------------------------------------------------
+# Snapshots of the tree, the log or the status. Every one of these is a
+# question git already answers; a stale copy in the repository answers it
+# wrong. Regenerate on demand, do not commit.
 git_log_current.txt
 git_status_current.txt
 repository_tree_current.txt
+outputs_inventory.txt
+
+# --- local working material -------------------------------------------------
+# Present on the author's machine, deliberately not carried by a clone. None of
+# it is an input to anything the repository builds or measures.
+CLAUDE.md
+COMPLETENESS_ASSESSMENT.md
+docs/context_restoration/
+docs/report/Report_Template/
+docs/sample_poster_*.pdf
+docs/patch_kickoff_promtps.py
+docs/project_review_prompt
+docs/kickoff_prompts_m4.md
+*.docx
+presentation_assets/orange_black/
+presentation_assets/Milestone 2.pdf
