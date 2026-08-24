@@ -165,7 +165,7 @@ been acquired and the caches built.
 - [Known limitations](#current-known-limitations) — read before quoting a figure
 - [`docs/evidence_index.md`](docs/evidence_index.md) — claim → artifact → field
 - [`docs/milestones.md`](docs/milestones.md) — how the project got here
-- [`docs/report_draft.txt`](docs/report_draft.txt) and [the compiled report](docs/report/report.pdf)
+- [The report](docs/report/report.pdf) — the capstone write-up, and its [LaTeX body](docs/report_draft.txt)
 
 ## The three evidence families
 
@@ -746,8 +746,13 @@ Start here:
   that establishes it, and the field within that file. Also lists what is not
   tracked, beside the command that regenerates it.
 - [**Milestone history**](docs/milestones.md) — what each milestone delivered.
-- [**The report**](docs/report/report.pdf) — the capstone write-up
-  ([LaTeX source](docs/report_draft.txt)).
+- [**Errata**](docs/errata.md) — every published figure was re-checked against
+  the artifact carrying it after submission. Three discrepancies are recorded
+  there; the rest reconciled exactly.
+- [**The report**](docs/report/report.pdf) — the capstone write-up. The
+  [LaTeX body](docs/report_draft.txt) is tracked beside it; it is the body
+  only, without preamble or bibliography, and does not compile standalone. See
+  [`docs/errata.md`](docs/errata.md).
 
 Methods and policy:
 
