@@ -1,5 +1,30 @@
 # CAPRM-Flood Current Status — 2026-07-30
 
+> **Currency notice, added 2026-08-24.**
+>
+> This document is current through chunk **C4 item 1** and commit `5416378`. It
+> is a working record kept during development, not a reader's entry point; for
+> that, start at [`README.md`](../../README.md) and
+> [`docs/evidence_index.md`](../evidence_index.md).
+>
+> What it does not cover, and what it states that has since changed:
+>
+> | This document says | Actual, as of 2026-08-24 |
+> | --- | --- |
+> | `575 passed` (sections 0, 1067, 3980) | **653 passed**, 0 failed |
+> | "Milestone 4 — PHASE C, chunk C4 next" | All four milestones complete. C4 item 1 published; item 2 measured and published. |
+> | "PHASE E final academic deliverables. Poster draft exists; report body drafted." | Report written, submitted, and accepted. Poster final. |
+> | "several B6-era files are modified in the working tree and are NOT yet committed" | Committed. The working tree is clean. |
+>
+> Also since: repository hygiene (Phase D in this document's numbering) was
+> carried out — the curated evidence set is tracked, the README leads with
+> results, `LICENSE` and `pyproject.toml` were added.
+>
+> The technical record below — the measurements, the defect analyses, the
+> decisions and their reasoning — is accurate and is why this document is kept.
+> Where it conflicts with a generated artifact, prefer the artifact.
+
+
 ## Purpose of This Document
 
 This document records the exact current operational state of CAPRM-Flood as of **July 30, 2026**.

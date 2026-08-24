@@ -1,5 +1,20 @@
 # CAPRM-Flood Roadmap — 2026-07-28
 
+> **Currency notice, added 2026-08-24.**
+>
+> This roadmap is **historical**. It was the plan of record from 2026-07-28
+> through project completion, and every chunk it schedules has since been
+> executed or deliberately dropped.
+>
+> It is kept because it records what was planned *before* the results came in —
+> including the predictions that were later refuted — which is what makes the
+> reported outcomes checkable rather than merely asserted.
+>
+> For what was actually delivered, see [`docs/milestones.md`](../milestones.md).
+> For what was scoped and not built, and why, see the "Scoped and not built"
+> section of [`README.md`](../../README.md).
+
+
 ## Purpose
 
 This document defines the ordered implementation roadmap for CAPRM-Flood from the current state on **July 28, 2026** through project completion.
