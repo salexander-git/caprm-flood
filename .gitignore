@@ -64,6 +64,7 @@ outputs_inventory.txt
 # it is an input to anything the repository builds or measures.
 CLAUDE.md
 COMPLETENESS_ASSESSMENT.md
+RESUME_ENTRY.md
 docs/context_restoration/
 docs/report/Report_Template/
 docs/sample_poster_*.pdf
