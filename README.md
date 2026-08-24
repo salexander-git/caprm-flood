@@ -105,8 +105,59 @@ programs reproducing an identical distance to within a nanometre establishes
 nothing about whether distance to the nearest mapped water feature is a good
 proxy for flood exposure.
 
+## Quick start
+
+What a clone can do without downloading anything, and what it cannot.
+
+**Tracked, so this works immediately:** the 1,000-property sample workload
+(`data/processed/monroe_property_points_sample.geojson`), the county's
+hydrography (`data/raw/usgs_3dhp_monroe.gpkg`, 21.2 MB), the trained RMI
+(`models/water_hilbert_rmi.bin`), the full test suite, and every manifest that
+carries a published number.
+
+**Not tracked, so these need acquiring from [`docs/data_sources.md`](docs/data_sources.md)
+first:** the FEMA NFHL shapefile, the 3DEP DEM, and the countywide parcel
+centroids. They are hundreds of megabytes and are public.
+
+```powershell
+py -3 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install --upgrade pip
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe -m pytest          # 653 passed
+```
+
+That is the whole verification loop for the Python side. To exercise the
+geometry against real data at the sample scale — no downloads needed beyond
+what is tracked:
+
+```powershell
+# Python nearest-water reference over the 1,000-property sample
+.\.venv\Scripts\python.exe python/scripts/run_water_baseline.py `
+  --config configs/monroe_fema_spike.yaml
+
+# The same query in C++, then a field-for-field comparison
+cmake -S cpp/spatial_core -B cpp/spatial_core/cmake-build -DCMAKE_BUILD_TYPE=Release
+cmake --build cpp/spatial_core/cmake-build --parallel
+
+.\.venv\Scripts\python.exe python/scripts/export_water_cpp_inputs.py `
+  --config configs/monroe_fema_spike.yaml `
+  --reference outputs/baseline/python_nearest_water.csv `
+  --properties-output outputs/cpp_input/water_properties_projected.csv `
+  --features-output outputs/cpp_input/water_features.csv `
+  --vertices-output outputs/cpp_input/water_vertices.csv `
+  --manifest-output outputs/validation/water_cpp_input_manifest.json
+```
+
+To read the results rather than recompute them, start at
+[`docs/evidence_index.md`](docs/evidence_index.md) — every published figure,
+the file that establishes it, and the field within that file.
+
+The countywide sequence below is the full path, and assumes the source data has
+been acquired and the caches built.
+
 ## Contents
 
+- [Quick start](#quick-start) — what a clone can run with no downloads
 - [Architecture](#architecture) — what Python owns, what C++ owns, and why
 - [Reproducing the validated countywide evidence](#reproducing-the-validated-countywide-fema--water-evidence)
 - [Environment](#environment) and [C++ builds](#c-builds)
