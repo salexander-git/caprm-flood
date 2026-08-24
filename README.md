@@ -1,152 +1,135 @@
 # CAPRM-Flood
 
-CAPRM-Flood is a reproducible C++/Python geospatial evidence-extraction framework for large-batch property-level flood exposure analysis. The current case study covers Monroe County, New York and processes a countywide workload of **267,362 unique property identifiers**.
+**Exact nearest-neighbour search over extended spatial objects, measured five
+ways against one reference.**
 
-The project derives three geospatial evidence families:
+CAPRM-Flood extracts property-level flood-exposure evidence for Monroe County,
+New York — 267,362 properties against 8,572 mapped water features — and then
+uses that workload to ask a question the learned-index literature has not
+answered: does a learned spatial index still pay when the query must be *exact*
+and the objects are line segments and polygon boundaries rather than points?
 
-1. **FEMA flood-hazard evidence** — flood-zone and Special Flood Hazard Area membership.
-2. **Nearest-water evidence** — distance to the nearest mapped USGS hydrographic feature, with deterministic feature identity and classification.
-3. **Terrain evidence** — property elevation, local mean elevation, relative elevation, and local slope derived from a projected digital elevation model.
-
-These validated evidence products feed a separate, transparent **preliminary relative exposure index** with explicit component normalization, weights, and countywide ranking. The index is frozen at scoring policy `preliminary_exposure_index_v2`, characterized as moderately sensitive to weight choice across 40 measured scenarios, and audited against its own manifests. It is the application layer, not the claim.
-
-Milestone 4 is where the project's computer-science contribution is concentrated. It adds no evidence family. It asks whether **learned spatial indexing extends to exact nearest-neighbour queries over extended objects** — line segments and polygon boundaries — and what exactness costs. The learned-index literature is evaluated almost exclusively on point data and several published methods return approximate results, so this is an unexamined corner rather than an open problem, and the contribution available is a rigorous measurement the literature lacks.
-
-The central engineering goals are correct spatial computation, explicit CRS handling, deterministic outputs, independent Python/C++ validation, provenance, reproducibility, and scalable countywide processing.
-
-## Current milestone status
-
-### Milestone 1 — complete and validated
-
-Milestone 1 established the FEMA point-in-polygon validation foundation:
-
-- deterministic 1,000-property regression fixture;
-- Python GeoPandas/Shapely reference computation;
-- independent C++ FEMA point-in-polygon implementation;
-- canonical FEMA feature identity using `FLD_AR_ID`;
-- explicit Python/C++ comparison;
-- **1,000 / 1,000 validated property agreement**.
-
-### Milestone 2 — complete and validated
-
-Milestone 2 added nearest-water evidence and countywide scaling:
-
-- deterministic 1K, 10K, 100K, and countywide property workloads;
-- USGS hydrography ingestion and caching;
-- Python STRtree nearest-water reference implementation;
-- independent C++ brute-force nearest-water implementation;
-- independent C++ indexed nearest-water implementation;
-- deterministic nearest-feature tie resolution;
-- strict Python/C++ validation at increasing scales;
-- reproducible benchmark harness and summaries;
-- integrated FEMA-plus-water property evidence;
-- countywide application to **267,362 unique property identifiers**.
-
-The countywide indexed nearest-water implementation reproduced all 267,362 Python results within a maximum absolute distance error of `4.658e-10 m`. In the canonical one-run countywide benchmark, the indexed implementation was `20.39x` faster in reported computation time and `19.83x` faster in total process time than brute force.
-
-### Milestone 3 — complete and frozen
-
-Milestone 3 implemented:
-
-- projected DEM preparation;
-- countywide terrain evidence extraction;
-- elevation, local mean elevation, relative elevation, and slope features;
-- terrain provenance/manifest generation;
-- deterministic exposure-index generation at scoring policy `preliminary_exposure_index_v2`;
-- index manifest generation;
-- measured component influence by exact variance decomposition;
-- rank-based sensitivity analysis across 40 weighting scenarios;
-- an automated product audit that verifies stored artifacts against their own manifests;
-- Milestone 3 result summarization;
-- terrain, scoring, sensitivity, and audit tests.
-
-Current countywide terrain results:
+Five independent C++ implementations of the same nearest-water query were built
+over one geometry kernel and one tie rule, each validated field-for-field
+against a frozen Python reference. The answer is measured, not argued.
 
 ```text
-properties: 267,362
-unique property IDs: 267,362
-missing slope values: 0
-elevation range: approximately 75.000–296.309 m
+rung                          index                        us/property   checks/property
+1  brute force                none                            3993.925         1,063,159
+2  feature hierarchy          2D BVH, 8,572 features           235.449            70,771
+3  segment hierarchy          2D BVH, 1,189,589 entries         34.099             9,408
+4  Hilbert + binary search    1D order, 1,189,589 entries       66.389            11,022
+5  Hilbert + learned index    1D order, RMI-seeded               70.692            11,022
 ```
 
-Frozen preliminary exposure-index results:
+Countywide, original-geometry verification, one invocation. Absolutes move about
+one percent between invocations while adjacent ratios agree to 0.116 percentage
+points, so ratios are quoted within an invocation and absolutes with their
+invocation named. Rung 1 carries a 31.71 percent spread at n=3, five times any
+other cell, and appears in no adjacent comparison.
+
+## What the measurements say
+
+**Exactness is free at the hierarchy, and it is not free at the ordering.**
+Rebuilding the index at segment granularity rather than feature granularity is
+worth **6.90×** — the largest single win in the project — because the feature
+hierarchy indexes objects rather than geometry, and the county's largest water
+features are near almost everything in it.
+
+**The learned index lost, and the phase said in advance that it might.** At the
+shipped configuration the RMI seeder produces byte-identical evidence and runs
+the query **6.48 percent slower** than the exact binary-search control. It saves
+about 20 key probes per property and spends about 211 extra point-to-segment
+distance computations to do it. The mechanism is convexity, not miss frequency:
+search cost grows as the square of the seed radius, the miss *rate* moves only
+1.19×, but the worst overestimate moves from 32× to 517× the true radius.
+**The mean prediction error is the wrong summary statistic for a predictor that
+feeds a radius.**
+
+**The sign of that result is set by a parameter the literature holds fixed.**
+Across nine seed windows the learned-to-control ratio moves from 1.11620 at
+W = 8 to 1.00002 at W = 2048. The durable finding is therefore not "learning did
+not help" but that the reported benefit of a learned spatial index depends on
+configuration that published comparisons do not report.
+
+**A registered prediction was refuted.** Before the analysis ran, the surrogate
+phase predicted in its own stored artifact that prediction error would spike
+along FEMA flood-zone boundaries. It does not. The mechanism behind the
+prediction was confirmed; the spatial claim was not. Under a buffered blocked
+split the coordinates-only surrogate is not separable from a constant predictor
+at all.
+
+Reporting the two negative results is what makes the positive ones credible.
+
+## Verified state
 
 ```text
-properties:                267,362
-unique property IDs:       267,362
-index minimum:             7.914598933
-index maximum:             99.929084911
-index mean:                34.63218408001099
-index median:              33.7284299935
-index standard deviation:  13.063711939924076
-weights:                   fema 0.40, water 0.35,
-                           terrain_absolute 0.15, terrain_relative 0.10
+Python test suite     653 passed, 0 failed
+Artifact audit        49 pass, 1 warn, 0 fail
+Cross-implementation  5 designs x 267,362 properties x 10 fields, full agreement
+Max distance error    4.658e-10 m against a 1e-6 m tolerance
+Scoring policy        preliminary_exposure_index_v2, frozen
+Rank stability        moderately sensitive (40 scenarios, min Spearman 0.875)
 ```
 
-Nominal weight is not influence. Water carries 35 percent of the weight and 65 percent of the variance; FEMA carries 40 percent and 17 percent, because 98.1 percent of properties are tied at the same FEMA component value and constants do not affect ranking.
+The single audit warning is recorded, not suppressed: two manifest key
+conventions coexist across the products, so any tool reading manifests
+generically must handle both.
 
-Measured rank stability:
+Every number above traces to a tracked file. **[`docs/evidence_index.md`](docs/evidence_index.md)**
+maps each claim to the artifact and the field that establishes it.
 
-```text
-verdict                      moderately sensitive
-minimum Spearman             0.875   (equal weighting)
-median Spearman              0.996
-minimum top-decile overlap   0.761   (equal weighting)
-median top-decile overlap    0.946
-```
+## What to look at
 
-Thresholds were declared before any result was measured. The verdict hinges on one scenario: every other plausible configuration sits near 0.996, and `equal` alone falls below the stable bar. This is not general instability — the index is stable unless you stop privileging water.
+If you are reading this to judge the engineering rather than to use the tool:
 
-The index is frozen and remains **preliminary**. It is no longer the subject of active work.
+| | |
+| --- | --- |
+| [`cpp/spatial_core/src/`](cpp/spatial_core/src/) | Five nearest-water implementations. Each file `#include`s the one below it, so the distance kernel and the tie rule are *reused* across the ladder rather than reimplemented — which is what makes adjacent rungs differ by one variable. |
+| [`python/caprm/audit.py`](python/caprm/audit.py) | Audits stored artifacts against their own manifests rather than auditing the code that wrote them, so it catches drift the unit tests cannot see. |
+| [`python/caprm/sensitivity.py`](python/caprm/sensitivity.py) | Stability thresholds declared in source before any result was measured, with reference corners included so a high correlation among plausible scenarios can be interpreted at all. |
+| [`python/caprm/rmi.py`](python/caprm/rmi.py) | The recursive model index: numpy least squares, no framework, with a per-model error bound verified exhaustively over all 1,189,589 keys. Python trains, C++ infers. |
+| [`python/caprm/ladder_benchmark.py`](python/caprm/ladder_benchmark.py) | The measurement harness. Repetition protocol declared before measuring, blocked and cyclically rotated ordering, session guards, crash-safe append-and-fsync. Two sittings of an identical configuration once measured 11.02 percent apart on provably identical work; that is the evidence behind the session guard. |
+| [`outputs/validation/b6_benchmark_tables.md`](outputs/validation/b6_benchmark_tables.md) | Published results. Any comparison whose gap sits inside its own cells' range is printed `NOT RESOLVED` rather than as though it carried a claim. |
 
-### Milestone 4 — current phase, learned indexing of extended spatial objects
+## What this is not
 
-Milestone 4 builds a five-rung ladder of nearest-water implementations over the same geometry kernel, the same tie rule, and one validation standard, so that adjacent rungs isolate one variable each.
+The exposure index is a **relative regional ranking**, not a calibrated flood
+probability, an expected loss, an insurance price, or an actuarial estimate.
+Three of its four components are percentile ranks computed within the workload,
+so a score states a position among these 267,362 properties and is not
+comparable across workloads or across NFHL vintages.
 
-```text
-1. brute force              no index                    Milestone 2
-2. Feature BVH              2D,  8,572 features         Milestone 2
-3. Segment BVH              2D, ~1.19M entries          B1, B2
-4. Hilbert + binary search  1D, ~1.19M entries          B3   control
-5. Hilbert + RMI            1D, ~1.19M entries          B4, B5   learned
-6. + learned radius         seeds the search disk       B7   stretch
-```
+Agreement across five implementations validates the *implementation*. Five
+programs reproducing an identical distance to within a nanometre establishes
+nothing about whether distance to the nearest mapped water feature is a good
+proxy for flood exposure.
 
-The path was forced by the project's own measurement rather than chosen to accommodate machine learning. The Feature BVH examines only 5.498 candidate features per property yet still performs 70,771 segment checks, because it indexes features rather than geometry and the largest water features are near almost everything in the county — the selected features are roughly 104 times larger than the average water feature. Rebuilding at segment granularity is what makes a learned index possible at all, and ~1.19M entries is squarely learned-index scale.
+## Contents
 
-Complete and validated countywide through chunk B6c-2:
+- [Architecture](#architecture) — what Python owns, what C++ owns, and why
+- [Reproducing the validated countywide evidence](#reproducing-the-validated-countywide-fema--water-evidence)
+- [Environment](#environment) and [C++ builds](#c-builds)
+- [Repository map](#repository-map)
+- [Known limitations](#current-known-limitations) — read before quoting a figure
+- [`docs/evidence_index.md`](docs/evidence_index.md) — claim → artifact → field
+- [`docs/milestones.md`](docs/milestones.md) — how the project got here
+- [`docs/report_draft.txt`](docs/report_draft.txt) and [the compiled report](docs/report/report.pdf)
 
-- **B1** — segment-granularity BVH with distance-exact splitting. `L = 5,748.2396 m` measured before anything was built on it. 267,362/267,362 field-for-field agreement at `4.658e-10 m`. Phase-2 work fell from 70,771 to 9,716.87 segment checks per property, **7.28x**, at B1's uncapped-equivalent 100 m entry-extent cap. At the 25 m operating point B2 selected, the countywide figure is **9,407.62** checks per property under original-geometry verification and **6,453.70** under split; the B6 tables report both.
-- **B2** — entry-extent sweep under both verification strategies, 14/14 points at full agreement. The cap is *not* a performance dial: across a 575-fold range of maximum entry extent, median query time varies under 10 percent. It is chosen for its only downstream consumer, the `L/2` inflation radius. Operating point: 25 m cap.
-- **B3** — Hilbert ordering of entry midpoints, exact inflated-disk query by recursive quadrant decomposition, and a binary-search control. Capping at 25 m costs 11.89 percent more entries and returns a **546x** reduction in admitted entries per query.
-- **B4** — a two-stage recursive model index after Kraska et al., SIGMOD 2018. 131,072 linear second-stage models, 4,194,400 bytes, with a per-model error bound verified exhaustively over all 1,189,589 keys. The finding is the equi-depth diagnostic: **the router binds, not the leaves.**
-- **B5** — inference ported to C++. Output byte-identical to the control on 267,362 properties.
-- **B5c** — resolve-descent instrumentation, so the learned rung's cost is counted rather than inferred.
+## The three evidence families
 
-**The measured result is negative, and it is reported because the phase said in advance that it would be.** At the shipped configuration — countywide, seed window W = 64, original-geometry verification — the learned rung produces identical evidence and runs the query 6.48 percent slower:
+1. **FEMA flood-hazard evidence** — flood-zone and Special Flood Hazard Area membership, with canonical feature identity via `FLD_AR_ID`.
+2. **Nearest-water evidence** — distance to the nearest mapped USGS hydrographic feature, with deterministic feature identity, classification, and tie count.
+3. **Terrain evidence** — elevation, local mean elevation, relative elevation, and local slope from a projected DEM.
 
-```text
-                              binary        rmi
-resolve entries / property   141.1742   352.5154     2.497x
-window missed                103,242    123,011      38.62% -> 46.01%
-mean d_seed / d_best          1.1717     1.5388
-tight entries / property      47.5926    47.5926     identical
-```
+These feed a separate, explicitly weighted **preliminary relative exposure
+index**. The boundary between evidence and scoring is enforced in the artifacts:
+the evidence manifest carries `scoring_included: false`. Validated source
+evidence stays reusable if the scoring methodology changes.
 
-The model saves about 20 key probes per property and spends about 211 extra point-to-segment distance computations to do it — roughly ten to one in the wrong direction. The mechanism is convexity rather than miss frequency: search cost grows as the square of the seed radius, the miss *rate* moves only 1.19x, and the worst overestimate moves from 32x to 517x the true radius. **The mean prediction error is the wrong summary statistic for a predictor that feeds a radius.**
-
-A second finding is not about the model at all: the exact binary-search control misses its ±64 seed window on 38.62 percent of queries, which makes the window a query-design parameter for both rungs.
-
-**That percentage is conditional, and B6 measured the conditions.** Across nine seed windows the learned-to-control wall-clock ratio moves from 1.11620 at W = 8 to 1.00002 at W = 2048, so the sign of 5 vs 4 is set by the seed window rather than by the model. Under split-geometry verification the same countywide gap reads +12.52 percent — the absolute penalty per property is unchanged and the denominator shrank, so the counted quantity is the invariant and the percentage is the artifact. The durable finding is therefore not “learning did not help” but that the reported benefit of a learned spatial index depends on parameters the literature holds fixed and does not report. See Nucleus 18.26 and 18.27.
-
-Also complete and validated:
-
-- **B6a** — a measurement harness with a repetition and warm-up protocol declared before measuring, blocked and cyclically rotated ordering, session guards, and crash-safe append-and-fsync recording. Two sittings of an identical rung-1 configuration were measured 11.02 percent apart on provably identical work, which is the evidence behind the session guard.
-- **B6b** — `SEED_WINDOW` as a compile-time parameter across nine windows, byte-neutral at every one. The first attempt built seven binaries against source that never referenced the macro and the neutrality gate passed on them; the rule extracted is that a neutrality gate requires a positive control (Nucleus 18.25).
-- **B6c** — the five-rung ladder at three workloads and a nine-window seed sweep at two workloads. 252 timed runs, exactness closed for all fifteen ladder cells.
-- **B6c-2** — the Option A / Option B verification cross-product. Both pre-declared predictions held: 4 vs 3 predicted ~5.5x and measured 5.774x countywide; 5 vs 4 predicted +12.8 percent and measured +12.52.
-
-Remaining: **B6d** — the published tables and the canonical-document pass. No measurement remains.
+The central engineering goals are correct spatial computation, explicit CRS
+handling, deterministic outputs, independent Python/C++ validation, provenance,
+reproducibility, and scalable countywide processing.
 
 ## Architecture
 
@@ -232,7 +215,8 @@ terrain evidence
 preliminary exposure index
 ```
 
-A future precipitation evidence family will be added separately.
+A precipitation evidence family was scoped and not built; see
+[Scoped and not built](#scoped-and-not-built).
 
 Validated source evidence should remain reusable even if the scoring methodology changes.
 
@@ -630,48 +614,72 @@ tests/cpp/test_water_segment_bvh.cpp
 tests/cpp/test_water_segment_bvh_verify_modes.cpp
 ```
 
-## Current roadmap
+## Project status
 
-Immediate work — Milestone 4 chunk B6d, the close-out. No measurement remains:
+All four milestones are complete. The capstone report is written, submitted, and
+accepted. No measurement remains open.
 
-1. give `python/caprm/ladder_analysis.py` a verification-mode dimension, so that pointing the analysis at the cross-product invocations cannot mix Option A and Option B inside one comparison;
-2. close the six outstanding exactness cells — the `_10000` and `_100000` Option B cells have digests but have not been run through `compare_python_cpp_water.py`, and the completion gate requires exact agreement for every implementation claiming exactness at every workload;
-3. publish the benchmark table as three adjacent comparisons per workload **and** per verification mode, with wall clock beside counts, `n` beside every figure, and any comparison whose gap sits inside its cells' own range marked NOT RESOLVED rather than printed as though it carried a claim;
-4. report search and verification as separate columns throughout, and report 4 vs 3 in both modes with Option A labelled diluted;
-5. report inflation as a first-class axis, including the uncounted `2W` window scan and its ~7.8x locality premium over a resolve-descent entry;
-6. update `docs/benchmark_results.md` and the three canonical documents, and verify this README does not contradict them.
+```text
+Milestone 1   FEMA point-in-polygon foundation                  complete
+Milestone 2   nearest-water evidence, countywide scaling        complete
+Milestone 3   terrain evidence, exposure index, audit           complete, frozen
+Milestone 4   Phase B, five-rung indexing ladder                complete
+              Phase C, surrogate feasibility                    complete
+```
 
-Complete: B6a (harness and protocol), B6b (`SEED_WINDOW` as a compile-time parameter), B6c (the ladder and the nine-window sweep), B6c-2 (the verification cross-product).
+[`docs/milestones.md`](docs/milestones.md) records what each milestone delivered.
 
-After Milestone 4 Phase B:
+### Scoped and not built
 
-1. train a neural surrogate of the pipeline's own deterministic output, split by spatial block rather than randomly;
-2. close the loop by using the surrogate's distance field to seed the exact query's search radius, making the approximate answer load-bearing for the exact one;
-3. consolidate reproducibility, runtime instrumentation, and repository hygiene;
-4. deliver the report and poster.
+These were identified, ranked, and left undone deliberately. Each is listed here
+rather than omitted, because a reader is entitled to know where the line was
+drawn.
 
-Precipitation is retained as a **gated stretch goal**, permitted only after the Milestone 4 computational work is complete and documented. It is not cancelled; it is outranked. A fourth evidence family adds ingestion, provenance, and validation work and no algorithmic content, and the project's identified weakness was that its computer-science contribution had stalled.
+- **Rung 6, the learned radius.** Seeding the search disk from a learned
+  distance field, making the approximate answer load-bearing for the exact one.
+  Phase C's finding removes its premise: a coordinates-only surrogate is not
+  separable from a constant predictor, so it has no distance field to offer.
+- **The index-size axis.** Every workload here varies query *count* at a fixed
+  1,189,589-entry index. The learned-index literature's central claim is that
+  the advantage grows with index size, and this project does not test it. Doing
+  so needs a defensible hydrography subsetting scheme, a reference recomputed at
+  each subset, and the model retrained at each N.
+- **The segment hierarchy in production.** It is 6.90x faster and equally exact,
+  and it is not what produced the shipped evidence. Adopting it would require
+  regenerating and revalidating every downstream product. The manifest records
+  which implementation ran; see [Known limitations](#current-known-limitations).
+- **Precipitation as a fourth evidence family.** Outranked rather than
+  cancelled. It adds ingestion, provenance and validation work and no
+  algorithmic content, and the project's identified weakness was that its
+  computer-science contribution had stalled.
 
 ## Documentation
 
-Current repository documentation includes:
+Start here:
 
-- [Milestone 2](docs/milestone_2.md)
+- [**Evidence index**](docs/evidence_index.md) — every published claim, the file
+  that establishes it, and the field within that file. Also lists what is not
+  tracked, beside the command that regenerates it.
+- [**Milestone history**](docs/milestones.md) — what each milestone delivered.
+- [**The report**](docs/report/report.pdf) — the capstone write-up
+  ([LaTeX source](docs/report_draft.txt)).
+
+Methods and policy:
+
+- [Scoring methodology](docs/scoring_methodology.md)
+- [Validation](docs/validation.md)
 - [Benchmark results](docs/benchmark_results.md)
 - [Data sources](docs/data_sources.md)
 - [CRS policy](docs/crs_policy.md)
-- [Validation](docs/validation.md)
-- [Milestone 1](docs/milestone_1.md)
+- [Milestone 1](docs/milestone_1.md), [Milestone 2](docs/milestone_2.md), [Milestone 3](docs/milestone_3.md)
 
-The three living canonical documents are tracked under `docs/canon/` and are reviewed at the end of every completed chunk:
+The three canonical documents under `docs/canon/` record durable architecture,
+implementation state, and the roadmap as it stood during development. They are
+long-form working documents rather than a reader's entry point, and each carries
+a header stating what it is current through.
 
-```text
-docs/canon/CAPRM_Flood_Project_Nucleus_2026-07-15.md   durable architecture, decisions, methodology
-docs/canon/CAPRM_Flood_Current_Status.md               exact present state, current commit, next task
-docs/canon/CAPRM_Flood_Roadmap.md                      remaining work in dependency order
-```
-
-Where they conflict with each other, prefer current validated code and generated artifacts first, then Current Status, then the Nucleus, then the Roadmap.
+Where any two sources conflict, prefer the generated artifacts first, then this
+README, then the canonical documents.
 
 ## Scope and interpretation
 
@@ -682,7 +690,7 @@ The current index is intended for comparative screening and analysis. It does no
 ## Current known limitations
 
 - The exposure index remains **preliminary**. It is frozen and characterized as moderately sensitive to weight choice, not calibrated.
-- Precipitation evidence has not yet been added and is gated behind Milestone 4.
+- Precipitation evidence was scoped and deliberately not built. It adds a fourth source family with no algorithmic content, and was outranked by the Milestone 4 computational work.
 - Memory is measured per rung on three instruments that disagree in direction, and none may be quoted alone (Nucleus 18.24). Countywide, on persistent structure the Hilbert path is 8.74x smaller than the segment BVH — a 9,516,712-byte key array plus a 4,194,400-byte model against 119,768,836 bytes of BVH; on peak resident memory the segment BVH is 1.25x smaller; on peak committed memory the Hilbert path is 1.20x smaller. Peak resident memory is the wrong instrument for a model's size cost specifically, because the peak occurs during index construction before the model is loaded. A ~160 MB transient in the Hilbert path's resident peak is constant across a 27x range of query count, which places it in index construction, and remains unattributed beyond that.
 - **Wall-clock figures follow B6a's repetition protocol** — 3+1 warm-up at rung 1 and 7+1 at rungs 2-5, blocked by repetition and cyclically rotated by block index, with dispersion reported as min/median/max and relative spread always. Absolutes move about 1 percent between invocations while adjacent ratios agree to 0.116 percentage points, so ratios are reported within an invocation and absolutes with their invocation named. `brute_force@countywide` carries a 31.71 percent spread at n=3, five times any other cell, so its figure is an order-of-magnitude statement and rung 1 appears in no adjacent comparison.
 - C++ `computation_seconds` includes geometry queries, CSV row writing, and progress logging; query-only and output-only time are not separated.
