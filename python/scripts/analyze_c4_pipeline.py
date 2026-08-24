@@ -96,7 +96,25 @@ def main() -> int:
         fits[stage] = {}
         for clock in ("setup_s", "compute_s", "process_wall_clock_s"):
             try:
-                fits[stage][clock] = pc.fit_stage(records, stage, clock)
+                fit = pc.fit_stage(records, stage, clock)
+                # A negative fixed cost is not physical. It appears when the
+                # per-property cost is NOT constant across workload size, so
+                # the line tilts to reach the large-N points and its intercept
+                # falls below zero. Flagged as a fact rather than judged
+                # against a threshold invented after seeing the data.
+                fit["intercept_is_negative"] = fit["a_fixed_s"] < 0.0
+                fit["per_property_us_by_workload"] = [
+                    {
+                        "workload": cell["workload"],
+                        "n_properties": cell["n_properties"],
+                        "us_per_property": cell[clock]["median_s"] / cell["n_properties"] * 1e6,
+                    }
+                    for cell in sorted(
+                        (r for r in records if r["stage"] == stage and clock in r),
+                        key=lambda r: r["n_properties"],
+                    )
+                ]
+                fits[stage][clock] = fit
             except pc.PipelineCostError as error:
                 # A stage measured at fewer than three workloads cannot carry a
                 # linearity claim. Recorded as unfitted rather than fitted on
@@ -196,7 +214,32 @@ def main() -> int:
                 f"| {fit['b_marginal_us_per_property']:.3f} "
                 f"| {fit['n_points']} | {fit['max_abs_residual_fraction']:.4f} |"
             )
+    lines += ["", "### Per-property cost is not constant across workload size", ""]
+    lines += ["| stage | 10,000 | 100,000 | countywide |", "| --- | ---: | ---: | ---: |"]
+    for stage in STAGES:
+        fit = fits[stage]["compute_s"]
+        if fit.get("fitted") is False:
+            continue
+        by = {row["workload"]: row["us_per_property"] for row in fit["per_property_us_by_workload"]}
+        lines.append(
+            f"| {stage} | {by.get('10000', float('nan')):.1f} "
+            f"| {by.get('100000', float('nan')):.1f} "
+            f"| {by.get('countywide', float('nan')):.1f} |"
+        )
+    negative = [s for s in STAGES if fits[s]["compute_s"].get("intercept_is_negative")]
     lines += [
+        "",
+        "Units are us/property. If cost were linear in N these rows would be flat.",
+        "They are not, and the fits say so from the other direction: "
+        f"{len(negative)} of {len(STAGES)} stages fit a NEGATIVE fixed cost "
+        f"({', '.join(negative)}), which is not physical. A negative intercept "
+        "is what a straight line does when it is asked to reach points whose "
+        "per-unit cost is still rising.",
+        "",
+        "**`b` above is therefore not a marginal cost that can be quoted alone.**",
+        "It is the slope of a line through three points that do not lie on one.",
+        "The `scoring` stage makes this plainest: its worst residual is 100.0",
+        "percent of the observed value.",
         "",
         "Three points fit two parameters. The residual qualifies the linearity",
         "claim; it does not confirm it. No R^2 is published: with three points it",

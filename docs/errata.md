@@ -52,12 +52,43 @@ denominator.
 protocol requires: *the exact path costs 34.099 µs/property at countywide under
 original-geometry verification, invocation `ladder`*.
 
-**A second reading of the same sentence.** "The exact path" is ambiguous between
-the C++ nearest-water query and the whole Python pipeline that produces the
-index value the surrogate predicts. Those are different quantities by a large
-factor, and only the second is the like-for-like comparison. The pipeline figure
-was not available when the report was written; it is now — see
-`docs/c4_inference_tables.md` and `outputs/validation/c4_pipeline_cost.json`.
+**A second reading of the same sentence, and it is the one that matters.**
+"The exact path" is ambiguous between the C++ nearest-water query and the whole
+Python pipeline that produces the exposure-index value the surrogate predicts.
+Only the second is a like-for-like comparison: the surrogate emits an index
+value, and a nearest-water distance is one of four inputs to that value.
+
+The pipeline figure did not exist when the report was written. It does now
+(`outputs/validation/c4_pipeline_cost.json`, measured 2026-08-24, boundary
+declared in source before the first run):
+
+```text
+fema_point_in_polygon       2.973 s        11.1 us/property
+nearest_water_python      329.572 s     1,232.7 us/property
+terrain_sampling           32.508 s       121.6 us/property
+scoring                     1.134 s         4.2 us/property
+                          ---------     -----------
+countywide compute        366.187 s     1,369.6 us/property
+```
+
+Against the surrogate's 1.979 µs/property (eight threads, batched), the ratio is
+**692×**, not sixteen to eighteen. The report's denominator was the C++
+implementation of one of the four stages — roughly 1/40th of the work the
+surrogate actually replaces.
+
+**The correction moves the report's result in its own favour**, which is why it
+is worth stating plainly rather than leaving as a footnote. The reported
+16–18× understates the measured advantage by a factor of about forty. The
+report's qualitative conclusion — that the advantage is a batching advantage
+rather than a latency advantage — is unaffected, since that rests on the batch
+and thread sweep.
+
+**What the correction does not license.** A 692× speed advantage is a statement
+about cost, not about usefulness. The surrogate emits one scalar; it does not
+produce the four components, their provenance, or the source-feature
+identifiers the pipeline produces, and under the buffered blocked split it is
+not separable from a constant predictor. A cheap predictor that is
+indistinguishable from a constant is not 692× better at anything.
 
 ## 2. The bibliography is not in the repository
 
