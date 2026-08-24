@@ -439,25 +439,47 @@ No flags are required. Python 3.14.0; every dependency including `scipy` is pinn
 
 ## C++ builds
 
+These five lines are the verified path. They produced every binary behind every
+measurement in this repository, and they were re-run against the current source
+on 2026-08-24 with g++ 15.2.0 (MSYS2): all five compile clean under
+`-Wall -Wextra`.
+
+```powershell
+g++ -std=c++17 -O2 cpp/spatial_core/src/fema_pip_dev.cpp -o cpp/spatial_core/build/fema_pip_dev.exe
+g++ -std=c++17 -O2 cpp/spatial_core/src/water_distance_bruteforce.cpp -o cpp/spatial_core/build/water_distance_bruteforce.exe
+g++ -std=c++17 -O2 cpp/spatial_core/src/water_distance_indexed.cpp -o cpp/spatial_core/build/water_distance_indexed.exe
+g++ -std=c++17 -O2 -Wall -Wextra cpp/spatial_core/src/water_distance_segment_bvh.cpp -o cpp/spatial_core/build/water_distance_segment_bvh.exe
+g++ -std=c++17 -O2 -ffp-contract=off -Wall -Wextra cpp/spatial_core/src/water_distance_hilbert.cpp -o cpp/spatial_core/build/water_distance_hilbert.exe
+```
+
+The two native invariant suites, which have no Python counterpart to compare
+against:
+
+```powershell
+g++ -std=c++17 -O2 -Wall -Wextra tests/cpp/test_water_segment_bvh.cpp -o cpp/spatial_core/build/test_water_segment_bvh.exe
+g++ -std=c++17 -O2 -Wall -Wextra tests/cpp/test_water_segment_bvh_verify_modes.cpp -o cpp/spatial_core/build/test_water_segment_bvh_verify_modes.exe
+```
+
+Both pass as of 2026-08-24: 80,021 checks and 607 checks respectively, 0
+failures. The first includes 100,000 randomized field-for-field trials against
+the brute-force kernel across two split caps.
+
+### CMake
+
+`cpp/spatial_core/CMakeLists.txt` builds all fourteen binaries plus the two
+suites under `ctest`, including the nine `SEED_WINDOW` variants behind a
+`seed_window_sweep` target.
+
 ```powershell
 cmake -S cpp/spatial_core -B cpp/spatial_core/cmake-build -DCMAKE_BUILD_TYPE=Release
 cmake --build cpp/spatial_core/cmake-build --parallel
-```
-
-Binaries land in `cpp/spatial_core/build/`, which is where the Python harness
-looks for them.
-
-The nine `SEED_WINDOW` variants are excluded from the default build:
-
-```powershell
 cmake --build cpp/spatial_core/cmake-build --target seed_window_sweep --parallel
-```
-
-The native invariant suites run under `ctest`:
-
-```powershell
 ctest --test-dir cpp/spatial_core/cmake-build --output-on-failure
 ```
+
+**It has not been executed.** CMake is not installed on the machine this
+repository was developed on, so the file is unverified. Use the direct `g++`
+lines above if you want the path that is known to work.
 
 The ladder is five separate translation units rather than a library, and
 deliberately so. Each source `#include`s the one below it, so the distance
@@ -478,16 +500,6 @@ Two compile settings are load-bearing rather than stylistic:
 
 Use the same compiler and optimization settings when comparing benchmark runs.
 Every published figure was taken at `-O2` with these flags.
-
-Equivalent direct builds, if you would rather not use CMake:
-
-```powershell
-g++ -std=c++17 -O2 cpp/spatial_core/src/fema_pip_dev.cpp -o cpp/spatial_core/build/fema_pip_dev.exe
-g++ -std=c++17 -O2 cpp/spatial_core/src/water_distance_bruteforce.cpp -o cpp/spatial_core/build/water_distance_bruteforce.exe
-g++ -std=c++17 -O2 cpp/spatial_core/src/water_distance_indexed.cpp -o cpp/spatial_core/build/water_distance_indexed.exe
-g++ -std=c++17 -O2 -Wall -Wextra cpp/spatial_core/src/water_distance_segment_bvh.cpp -o cpp/spatial_core/build/water_distance_segment_bvh.exe
-g++ -std=c++17 -O2 -ffp-contract=off -Wall -Wextra cpp/spatial_core/src/water_distance_hilbert.cpp -o cpp/spatial_core/build/water_distance_hilbert.exe
-```
 
 ## Reproducing the validated countywide FEMA / water evidence
 
@@ -834,5 +846,6 @@ The current index is intended for comparative screening and analysis. It does no
 - Below roughly twelve thousand properties the Hilbert path spends more time constructing its index than using it. Index construction is 0.912181 s and is constant across every workload while query cost is linear in the property count, so build equals query at Q = 12,301 under original-geometry verification and Q = 24,749 under split. Any end-to-end claim about this path states whether construction is included, and at what query count.
 - **The Python pipeline's per-property cost is not constant in workload size, so its marginal cost cannot be quoted as a single number.** Measured at three workloads under a boundary declared in source before the first run, `nearest_water_python` costs 780.9, 1234.2 and 1232.7 us/property at 10K, 100K and countywide. Three of the four stages fit a negative fixed cost, which is not physical and is what a straight line does when asked to reach points whose per-unit cost is still rising. The `a + b*N` fits are published with their residuals in `docs/c4_inference_tables.md`; `b` is a slope through three points that do not lie on one line, and is not a marginal cost on its own.
 - The C++ path does not itself verify the trained model's training-array SHA-256; it verifies a fingerprint (array length, five sampled keys, and the full inference chain) while the trainer verifies the digest. The provenance chain closes across the two languages but not inside either alone.
-- The C++ ladder builds under CMake but is deliberately not a reusable library: each rung is its own translation unit that `#include`s the one below it, which is what keeps the kernel and tie rule shared. Two native unit suites cover geometric invariants that have no Python counterpart; the primary correctness claim still rests on field-by-field comparison against the Python reference.
+- **The C++ build is not covered by the Python suite, and one native test suite was silently broken because of it.** `tests/cpp/test_water_segment_bvh.cpp` failed to compile from the B2 verification-mode fork until 2026-08-24, because the query signature gained three parameters and the test was not updated. Nothing detected it: `pytest` does not build C++, and the native suites were compiled by hand. Both suites now build and pass, and the CI workflow builds them on every push, but the underlying asymmetry remains — a C++ change can break a C++ test without any Python test noticing.
+- The C++ ladder is deliberately not a reusable library: each rung is its own translation unit that `#include`s the one below it, which is what keeps the kernel and tie rule shared. The primary correctness claim rests on field-by-field comparison against the Python reference; the two native suites cover geometric invariants that have no Python counterpart.
 - Public ArcGIS, FEMA, USGS, and future NOAA source data can change; manifests and checksums identify the exact cached inputs used for reported results.
