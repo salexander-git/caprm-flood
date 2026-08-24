@@ -420,11 +420,11 @@ py -3 -m venv .venv
 Current status:
 
 ```text
-python -m pytest -q --ignore=tests/test_spatial_split.py
-257 passed
+python -m pytest -q
+653 passed
 ```
 
-The `--ignore` flag is required and is not a Milestone 4 issue: `tests/test_spatial_split.py` imports `scipy.spatial.cKDTree`, scipy is not installed, and pytest otherwise aborts during collection and runs zero tests. That file and the module it imports are untracked Phase C work in progress; when Phase C begins, scipy must be installed *and* declared in `requirements.txt` in the same change.
+No flags are required. Python 3.14.0; every dependency including `scipy` is pinned in `requirements.txt`.
 
 ## C++ builds
 
