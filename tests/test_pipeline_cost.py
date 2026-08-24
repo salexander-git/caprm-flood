@@ -365,3 +365,42 @@ def test_boundary_records_the_dem_correction_made_before_measurement():
     correction = inside["correction_2026_07_30"]
     assert "compute_s" in correction
     assert "BEFORE any timing run" in correction
+
+# --- C4 item 2c, the analysis step -------------------------------------------
+
+
+def _load_analysis_script():
+    """Import the analysis script by path; python/scripts is not a package."""
+    import importlib.util
+
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    path = root / "python" / "scripts" / "analyze_c4_pipeline.py"
+    spec = importlib.util.spec_from_file_location("analyze_c4_pipeline", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_flatten_lifts_the_nested_process_clock():
+    module = _load_analysis_script()
+    records = [{"stage": "scoring", "process": {"process_wall_clock_s": {"median_s": 1.5}}}]
+    lifted = module.flatten_process_clock(records)
+    assert lifted[0]["process_wall_clock_s"]["median_s"] == 1.5
+    # The original is not mutated; the run log is the measurement of record.
+    assert "process_wall_clock_s" not in records[0]
+
+
+def test_flatten_tolerates_a_cell_measured_without_the_process_clock():
+    module = _load_analysis_script()
+    records = [{"stage": "scoring"}]
+    lifted = module.flatten_process_clock(records)
+    assert "process_wall_clock_s" not in lifted[0]
+
+
+def test_cited_cpp_figure_names_its_invocation():
+    """A quoted absolute must carry the invocation it came from (docs/errata.md)."""
+    module = _load_analysis_script()
+    assert module.CPP_CITATION["invocation"]
+    assert module.CPP_CITATION["operating_point"]
