@@ -1,0 +1,33 @@
+{
+  "chunk": "B5c",
+  "report": "query_cost_by_descent",
+  "benchmark_eligible": true,
+  "seed_mode": "rmi",
+  "region_mode": "disk",
+  "verification_mode": "original",
+  "properties": 267362,
+  "index_entries": 1189589,
+  "seed_window_entries": 64,
+  "query_seconds": 20.630267400000001,
+  "resolve_descent": {
+    "note": "seed-dependent; the descent a predicted position actually affects",
+    "nodes_total": 22236075,
+    "entries_total": 94249231,
+    "nodes_per_property": 83.168419595903686,
+    "entries_per_property": 352.51543226038103
+  },
+  "tight_descent": {
+    "note": "seed-invariant; every emitted CSV counter comes from here",
+    "nodes_per_property": 60.31990709225694,
+    "entries_per_property": 47.592623484264777
+  },
+  "seed_quality": {
+    "note": "d_seed >= d_best always, by the lemma; equality means the window held the nearest split segment",
+    "window_missed": 123011,
+    "fraction_window_missed": 0.46009156125403011,
+    "ratio_samples": 267362,
+    "mean_d_seed_over_d_best": 1.5388433412534919,
+    "max_d_seed_over_d_best": 517.34350711305513
+  },
+  "phase2_segment_checks_per_property": 11021.825857825719
+}

@@ -1,0 +1,23 @@
+{
+  "total_python_rows": 10000,
+  "total_cpp_rows": 10000,
+  "total_union_rows": 10000,
+  "total_joined_rows": 10000,
+  "missing_python_rows": 0,
+  "missing_cpp_rows": 0,
+  "coverage_rate": 1.0,
+  "matched_agreements": 10000,
+  "sfha_agreements": 10000,
+  "zone_agreements": 10000,
+  "feature_index_agreements": 10000,
+  "all_fields_agree": 10000,
+  "matched_agreement_rate": 1.0,
+  "sfha_agreement_rate": 1.0,
+  "zone_agreement_rate": 1.0,
+  "feature_index_agreement_rate": 1.0,
+  "all_fields_agreement_rate": 1.0,
+  "comparison_scope": "union",
+  "total_python_source_rows": 10000,
+  "python_baseline": "outputs/baseline/python_fema_membership_10000.csv",
+  "cpp_output": "outputs/cpp/cpp_fema_membership_10000.csv"
+}

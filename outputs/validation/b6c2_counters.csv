@@ -1,0 +1,7 @@
+"cell_key","verification_mode","average_segment_checks_per_property","average_candidate_features_per_property","resolve_entries_per_property","tight_entries_per_property","geometric_inflation_capped","peak_working_set_bytes","peak_commit_bytes","index_bytes","output_sha256"
+"hilbert_binary@countywide@split@w64","split","7616.515122","","141.174168","47.59262348426478","6.397244","232419328","285184000","","05c799b1fcef76bee01701d88ae4f2512d0e6b460aa63aa7f17143616ede12ee"
+"hilbert_binary@countywide@w64","original","11021.825858","","141.174168","47.59262348426478","6.397244","232357888","285159424","","8ad41e8391f64e683e67ac253dc4d1e4302da7706f893763d0d32a689d6b7e9e"
+"hilbert_rmi@countywide@split@w64","split","7616.515122","","352.515432","47.59262348426478","6.397244","232423424","285179904","","008945d1a38aff3570c2eafaed7ec1b6276243062b63f1dd5c8fafa78b424620"
+"hilbert_rmi@countywide@w64","original","11021.825858","","352.515432","47.59262348426478","6.397244","232390656","285171712","","86f05df0c4a32fd69fb4a63be3437edbc20466ec5beb3f22d8dae871302421aa"
+"segment_bvh@countywide","original","9407.617649","1.466237","","","","185901056","342335488","119768836.0","be9972181a71b4cd85afb9d7a0d41c02a75a975b0225c8b5485e6fd81552f8b6"
+"segment_bvh@countywide@split","split","6453.699262","1.466237","","","","185737216","342315008","119768836.0","90ecb3c996b07057d65a50fd074b48868d05262d2cec8bb25047bea48f79b3ea"

@@ -1,0 +1,272 @@
+{
+  "created_at_utc": "2026-07-15T23:41:11.447000+00:00",
+  "schema_version": "scoring_inputs_summary_v1",
+  "purpose": "Read-only description of the evidence and terrain inputs consumed by caprm.scoring, used to document current scoring behavior against measured values rather than assumptions.",
+  "inputs": {
+    "evidence": "outputs/evidence/property_flood_evidence_countywide.csv",
+    "evidence_sha256": "4e0d27e14b30aba4c2afb350b9c58d6b4384f951db7252831c29df8487bd75f2",
+    "terrain": "outputs/evidence/property_terrain_evidence_countywide.csv",
+    "terrain_sha256": "e7768c538b41639032af176bd789bec76137c29348bc9be931ca7b4c44e5d3de"
+  },
+  "evidence_table": {
+    "row_count": 267362,
+    "unique_property_ids": 267362,
+    "columns": {
+      "present_columns": [
+        "distance_crs",
+        "fema_feature_index",
+        "fema_project_crs",
+        "fema_projected_x",
+        "fema_projected_y",
+        "fema_source_feature_id",
+        "fema_zone",
+        "is_sfha",
+        "latitude",
+        "longitude",
+        "matched_fema_polygon",
+        "nearest_water_distance_m",
+        "nearest_water_feature_class",
+        "nearest_water_feature_id",
+        "nearest_water_feature_type",
+        "nearest_water_name",
+        "nearest_water_source_id",
+        "nearest_water_source_object_id",
+        "nearest_water_tie_count",
+        "property_id",
+        "sample_order",
+        "sfha_flag",
+        "water_projected_x",
+        "water_projected_y"
+      ],
+      "required_columns": [
+        "distance_crs",
+        "fema_zone",
+        "is_sfha",
+        "matched_fema_polygon",
+        "nearest_water_distance_m",
+        "property_id"
+      ],
+      "missing_required_columns": []
+    },
+    "distance_crs_values": [
+      "EPSG:26918"
+    ],
+    "fema": {
+      "distinct_normalized_zone_values": [
+        "<missing>",
+        "A",
+        "AE",
+        "AO",
+        "VE",
+        "X"
+      ],
+      "matched_property_count": 267358,
+      "unmatched_property_count": 4,
+      "sfha_property_count": 5061,
+      "matched_zone_sfha_counts": [
+        {
+          "matched_fema_polygon": true,
+          "fema_zone": "X",
+          "is_sfha": false,
+          "property_count": 262297
+        },
+        {
+          "matched_fema_polygon": true,
+          "fema_zone": "AE",
+          "is_sfha": true,
+          "property_count": 4226
+        },
+        {
+          "matched_fema_polygon": true,
+          "fema_zone": "A",
+          "is_sfha": true,
+          "property_count": 408
+        },
+        {
+          "matched_fema_polygon": true,
+          "fema_zone": "AO",
+          "is_sfha": true,
+          "property_count": 388
+        },
+        {
+          "matched_fema_polygon": true,
+          "fema_zone": "VE",
+          "is_sfha": true,
+          "property_count": 39
+        },
+        {
+          "matched_fema_polygon": false,
+          "fema_zone": "<missing>",
+          "is_sfha": false,
+          "property_count": 4
+        }
+      ]
+    },
+    "nearest_water_distance_m": {
+      "row_count": 267362,
+      "null_count": 0,
+      "unique_value_count": 265773,
+      "minimum": 0.0,
+      "maximum": 2630.23485692034,
+      "mean": 506.41090488221937,
+      "median": 325.34557960861605,
+      "zero_value_count": 266
+    }
+  },
+  "terrain_table": {
+    "row_count": 267362,
+    "unique_property_ids": 267362,
+    "columns": {
+      "present_columns": [
+        "property_id",
+        "terrain_crs",
+        "terrain_elevation_m",
+        "terrain_local_mean_elevation_m",
+        "terrain_relative_elevation_m",
+        "terrain_sample_radius_m",
+        "terrain_slope_degrees"
+      ],
+      "required_columns": [
+        "property_id",
+        "terrain_crs",
+        "terrain_elevation_m",
+        "terrain_relative_elevation_m",
+        "terrain_slope_degrees"
+      ],
+      "missing_required_columns": []
+    },
+    "terrain_crs_values": [
+      "EPSG:26918"
+    ],
+    "terrain_elevation_m": {
+      "row_count": 267362,
+      "null_count": 0,
+      "unique_value_count": 260138,
+      "minimum": 75.0,
+      "maximum": 296.309173583984,
+      "mean": 143.19652309904689,
+      "median": 146.828033447266,
+      "zero_value_count": 0
+    },
+    "terrain_relative_elevation_m": {
+      "row_count": 267362,
+      "null_count": 0,
+      "unique_value_count": 264447,
+      "minimum": -20.668783566451,
+      "maximum": 30.149121477383,
+      "mean": 0.24684098480990863,
+      "median": 0.17525637938549998,
+      "zero_value_count": 1
+    },
+    "terrain_slope_degrees": {
+      "row_count": 267362,
+      "null_count": 0,
+      "unique_value_count": 264770,
+      "minimum": 0.0,
+      "maximum": 58.138581831264,
+      "mean": 1.9055083576311016,
+      "median": 1.2338809801205,
+      "zero_value_count": 32
+    }
+  },
+  "manifest_structure": [
+    {
+      "path": "outputs/validation/property_flood_evidence_countywide_manifest.json",
+      "exists": true,
+      "top_level_keys": [
+        "columns",
+        "created_at_utc",
+        "description",
+        "distance_crs",
+        "evidence_summary",
+        "fema_baseline",
+        "fema_baseline_sha256",
+        "fema_project_crs",
+        "fema_validation",
+        "hydrography_query_buffer_meters",
+        "output_csv",
+        "output_sha256",
+        "output_size_bytes",
+        "property_cache",
+        "schema_version",
+        "scoring_included",
+        "water_baseline",
+        "water_baseline_sha256",
+        "water_benchmark",
+        "water_validation"
+      ],
+      "has_summary_block": false,
+      "summary_keys": null
+    },
+    {
+      "path": "outputs/validation/property_terrain_evidence_countywide_manifest.json",
+      "exists": true,
+      "top_level_keys": [
+        "created_at_utc",
+        "input_evidence",
+        "input_evidence_sha256",
+        "interpretation",
+        "output",
+        "output_sha256",
+        "sample_radius_meters",
+        "schema_version",
+        "summary",
+        "terrain_crs",
+        "terrain_raster",
+        "terrain_raster_sha256"
+      ],
+      "has_summary_block": true,
+      "summary_keys": [
+        "maximum_elevation_m",
+        "maximum_relative_elevation_m",
+        "mean_elevation_m",
+        "mean_relative_elevation_m",
+        "mean_slope_degrees",
+        "median_elevation_m",
+        "median_relative_elevation_m",
+        "median_slope_degrees",
+        "minimum_elevation_m",
+        "minimum_relative_elevation_m",
+        "missing_slope_count",
+        "property_count",
+        "terrain_crs_values",
+        "unique_property_ids"
+      ]
+    },
+    {
+      "path": "outputs/validation/property_exposure_index_countywide_manifest.json",
+      "exists": true,
+      "top_level_keys": [
+        "created_at_utc",
+        "distance_crs",
+        "input_evidence",
+        "input_evidence_sha256",
+        "input_terrain",
+        "input_terrain_sha256",
+        "interpretation",
+        "output",
+        "output_sha256",
+        "schema_version",
+        "summary",
+        "terrain_crs",
+        "weights"
+      ],
+      "has_summary_block": true,
+      "summary_keys": [
+        "maximum_exposure_index",
+        "maximum_exposure_percentile",
+        "mean_exposure_index",
+        "mean_fema_component",
+        "mean_terrain_component",
+        "mean_water_component",
+        "median_exposure_index",
+        "minimum_exposure_index",
+        "minimum_exposure_percentile",
+        "property_count",
+        "scoring_policy_version",
+        "unique_property_ids",
+        "weights"
+      ]
+    }
+  ]
+}

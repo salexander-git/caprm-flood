@@ -1,0 +1,30 @@
+{
+  "chunk": "B5",
+  "report": "seed_position_error_on_property_keys",
+  "reference": "std::lower_bound over the index key array",
+  "benchmark_eligible": false,
+  "seed_mode": "rmi",
+  "properties": 267362,
+  "index_entries": 1189589,
+  "seed_window_entries": 64,
+  "exact_zero": 99453,
+  "within_seed_window": 231617,
+  "fraction_within_seed_window": 0.8663048600773483,
+  "signed_error": {
+    "min": -17995,
+    "max": 11973,
+    "mean": -9.0889356004219,
+    "p50": 0,
+    "p90": 31,
+    "p99": 394.39000000001397,
+    "p99.9": 2083.2780000000494
+  },
+  "absolute_error": {
+    "max": 17995,
+    "mean": 55.767438903060267,
+    "p50": 5,
+    "p90": 100,
+    "p99": 731,
+    "p99.9": 5389.3070000003208
+  }
+}

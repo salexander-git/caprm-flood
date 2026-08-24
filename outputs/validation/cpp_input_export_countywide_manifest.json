@@ -1,0 +1,21 @@
+{
+  "created_at_utc": "2026-06-23T11:10:51.387078+00:00",
+  "scope": "baseline",
+  "project_crs": "EPSG:3857",
+  "config": "configs/monroe_fema_spike_countywide.yaml",
+  "property_cache": "data/processed/monroe_property_points_countywide.geojson",
+  "baseline_input": "outputs/baseline/python_fema_membership_countywide.csv",
+  "properties_output": "outputs/cpp_input/properties_projected_countywide.csv",
+  "rings_output": "outputs/cpp_input/fema_polygon_rings_joined_countywide.csv",
+  "bbox_buffer_meters": null,
+  "property_count": 267362,
+  "property_output_size_bytes": 26551236,
+  "property_output_sha256": "10adb1d50ae9cb828d4aaeb9c4ae92159601adeeed855d04a2bf43838bdeaff1",
+  "fema_feature_count": 1382,
+  "polygon_part_count": 1557,
+  "ring_count": 3027,
+  "ring_vertex_count": 11374305,
+  "invalid_geometry_count": 69,
+  "rings_output_size_bytes": 818315669,
+  "rings_output_sha256": "dec513c9217949a8bfee5819de28b5a160b0b7aece1cb50578f18159dd9a5556"
+}

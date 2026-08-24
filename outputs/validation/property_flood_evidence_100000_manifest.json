@@ -1,0 +1,103 @@
+{
+  "created_at_utc": "2026-06-23T10:34:26.541173+00:00",
+  "schema_version": "milestone_2_fema_water_evidence_v1",
+  "description": "Integrated property-level FEMA flood-zone and nearest-water evidence. No composite score or flood-loss prediction is included.",
+  "scoring_included": false,
+  "property_cache": "data/processed/monroe_property_points_sample_100000.geojson",
+  "fema_baseline": "outputs/baseline/python_fema_membership_100000.csv",
+  "fema_baseline_sha256": "6e24992672775fe072fd6fdcaad82cc7a0eda294e998147d2892ee7f17f4c962",
+  "water_baseline": "outputs/baseline/python_nearest_water_100000.csv",
+  "water_baseline_sha256": "4aef82a6559b42fdd65779585967b2add4deac7970b7cf316424c98928916e6e",
+  "fema_project_crs": "EPSG:3857",
+  "distance_crs": "EPSG:26918",
+  "hydrography_query_buffer_meters": 20000.0,
+  "fema_validation": {
+    "summary_path": "outputs/validation/fema_pip_100000_summary.json",
+    "summary_sha256": "2eca24760525af3e68afd584d78c8c3ff6b423481ff3c742c59b2e7c603f064b",
+    "validated_rows": 100000,
+    "all_fields_agree": 100000
+  },
+  "water_validation": {
+    "summary_path": "outputs/validation/water_indexed_100000_summary.json",
+    "summary_sha256": "e45e9ead564e33fa5326b6d9c845ed84165180da72a7147fa7e5cf3d2c0326dd",
+    "algorithm": "feature_bvh",
+    "validated_rows": 100000,
+    "all_fields_agree": 100000,
+    "maximum_absolute_error_m": 4.6564707645302406e-10
+  },
+  "water_benchmark": {
+    "summary_path": "outputs/validation/water_cpp_benchmark_100000_summary.json",
+    "summary_sha256": "9e52d10a4cf1f21ca2972cc0c24f599c6a53e70dc34346054a1e52b1af840ccb",
+    "repetitions": 1,
+    "warmups_per_algorithm": 0,
+    "comparison": {
+      "median_computation_speedup": 12.650872124615047,
+      "median_total_process_speedup": 12.152893319500548,
+      "segment_check_reduction_rate": 0.8935296897359661,
+      "segment_check_speedup_factor": 9.392289714570355,
+      "average_candidate_features_per_property": 6.51398,
+      "candidate_feature_fraction": 0.0007599136724218386
+    }
+  },
+  "evidence_summary": {
+    "property_count": 100000,
+    "unique_property_ids": 100000,
+    "matched_fema_polygon_count": 100000,
+    "sfha_property_count": 3278,
+    "non_sfha_property_count": 96722,
+    "fema_zone_counts": {
+      "X": 96722,
+      "AE": 2758,
+      "AO": 323,
+      "A": 182,
+      "VE": 15
+    },
+    "unique_fema_source_feature_count": 704,
+    "minimum_water_distance_m": 0.0,
+    "maximum_water_distance_m": 1682.1136231834,
+    "mean_water_distance_m": 321.83896577986746,
+    "median_water_distance_m": 260.166593802556,
+    "zero_water_distance_property_count": 120,
+    "unique_nearest_water_feature_count": 1109,
+    "nearest_water_class_counts": {
+      "flowline": 71157,
+      "waterbody": 28843
+    },
+    "nearest_water_type_counts": {
+      "Channel Line": 70467,
+      "Lake": 15635,
+      "River": 7314,
+      "Canal": 5240,
+      "Ocean or Great Lake": 1344
+    }
+  },
+  "output_csv": "outputs/evidence/property_flood_evidence_100000.csv",
+  "output_size_bytes": 27315390,
+  "output_sha256": "0bf74078d1ba3b842de3eff0a97ef859e94c044606f861cd53591c4d359e2825",
+  "columns": [
+    "sample_order",
+    "property_id",
+    "latitude",
+    "longitude",
+    "fema_projected_x",
+    "fema_projected_y",
+    "fema_project_crs",
+    "water_projected_x",
+    "water_projected_y",
+    "distance_crs",
+    "matched_fema_polygon",
+    "fema_zone",
+    "sfha_flag",
+    "is_sfha",
+    "fema_source_feature_id",
+    "fema_feature_index",
+    "nearest_water_distance_m",
+    "nearest_water_feature_id",
+    "nearest_water_feature_class",
+    "nearest_water_feature_type",
+    "nearest_water_source_id",
+    "nearest_water_source_object_id",
+    "nearest_water_name",
+    "nearest_water_tie_count"
+  ]
+}

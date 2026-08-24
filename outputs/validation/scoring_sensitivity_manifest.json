@@ -1,0 +1,620 @@
+{
+  "created_at_utc": "2026-07-16T02:01:05.643979+00:00",
+  "schema_version": "scoring_sensitivity_v1",
+  "scoring_policy_version": "preliminary_exposure_index_v2",
+  "input_evidence": "outputs/evidence/property_flood_evidence_countywide.csv",
+  "input_evidence_sha256": "4e0d27e14b30aba4c2afb350b9c58d6b4384f951db7252831c29df8487bd75f2",
+  "input_terrain": "outputs/evidence/property_terrain_evidence_countywide.csv",
+  "input_terrain_sha256": "e7768c538b41639032af176bd789bec76137c29348bc9be931ca7b4c44e5d3de",
+  "property_count": 267362,
+  "baseline_weights": {
+    "fema": 0.4,
+    "water": 0.35,
+    "terrain_absolute": 0.15,
+    "terrain_relative": 0.1
+  },
+  "baseline_scenario": "baseline",
+  "scenario_count": 40,
+  "plausible_scenario_count": 36,
+  "reference_scenario_count": 4,
+  "perturbation": {
+    "count": 24,
+    "seed": 20260716,
+    "concentration": 200.0,
+    "distribution": "dirichlet",
+    "note": "Alpha is concentration times the baseline weights, so the distribution is centered on the baseline and supported exactly on the weight simplex. The seed makes the scenario family reproducible."
+  },
+  "stability": {
+    "verdict": "moderately_sensitive",
+    "thresholds": {
+      "stable": {
+        "minimum_spearman": 0.95,
+        "minimum_top_decile_overlap": 0.8
+      },
+      "moderately_sensitive": {
+        "minimum_spearman": 0.85,
+        "minimum_top_decile_overlap": 0.6
+      }
+    },
+    "thresholds_note": "Declared in caprm.sensitivity before any result was measured. They are a judgement call with no external standard.",
+    "plausible_scenario_count": 35,
+    "minimum_spearman_with_baseline": 0.8750283804050064,
+    "worst_spearman_scenario": "equal",
+    "median_spearman_with_baseline": 0.9963336609341636,
+    "minimum_top_decile_overlap": 0.7614167632868309,
+    "worst_top_decile_overlap_scenario": "equal",
+    "median_top_decile_overlap": 0.9455436286793582,
+    "maximum_percentile_shift": 47.46673050022067,
+    "median_of_median_percentile_shift": 1.5595896200656796,
+    "reference_calibration": {
+      "description": "Reference corners place all weight on one component. They are not proposed configurations. They establish what a genuinely different weighting does to these metrics, without which a high correlation among plausible scenarios cannot be interpreted.",
+      "minimum_reference_spearman": 0.16741925309508368,
+      "maximum_reference_spearman": 0.8932573505511027,
+      "minimum_reference_top_decile_overlap": 0.28948647941055466
+    }
+  },
+  "property_variability": {
+    "median_percentile_range": 18.033228357058967,
+    "mean_percentile_range": 18.94734637155171,
+    "p95_percentile_range": 39.7377899626723,
+    "maximum_percentile_range": 63.038502105759235,
+    "properties_with_range_over_10": 207417,
+    "properties_with_range_over_25": 69041,
+    "note": "Computed across plausible scenarios only. Reference corners are excluded because including implausible configurations would inflate the apparent instability of every property."
+  },
+  "extreme_properties": {
+    "most_unstable": [
+      {
+        "property_id": "18009000010011110000",
+        "baseline_percentile": 64.65167076847122,
+        "minimum_percentile": 18.25764319536808,
+        "maximum_percentile": 81.29614530112731,
+        "mean_percentile": 62.97718282910643,
+        "standard_deviation_percentile": 12.69531076591182,
+        "percentile_range": 63.038502105759235
+      },
+      {
+        "property_id": "22903000010061200000",
+        "baseline_percentile": 63.44768516094285,
+        "minimum_percentile": 17.653032218490285,
+        "maximum_percentile": 80.02614432866301,
+        "mean_percentile": 61.77308813103166,
+        "standard_deviation_percentile": 12.597960291202442,
+        "percentile_range": 62.37311211017273
+      },
+      {
+        "property_id": "13632000010010000000",
+        "baseline_percentile": 65.55942878943156,
+        "minimum_percentile": 19.530823378041756,
+        "maximum_percentile": 81.76592036265437,
+        "mean_percentile": 63.89587587864642,
+        "standard_deviation_percentile": 12.454648760764405,
+        "percentile_range": 62.23509698461261
+      },
+      {
+        "property_id": "22403000010230000000",
+        "baseline_percentile": 61.00792184379231,
+        "minimum_percentile": 15.737090536426269,
+        "maximum_percentile": 77.88578780828989,
+        "mean_percentile": 59.406046650026724,
+        "standard_deviation_percentile": 12.615543645696022,
+        "percentile_range": 62.148697271863625
+      },
+      {
+        "property_id": "22808000020261000000",
+        "baseline_percentile": 62.508509062619225,
+        "minimum_percentile": 17.03308622766137,
+        "maximum_percentile": 78.9629790321736,
+        "mean_percentile": 60.83270684190974,
+        "standard_deviation_percentile": 12.479822448247047,
+        "percentile_range": 61.929892804512235
+      },
+      {
+        "property_id": "17912000030140000000",
+        "baseline_percentile": 61.85284371002611,
+        "minimum_percentile": 16.566677388708943,
+        "maximum_percentile": 78.41615487616042,
+        "mean_percentile": 60.208656968621,
+        "standard_deviation_percentile": 12.491656337078894,
+        "percentile_range": 61.84947748745148
+      },
+      {
+        "property_id": "22812000010300000000",
+        "baseline_percentile": 62.811095069606004,
+        "minimum_percentile": 17.40056552539254,
+        "maximum_percentile": 79.23639111018021,
+        "mean_percentile": 61.13525129059311,
+        "standard_deviation_percentile": 12.473648627720591,
+        "percentile_range": 61.83582558478767
+      },
+      {
+        "property_id": "19401000010320000000",
+        "baseline_percentile": 59.431220592305564,
+        "minimum_percentile": 14.644190273860907,
+        "maximum_percentile": 76.36836947658979,
+        "mean_percentile": 57.84709079408775,
+        "standard_deviation_percentile": 12.569164660845606,
+        "percentile_range": 61.724179202728884
+      },
+      {
+        "property_id": "22303000010070000000",
+        "baseline_percentile": 60.56582461232337,
+        "minimum_percentile": 15.589911804968546,
+        "maximum_percentile": 77.2652807803652,
+        "mean_percentile": 58.95481178659978,
+        "standard_deviation_percentile": 12.492100564775775,
+        "percentile_range": 61.67536897539666
+      },
+      {
+        "property_id": "18004000010042200000",
+        "baseline_percentile": 60.45212109424675,
+        "minimum_percentile": 15.593091015177924,
+        "maximum_percentile": 77.23947307395966,
+        "mean_percentile": 58.856209517017724,
+        "standard_deviation_percentile": 12.521733349778497,
+        "percentile_range": 61.64638205878173
+      },
+      {
+        "property_id": "17912000030130000000",
+        "baseline_percentile": 61.999087379657546,
+        "minimum_percentile": 16.93490473590114,
+        "maximum_percentile": 78.41952109873505,
+        "mean_percentile": 60.3545473926736,
+        "standard_deviation_percentile": 12.409233809480254,
+        "percentile_range": 61.484616362833904
+      },
+      {
+        "property_id": "22808000010091100000",
+        "baseline_percentile": 64.40986378019315,
+        "minimum_percentile": 19.19906344207479,
+        "maximum_percentile": 80.46917662195825,
+        "mean_percentile": 62.77523025377994,
+        "standard_deviation_percentile": 12.297403181558101,
+        "percentile_range": 61.27011317988347
+      },
+      {
+        "property_id": "22303000010320000000",
+        "baseline_percentile": 61.16426418114765,
+        "minimum_percentile": 16.447737524405113,
+        "maximum_percentile": 77.66249504417232,
+        "mean_percentile": 59.58303307459133,
+        "standard_deviation_percentile": 12.378077382825564,
+        "percentile_range": 61.214757519767204
+      },
+      {
+        "property_id": "17912000030150000000",
+        "baseline_percentile": 60.718052677643044,
+        "minimum_percentile": 16.190595522175926,
+        "maximum_percentile": 77.20244462563865,
+        "mean_percentile": 59.12956445235713,
+        "standard_deviation_percentile": 12.349072825761063,
+        "percentile_range": 61.01184910346272
+      },
+      {
+        "property_id": "22303000010110000000",
+        "baseline_percentile": 61.32359871634713,
+        "minimum_percentile": 16.821762254920294,
+        "maximum_percentile": 77.7133624075224,
+        "mean_percentile": 59.75036758319348,
+        "standard_deviation_percentile": 12.311023281097736,
+        "percentile_range": 60.8916001526021
+      },
+      {
+        "property_id": "19802000010028000000",
+        "baseline_percentile": 64.0775428071304,
+        "minimum_percentile": 19.039354882144806,
+        "maximum_percentile": 79.86998900367293,
+        "mean_percentile": 62.41590677308917,
+        "standard_deviation_percentile": 12.149973930832788,
+        "percentile_range": 60.83063412152812
+      },
+      {
+        "property_id": "22902000010211000000",
+        "baseline_percentile": 65.30284782429814,
+        "minimum_percentile": 20.667110509346877,
+        "maximum_percentile": 81.35860743112335,
+        "mean_percentile": 63.72543488686582,
+        "standard_deviation_percentile": 12.27071480055456,
+        "percentile_range": 60.69149692177647
+      },
+      {
+        "property_id": "18003000040010000000",
+        "baseline_percentile": 62.20536201853667,
+        "minimum_percentile": 17.825644631623042,
+        "maximum_percentile": 78.50629483621458,
+        "mean_percentile": 60.58812064209241,
+        "standard_deviation_percentile": 12.315648472794408,
+        "percentile_range": 60.68065020459154
+      },
+      {
+        "property_id": "22102000010290000000",
+        "baseline_percentile": 64.252212356281,
+        "minimum_percentile": 19.51417927753383,
+        "maximum_percentile": 80.19426844502958,
+        "mean_percentile": 62.63450344892361,
+        "standard_deviation_percentile": 12.196361360101236,
+        "percentile_range": 60.68008916749575
+      },
+      {
+        "property_id": "22816000020730000000",
+        "baseline_percentile": 64.66588370823078,
+        "minimum_percentile": 20.06623977977424,
+        "maximum_percentile": 80.68050059469932,
+        "mean_percentile": 63.07024745476172,
+        "standard_deviation_percentile": 12.229463082178519,
+        "percentile_range": 60.61426081492509
+      }
+    ],
+    "consistently_high": [
+      {
+        "property_id": "06251000010060000000",
+        "baseline_percentile": 100.0,
+        "minimum_percentile": 99.99962597526948,
+        "maximum_percentile": 100.0,
+        "mean_percentile": 99.99998961042417,
+        "standard_deviation_percentile": 6.233745508647338e-05,
+        "percentile_range": 0.00037402473051884044
+      },
+      {
+        "property_id": "06210000010020010000",
+        "baseline_percentile": 99.99962597526948,
+        "minimum_percentile": 99.99925195053898,
+        "maximum_percentile": 99.99962597526948,
+        "mean_percentile": 99.99961558569356,
+        "standard_deviation_percentile": 6.233745508410494e-05,
+        "percentile_range": 0.0003740247305046296
+      },
+      {
+        "property_id": "06210000010010000000",
+        "baseline_percentile": 99.99887792580844,
+        "minimum_percentile": 99.99887792580844,
+        "maximum_percentile": 99.99925195053898,
+        "mean_percentile": 99.99891948411181,
+        "standard_deviation_percentile": 0.00011921201560845071,
+        "percentile_range": 0.0003740247305330513
+      },
+      {
+        "property_id": "06211000010010010000",
+        "baseline_percentile": 99.99925195053898,
+        "minimum_percentile": 99.99887792580844,
+        "maximum_percentile": 100.0,
+        "mean_percentile": 99.9992311713873,
+        "standard_deviation_percentile": 0.0001775718895955909,
+        "percentile_range": 0.0011220741915565213
+      },
+      {
+        "property_id": "06211000010010020000",
+        "baseline_percentile": 99.99850390107794,
+        "minimum_percentile": 99.99850390107794,
+        "maximum_percentile": 99.99850390107794,
+        "mean_percentile": 99.998503901078,
+        "standard_deviation_percentile": 1.441243719105813e-14,
+        "percentile_range": 0.0
+      },
+      {
+        "property_id": "06306000010191000000",
+        "baseline_percentile": 99.99812987634742,
+        "minimum_percentile": 99.99775585161692,
+        "maximum_percentile": 99.99812987634742,
+        "mean_percentile": 99.99808831804397,
+        "standard_deviation_percentile": 0.00011921201559939195,
+        "percentile_range": 0.0003740247305046296
+      },
+      {
+        "property_id": "04729000020120000000",
+        "baseline_percentile": 99.99738182688638,
+        "minimum_percentile": 99.99588572796434,
+        "maximum_percentile": 99.99738182688638,
+        "mean_percentile": 99.99725715197619,
+        "standard_deviation_percentile": 0.00028273612031913997,
+        "percentile_range": 0.00149609892204694
+      },
+      {
+        "property_id": "04729000020110000000",
+        "baseline_percentile": 99.99700780215588,
+        "minimum_percentile": 99.99551170323382,
+        "maximum_percentile": 99.99700780215588,
+        "mean_percentile": 99.99687273766992,
+        "standard_deviation_percentile": 0.00028488772335422553,
+        "percentile_range": 0.001496098922061151
+      },
+      {
+        "property_id": "04729000020100000000",
+        "baseline_percentile": 99.99663377742536,
+        "minimum_percentile": 99.9951376785033,
+        "maximum_percentile": 99.99663377742536,
+        "mean_percentile": 99.99640520675669,
+        "standard_deviation_percentile": 0.00037164238314886007,
+        "percentile_range": 0.001496098922061151
+      },
+      {
+        "property_id": "04729000020090000000",
+        "baseline_percentile": 99.9947636537728,
+        "minimum_percentile": 99.99326755485073,
+        "maximum_percentile": 99.99551170323382,
+        "mean_percentile": 99.99438962904232,
+        "standard_deviation_percentile": 0.0007794496933025267,
+        "percentile_range": 0.002244148383084621
+      },
+      {
+        "property_id": "04729000020140000000",
+        "baseline_percentile": 99.99364157958124,
+        "minimum_percentile": 99.99326755485073,
+        "maximum_percentile": 99.9951376785033,
+        "mean_percentile": 99.99390131897744,
+        "standard_deviation_percentile": 0.0006052101513023297,
+        "percentile_range": 0.0018701236525657805
+      },
+      {
+        "property_id": "04721000010160000000",
+        "baseline_percentile": 99.99551170323382,
+        "minimum_percentile": 99.99289353012021,
+        "maximum_percentile": 99.99625975269485,
+        "mean_percentile": 99.99516884723086,
+        "standard_deviation_percentile": 0.0008639659003717713,
+        "percentile_range": 0.0033662225746411423
+      },
+      {
+        "property_id": "06306000010242200000",
+        "baseline_percentile": 99.99775585161692,
+        "minimum_percentile": 99.99289353012021,
+        "maximum_percentile": 99.99812987634742,
+        "mean_percentile": 99.9973298790072,
+        "standard_deviation_percentile": 0.0012899485830375613,
+        "percentile_range": 0.005236346227206923
+      },
+      {
+        "property_id": "00116000020130000000",
+        "baseline_percentile": 99.99625975269485,
+        "minimum_percentile": 99.9925195053897,
+        "maximum_percentile": 99.99738182688638,
+        "mean_percentile": 99.99559481984058,
+        "standard_deviation_percentile": 0.0013021559623293375,
+        "percentile_range": 0.004862321496688082
+      },
+      {
+        "property_id": "04729000020130000000",
+        "baseline_percentile": 99.99326755485073,
+        "minimum_percentile": 99.9925195053897,
+        "maximum_percentile": 99.9947636537728,
+        "mean_percentile": 99.99348573594347,
+        "standard_deviation_percentile": 0.0006408512146475669,
+        "percentile_range": 0.002244148383098832
+      },
+      {
+        "property_id": "06309000010300000000",
+        "baseline_percentile": 99.99588572796434,
+        "minimum_percentile": 99.99214548065918,
+        "maximum_percentile": 99.99812987634742,
+        "mean_percentile": 99.99596884457108,
+        "standard_deviation_percentile": 0.0012327784797027002,
+        "percentile_range": 0.005984395688244604
+      },
+      {
+        "property_id": "06309000010280000000",
+        "baseline_percentile": 99.99438962904227,
+        "minimum_percentile": 99.99177145592867,
+        "maximum_percentile": 99.99663377742536,
+        "mean_percentile": 99.9945039143766,
+        "standard_deviation_percentile": 0.001018711403007336,
+        "percentile_range": 0.004862321496688082
+      },
+      {
+        "property_id": "01712000030130000000",
+        "baseline_percentile": 99.9925195053897,
+        "minimum_percentile": 99.99102340646763,
+        "maximum_percentile": 99.9951376785033,
+        "mean_percentile": 99.99271690733079,
+        "standard_deviation_percentile": 0.0009051359226150047,
+        "percentile_range": 0.004114272035664612
+      },
+      {
+        "property_id": "06309000010310000000",
+        "baseline_percentile": 99.9951376785033,
+        "minimum_percentile": 99.99102340646763,
+        "maximum_percentile": 99.99738182688638,
+        "mean_percentile": 99.99525196383762,
+        "standard_deviation_percentile": 0.0012318324581808823,
+        "percentile_range": 0.006358420418749233
+      },
+      {
+        "property_id": "06309000010270000000",
+        "baseline_percentile": 99.99289353012021,
+        "minimum_percentile": 99.99027535700661,
+        "maximum_percentile": 99.99625975269485,
+        "mean_percentile": 99.99348573594354,
+        "standard_deviation_percentile": 0.0011180596019614846,
+        "percentile_range": 0.005984395688244604
+      }
+    ],
+    "consistently_low": [
+      {
+        "property_id": "11504000020340000000",
+        "baseline_percentile": 0.00037402473051518164,
+        "minimum_percentile": 0.00037402473051518164,
+        "maximum_percentile": 0.026555755866577897,
+        "mean_percentile": 0.002025967290290564,
+        "standard_deviation_percentile": 0.006125903963225589,
+        "percentile_range": 0.026181731136062716
+      },
+      {
+        "property_id": "11504000020330000000",
+        "baseline_percentile": 0.0007480494610303633,
+        "minimum_percentile": 0.00037402473051518164,
+        "maximum_percentile": 0.04563101712285216,
+        "mean_percentile": 0.003553234939894228,
+        "standard_deviation_percentile": 0.010486994858942188,
+        "percentile_range": 0.04525699239233698
+      },
+      {
+        "property_id": "11504000020351000000",
+        "baseline_percentile": 0.0026181731136062716,
+        "minimum_percentile": 0.0014960989220607266,
+        "maximum_percentile": 0.08490361382694624,
+        "mean_percentile": 0.009184385049317253,
+        "standard_deviation_percentile": 0.02051784767829078,
+        "percentile_range": 0.08340751490488552
+      },
+      {
+        "property_id": "16902000010390000000",
+        "baseline_percentile": 0.001122074191545545,
+        "minimum_percentile": 0.001122074191545545,
+        "maximum_percentile": 0.08639971274900696,
+        "mean_percentile": 0.0068778992111402934,
+        "standard_deviation_percentile": 0.020006707904903723,
+        "percentile_range": 0.08527763855746141
+      },
+      {
+        "property_id": "11603000030230000000",
+        "baseline_percentile": 0.0018701236525759085,
+        "minimum_percentile": 0.001122074191545545,
+        "maximum_percentile": 0.08826983640158288,
+        "mean_percentile": 0.007968804675142892,
+        "standard_deviation_percentile": 0.02083706116098243,
+        "percentile_range": 0.08714776221003734
+      },
+      {
+        "property_id": "11504000020300000000",
+        "baseline_percentile": 0.0014960989220607266,
+        "minimum_percentile": 0.0014960989220607266,
+        "maximum_percentile": 0.09612435574240169,
+        "mean_percentile": 0.00802075255438111,
+        "standard_deviation_percentile": 0.02230776243486602,
+        "percentile_range": 0.09462825682034097
+      },
+      {
+        "property_id": "11603000030211000000",
+        "baseline_percentile": 0.00224414838309109,
+        "minimum_percentile": 0.00224414838309109,
+        "maximum_percentile": 0.11632169119022148,
+        "mean_percentile": 0.01076360057815913,
+        "standard_deviation_percentile": 0.027317359241680432,
+        "percentile_range": 0.1140775428071304
+      },
+      {
+        "property_id": "10530000010040000000",
+        "baseline_percentile": 0.009724642993394723,
+        "minimum_percentile": 0.005984395688242906,
+        "maximum_percentile": 0.1223060868784644,
+        "mean_percentile": 0.02278433983388314,
+        "standard_deviation_percentile": 0.027609348634739073,
+        "percentile_range": 0.1163216911902215
+      },
+      {
+        "property_id": "20704000010171000000",
+        "baseline_percentile": 0.003740247305151817,
+        "minimum_percentile": 0.0026181731136062716,
+        "maximum_percentile": 0.15783843627740665,
+        "mean_percentile": 0.016986956510897825,
+        "standard_deviation_percentile": 0.03911165255788296,
+        "percentile_range": 0.1552202631638004
+      },
+      {
+        "property_id": "11603000030010000000",
+        "baseline_percentile": 0.004114272035666998,
+        "minimum_percentile": 0.0033662225746366346,
+        "maximum_percentile": 0.1612046588520433,
+        "mean_percentile": 0.0169350086316596,
+        "standard_deviation_percentile": 0.03860436486279389,
+        "percentile_range": 0.15783843627740665
+      },
+      {
+        "property_id": "10530000010050000000",
+        "baseline_percentile": 0.01383891502906172,
+        "minimum_percentile": 0.009724642993394723,
+        "maximum_percentile": 0.18327211795243903,
+        "mean_percentile": 0.029059643645860094,
+        "standard_deviation_percentile": 0.03870189875026375,
+        "percentile_range": 0.1735474749590443
+      },
+      {
+        "property_id": "11504000020290000000",
+        "baseline_percentile": 0.002992197844121453,
+        "minimum_percentile": 0.0026181731136062716,
+        "maximum_percentile": 0.19037858783222747,
+        "mean_percentile": 0.01719474802785069,
+        "standard_deviation_percentile": 0.04443119517407581,
+        "percentile_range": 0.1877604147186212
+      },
+      {
+        "property_id": "12050000020010020000",
+        "baseline_percentile": 0.007854519340818815,
+        "minimum_percentile": 0.002992197844121453,
+        "maximum_percentile": 0.20646165124438026,
+        "mean_percentile": 0.021454474125384735,
+        "standard_deviation_percentile": 0.03883637174355874,
+        "percentile_range": 0.20346945340025882
+      },
+      {
+        "property_id": "10530000010080000000",
+        "baseline_percentile": 0.033662225746366355,
+        "minimum_percentile": 0.027303805327608264,
+        "maximum_percentile": 0.212072022202108,
+        "mean_percentile": 0.05740240655823273,
+        "standard_deviation_percentile": 0.04335567216298154,
+        "percentile_range": 0.18476821687449974
+      },
+      {
+        "property_id": "11603000030240000000",
+        "baseline_percentile": 0.005984395688242906,
+        "minimum_percentile": 0.004862321496697361,
+        "maximum_percentile": 0.2259109372311697,
+        "mean_percentile": 0.025724589798766396,
+        "standard_deviation_percentile": 0.05473942966525366,
+        "percentile_range": 0.22104861573447235
+      },
+      {
+        "property_id": "12050000010750000000",
+        "baseline_percentile": 0.008228544071333997,
+        "minimum_percentile": 0.0026181731136062716,
+        "maximum_percentile": 0.23226935764992782,
+        "mean_percentile": 0.023044079230074243,
+        "standard_deviation_percentile": 0.044940750929431214,
+        "percentile_range": 0.22965118453632155
+      },
+      {
+        "property_id": "1160300001029000TRAN",
+        "baseline_percentile": 0.0033662225746366346,
+        "minimum_percentile": 0.0026181731136062716,
+        "maximum_percentile": 0.2360096049550796,
+        "mean_percentile": 0.02072720381604963,
+        "standard_deviation_percentile": 0.055270491334846183,
+        "percentile_range": 0.23339143184147335
+      },
+      {
+        "property_id": "12025000030010000000",
+        "baseline_percentile": 0.011594766645970632,
+        "minimum_percentile": 0.0007480494610303633,
+        "maximum_percentile": 0.24797839633156543,
+        "mean_percentile": 0.034389496055701435,
+        "standard_deviation_percentile": 0.06561737933935158,
+        "percentile_range": 0.24723034687053508
+      },
+      {
+        "property_id": "12025000030730000000",
+        "baseline_percentile": 0.011220741915455449,
+        "minimum_percentile": 0.00037402473051518164,
+        "maximum_percentile": 0.24872644579259579,
+        "mean_percentile": 0.033495992532804046,
+        "standard_deviation_percentile": 0.06536730967128203,
+        "percentile_range": 0.2483524210620806
+      },
+      {
+        "property_id": "12025000030030000000",
+        "baseline_percentile": 0.01309086556803136,
+        "minimum_percentile": 0.0014960989220607266,
+        "maximum_percentile": 0.2505965694451717,
+        "mean_percentile": 0.03564663473326633,
+        "standard_deviation_percentile": 0.0661246479975564,
+        "percentile_range": 0.249100470523111
+      }
+    ]
+  },
+  "outputs": {
+    "scenario_summary": "outputs/analysis/scoring_sensitivity_summary.csv",
+    "scenario_summary_sha256": "65a28b51a92c63685d2927e06aea61a4d52705cde24dc5a1c63681288a56a240",
+    "property_shifts": "outputs/analysis/scoring_sensitivity_property_shifts.csv",
+    "property_shifts_sha256": "1d1cd9a9ce03ced7e253471a9c44f80fbb9d2b32966710f8ad9ce0461171b5af"
+  },
+  "interpretation": "Sensitivity measures how far the countywide ranking moves when component weights change. It does not establish that the weights are correct, that the components are the right components, or that the index estimates flood probability. A stable ranking under reweighting means the conclusion does not hinge on the weight choice, not that the conclusion is right."
+}

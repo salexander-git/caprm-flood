@@ -1,0 +1,361 @@
+{
+  "created_at_utc": "2026-07-31T02:49:36.913097+00:00",
+  "schema_version": "milestone3_audit_v1",
+  "purpose": "Audit the structural completeness and provenance consistency of the Milestone 3 products. Checks the stored artifacts rather than the code that produced them, so it catches drift the unit tests cannot see.",
+  "status": "warn",
+  "status_counts": {
+    "pass": 49,
+    "warn": 1,
+    "fail": 0
+  },
+  "audited": {
+    "flood_evidence": "outputs/evidence/property_flood_evidence_countywide.csv",
+    "terrain_evidence": "outputs/evidence/property_terrain_evidence_countywide.csv",
+    "exposure_index": "outputs/index/property_exposure_index_countywide.csv",
+    "terrain_raster": "data/raw/terrain/monroe_dem_utm18.tif",
+    "property_workload": "data/processed/monroe_property_points_countywide.geojson"
+  },
+  "population_reference": "property_workload",
+  "checks": [
+    {
+      "check": "manifest_schema_consistency",
+      "status": "warn",
+      "detail": "2 manifest key conventions are in use. Any tool reading manifests generically must handle each.",
+      "conventions": {
+        "flood_evidence": {
+          "summary_key": "evidence_summary",
+          "output_key": "output_csv"
+        },
+        "terrain_evidence": {
+          "summary_key": "summary",
+          "output_key": "output"
+        },
+        "exposure_index": {
+          "summary_key": "summary",
+          "output_key": "output"
+        }
+      }
+    },
+    {
+      "check": "flood_evidence_manifest_path_agreement",
+      "status": "pass",
+      "detail": "Manifest records 'outputs/evidence/property_flood_evidence_countywide.csv'; audited 'outputs/evidence/property_flood_evidence_countywide.csv'."
+    },
+    {
+      "check": "flood_evidence_checksum",
+      "status": "pass",
+      "detail": "Manifest checksum matches the file on disk.",
+      "sha256": "4e0d27e14b30aba4c2afb350b9c58d6b4384f951db7252831c29df8487bd75f2"
+    },
+    {
+      "check": "terrain_evidence_manifest_path_agreement",
+      "status": "pass",
+      "detail": "Manifest records 'outputs/evidence/property_terrain_evidence_countywide.csv'; audited 'outputs/evidence/property_terrain_evidence_countywide.csv'."
+    },
+    {
+      "check": "terrain_evidence_checksum",
+      "status": "pass",
+      "detail": "Manifest checksum matches the file on disk.",
+      "sha256": "e7768c538b41639032af176bd789bec76137c29348bc9be931ca7b4c44e5d3de"
+    },
+    {
+      "check": "exposure_index_manifest_path_agreement",
+      "status": "pass",
+      "detail": "Manifest records 'outputs/index/property_exposure_index_countywide.csv'; audited 'outputs/index/property_exposure_index_countywide.csv'."
+    },
+    {
+      "check": "exposure_index_checksum",
+      "status": "pass",
+      "detail": "Manifest checksum matches the file on disk.",
+      "sha256": "3cae2e830a5867bee4d51a36f1c5c04f05ee0a6a26d64dace27da75d3c4911b0"
+    },
+    {
+      "check": "index_input_evidence_checksum",
+      "status": "pass",
+      "detail": "Manifest checksum matches the file on disk.",
+      "sha256": "4e0d27e14b30aba4c2afb350b9c58d6b4384f951db7252831c29df8487bd75f2"
+    },
+    {
+      "check": "index_input_terrain_checksum",
+      "status": "pass",
+      "detail": "Manifest checksum matches the file on disk.",
+      "sha256": "e7768c538b41639032af176bd789bec76137c29348bc9be931ca7b4c44e5d3de"
+    },
+    {
+      "check": "terrain_input_evidence_checksum",
+      "status": "pass",
+      "detail": "Manifest checksum matches the file on disk.",
+      "sha256": "4e0d27e14b30aba4c2afb350b9c58d6b4384f951db7252831c29df8487bd75f2"
+    },
+    {
+      "check": "terrain_schema",
+      "status": "pass",
+      "detail": "Schema matches the expected 7 columns."
+    },
+    {
+      "check": "terrain_property_ids_present",
+      "status": "pass",
+      "detail": "0 null property IDs.",
+      "null_count": 0
+    },
+    {
+      "check": "terrain_property_ids_unique",
+      "status": "pass",
+      "detail": "0 duplicate property IDs.",
+      "row_count": 267362,
+      "unique_count": 267362
+    },
+    {
+      "check": "terrain_terrain_elevation_m_nulls",
+      "status": "pass",
+      "detail": "0 null values.",
+      "null_count": 0
+    },
+    {
+      "check": "terrain_terrain_local_mean_elevation_m_nulls",
+      "status": "pass",
+      "detail": "0 null values.",
+      "null_count": 0
+    },
+    {
+      "check": "terrain_terrain_relative_elevation_m_nulls",
+      "status": "pass",
+      "detail": "0 null values.",
+      "null_count": 0
+    },
+    {
+      "check": "terrain_terrain_slope_degrees_nulls",
+      "status": "pass",
+      "detail": "0 null values.",
+      "null_count": 0
+    },
+    {
+      "check": "terrain_terrain_sample_radius_m_nulls",
+      "status": "pass",
+      "detail": "0 null values.",
+      "null_count": 0
+    },
+    {
+      "check": "terrain_relative_elevation_derivation",
+      "status": "pass",
+      "detail": "terrain_relative_elevation_m must equal elevation minus local mean. Maximum difference 1.040e-12.",
+      "maximum_absolute_difference": 1.0396128402589966e-12,
+      "tolerance": 1e-09
+    },
+    {
+      "check": "terrain_sample_radius_consistency",
+      "status": "pass",
+      "detail": "Artifact radius 90.0; manifest radius 90.0.",
+      "artifact_value": 90.0,
+      "manifest_value": 90.0
+    },
+    {
+      "check": "terrain_crs_consistency",
+      "status": "pass",
+      "detail": "Artifact CRS ['EPSG:26918']; manifest CRS 'EPSG:26918'.",
+      "artifact_values": [
+        "EPSG:26918"
+      ],
+      "manifest_value": "EPSG:26918"
+    },
+    {
+      "check": "terrain_terrain_elevation_m_plausibility",
+      "status": "pass",
+      "detail": "0 below 70.0, 0 above 400.0.",
+      "observed_minimum": 75.0,
+      "observed_maximum": 296.309173583984,
+      "rationale": "Lake Ontario's low-water datum is roughly 74.2 m, so a land elevation materially below 70 m suggests nodata leakage rather than terrain. Monroe County is a lake plain; 400 m is generous."
+    },
+    {
+      "check": "terrain_terrain_slope_degrees_plausibility",
+      "status": "pass",
+      "detail": "0 below 0.0, 0 above 70.0.",
+      "observed_minimum": 0.0,
+      "observed_maximum": 58.138581831264,
+      "rationale": "The county is flat apart from the Genesee gorge, whose walls are the steepest real terrain present. A slope beyond 70 degrees would suggest a DEM artifact."
+    },
+    {
+      "check": "terrain_source_raster_checksum",
+      "status": "pass",
+      "detail": "Manifest checksum matches the file on disk.",
+      "sha256": "069cfd98ff0c112bc80c7d7078b31f7a48132d8434c3a9563b2e0bab79ec4c66"
+    },
+    {
+      "check": "terrain_manifest_count_agreement",
+      "status": "pass",
+      "detail": "Manifest reports 267362 properties; artifact holds 267362.",
+      "manifest_value": 267362,
+      "artifact_value": 267362
+    },
+    {
+      "check": "index_schema",
+      "status": "pass",
+      "detail": "Schema matches the expected 8 columns."
+    },
+    {
+      "check": "index_property_ids_present",
+      "status": "pass",
+      "detail": "0 null property IDs.",
+      "null_count": 0
+    },
+    {
+      "check": "index_property_ids_unique",
+      "status": "pass",
+      "detail": "0 duplicate property IDs.",
+      "row_count": 267362,
+      "unique_count": 267362
+    },
+    {
+      "check": "index_fema_component_0_100_nulls",
+      "status": "pass",
+      "detail": "0 null values.",
+      "null_count": 0
+    },
+    {
+      "check": "index_water_component_0_100_nulls",
+      "status": "pass",
+      "detail": "0 null values.",
+      "null_count": 0
+    },
+    {
+      "check": "index_terrain_absolute_component_0_100_nulls",
+      "status": "pass",
+      "detail": "0 null values.",
+      "null_count": 0
+    },
+    {
+      "check": "index_terrain_relative_component_0_100_nulls",
+      "status": "pass",
+      "detail": "0 null values.",
+      "null_count": 0
+    },
+    {
+      "check": "index_exposure_index_0_100_nulls",
+      "status": "pass",
+      "detail": "0 null values.",
+      "null_count": 0
+    },
+    {
+      "check": "index_exposure_percentile_nulls",
+      "status": "pass",
+      "detail": "0 null values.",
+      "null_count": 0
+    },
+    {
+      "check": "index_fema_component_0_100_range",
+      "status": "pass",
+      "detail": "0 values outside 0-100.",
+      "minimum": 0.0,
+      "maximum": 100.0
+    },
+    {
+      "check": "index_water_component_0_100_range",
+      "status": "pass",
+      "detail": "0 values outside 0-100.",
+      "minimum": 0.000374024731,
+      "maximum": 99.950441723207
+    },
+    {
+      "check": "index_terrain_absolute_component_0_100_range",
+      "status": "pass",
+      "detail": "0 values outside 0-100.",
+      "minimum": 0.000374024731,
+      "maximum": 99.998503901078
+    },
+    {
+      "check": "index_terrain_relative_component_0_100_range",
+      "status": "pass",
+      "detail": "0 values outside 0-100.",
+      "minimum": 0.000374024731,
+      "maximum": 100.0
+    },
+    {
+      "check": "index_exposure_index_0_100_range",
+      "status": "pass",
+      "detail": "0 values outside 0-100.",
+      "minimum": 7.914598933,
+      "maximum": 99.929084911
+    },
+    {
+      "check": "index_exposure_percentile_range",
+      "status": "pass",
+      "detail": "0 values outside 0-100.",
+      "minimum": 0.000374024731,
+      "maximum": 100.0
+    },
+    {
+      "check": "index_composite_derivation",
+      "status": "pass",
+      "detail": "The manifest's weights applied to the artifact's component columns must reproduce the stored index. Maximum difference 5.002e-10.",
+      "maximum_absolute_difference": 5.002043224067165e-10,
+      "tolerance": 1e-09,
+      "weights": {
+        "fema": 0.4,
+        "water": 0.35,
+        "terrain_absolute": 0.15,
+        "terrain_relative": 0.1
+      }
+    },
+    {
+      "check": "index_percentile_derivation",
+      "status": "pass",
+      "detail": "Ranking the stored index must reproduce the stored percentile. Maximum difference 5.009e-13.",
+      "maximum_absolute_difference": 5.009326287108706e-13,
+      "tolerance": 1e-06
+    },
+    {
+      "check": "index_deterministic_ordering",
+      "status": "pass",
+      "detail": "Output must be sorted by property_id so that row order is independent of input order."
+    },
+    {
+      "check": "index_percentile_ties",
+      "status": "pass",
+      "detail": "14754 properties share a percentile with at least one other. Ties take an average rank, so tied properties are neither split nor ordered arbitrarily.",
+      "tied_property_count": 14754,
+      "distinct_percentile_count": 252608
+    },
+    {
+      "check": "index_policy_version_consistency",
+      "status": "pass",
+      "detail": "Artifact version ['preliminary_exposure_index_v2']; manifest version 'preliminary_exposure_index_v2'.",
+      "artifact_values": [
+        "preliminary_exposure_index_v2"
+      ],
+      "manifest_value": "preliminary_exposure_index_v2"
+    },
+    {
+      "check": "index_manifest_count_agreement",
+      "status": "pass",
+      "detail": "Manifest reports 267362 properties; artifact holds 267362.",
+      "manifest_value": 267362,
+      "artifact_value": 267362
+    },
+    {
+      "check": "population_reference",
+      "status": "pass",
+      "detail": "Comparing every product against property_workload, which holds 267362 property IDs.",
+      "reference": "property_workload",
+      "property_count": 267362
+    },
+    {
+      "check": "population_flood_evidence",
+      "status": "pass",
+      "detail": "flood_evidence holds exactly the same 267362 property IDs as the reference.",
+      "property_count": 267362
+    },
+    {
+      "check": "population_terrain_evidence",
+      "status": "pass",
+      "detail": "terrain_evidence holds exactly the same 267362 property IDs as the reference.",
+      "property_count": 267362
+    },
+    {
+      "check": "population_exposure_index",
+      "status": "pass",
+      "detail": "exposure_index holds exactly the same 267362 property IDs as the reference.",
+      "property_count": 267362
+    }
+  ],
+  "interpretation": "A pass means the artifacts are internally consistent, agree with their manifests, and describe the same property population. It does not mean the evidence is accurate or the scoring methodology is correct."
+}
