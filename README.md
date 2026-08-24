@@ -412,9 +412,47 @@ No flags are required. Python 3.14.0; every dependency including `scipy` is pinn
 
 ## C++ builds
 
-The repository currently uses direct executable builds rather than CMake.
+```powershell
+cmake -S cpp/spatial_core -B cpp/spatial_core/cmake-build -DCMAKE_BUILD_TYPE=Release
+cmake --build cpp/spatial_core/cmake-build --parallel
+```
 
-Representative GNU C++ builds from the repository root:
+Binaries land in `cpp/spatial_core/build/`, which is where the Python harness
+looks for them.
+
+The nine `SEED_WINDOW` variants are excluded from the default build:
+
+```powershell
+cmake --build cpp/spatial_core/cmake-build --target seed_window_sweep --parallel
+```
+
+The native invariant suites run under `ctest`:
+
+```powershell
+ctest --test-dir cpp/spatial_core/cmake-build --output-on-failure
+```
+
+The ladder is five separate translation units rather than a library, and
+deliberately so. Each source `#include`s the one below it, so the distance
+kernel and the tie rule are reused rather than reimplemented — which is what
+makes adjacent rungs differ by exactly one variable. Linking them together
+would defeat that.
+
+Two compile settings are load-bearing rather than stylistic:
+
+- `-ffp-contract=off` on the Hilbert binary. It changes nothing on baseline
+  SSE2, but a `-march=native` build on Haswell or later can contract `a + b*x`
+  into a fused multiply-add and shift the RMI's normalized input. The manifest
+  probe catches that at load; the flag prevents it.
+- `CAPRM_SEED_WINDOW` as a compile-time definition. B6b built nine binaries
+  across nine windows and verified byte-neutrality at every one — after a first
+  attempt passed the neutrality gate on binaries whose source never referenced
+  the macro. A neutrality gate requires a positive control.
+
+Use the same compiler and optimization settings when comparing benchmark runs.
+Every published figure was taken at `-O2` with these flags.
+
+Equivalent direct builds, if you would rather not use CMake:
 
 ```powershell
 g++ -std=c++17 -O2 cpp/spatial_core/src/fema_pip_dev.cpp -o cpp/spatial_core/build/fema_pip_dev.exe
@@ -423,10 +461,6 @@ g++ -std=c++17 -O2 cpp/spatial_core/src/water_distance_indexed.cpp -o cpp/spatia
 g++ -std=c++17 -O2 -Wall -Wextra cpp/spatial_core/src/water_distance_segment_bvh.cpp -o cpp/spatial_core/build/water_distance_segment_bvh.exe
 g++ -std=c++17 -O2 -ffp-contract=off -Wall -Wextra cpp/spatial_core/src/water_distance_hilbert.cpp -o cpp/spatial_core/build/water_distance_hilbert.exe
 ```
-
-Use the same compiler and optimization settings when comparing benchmark runs.
-
-`-ffp-contract=off` is required for the Hilbert binary. It changes nothing on baseline SSE2, but a `-march=native` build on Haswell or later could contract `a + b*x` into a fused multiply-add and shift the model's normalized input. The manifest probe records catch that at load; the flag prevents it.
 
 ## Reproducing the validated countywide FEMA / water evidence
 
@@ -699,5 +733,5 @@ The current index is intended for comparative screening and analysis. It does no
 - Below roughly twelve thousand properties the Hilbert path spends more time constructing its index than using it. Index construction is 0.912181 s and is constant across every workload while query cost is linear in the property count, so build equals query at Q = 12,301 under original-geometry verification and Q = 24,749 under split. Any end-to-end claim about this path states whether construction is included, and at what query count.
 - The Python pipeline that produces every Milestone 3 result has no runtime instrumentation.
 - The C++ path does not itself verify the trained model's training-array SHA-256; it verifies a fingerprint (array length, five sampled keys, and the full inference chain) while the trainer verifies the digest. The provenance chain closes across the two languages but not inside either alone.
-- The C++ source is functional but is not organized as a reusable CMake library. Two native unit suites exist for geometric invariants that have no Python counterpart; the primary correctness claim still rests on field-by-field comparison against the Python reference.
+- The C++ ladder builds under CMake but is deliberately not a reusable library: each rung is its own translation unit that `#include`s the one below it, which is what keeps the kernel and tie rule shared. Two native unit suites cover geometric invariants that have no Python counterpart; the primary correctness claim still rests on field-by-field comparison against the Python reference.
 - Public ArcGIS, FEMA, USGS, and future NOAA source data can change; manifests and checksums identify the exact cached inputs used for reported results.

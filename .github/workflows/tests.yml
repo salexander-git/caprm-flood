@@ -1,0 +1,52 @@
+name: tests
+
+on:
+  push:
+    branches: [master, portfolio-cleanup]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  python:
+    name: Python suite
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # requirements.txt carries the exact pins every published measurement was
+      # taken under, including a Python 3.14 build set. CI runs the suite for
+      # regression signal, not to reproduce a figure, so it resolves the lower
+      # bounds from pyproject instead of the pins. A green run here means the
+      # code is self-consistent; it does not attest to a benchmark number.
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+
+      - name: Run tests
+        run: python -m pytest
+
+  cpp:
+    name: C++ ladder builds
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        run: cmake -S cpp/spatial_core -B cpp/spatial_core/cmake-build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build the five rungs
+        run: cmake --build cpp/spatial_core/cmake-build --parallel
+
+      # Nine SEED_WINDOW binaries. B6b's rule: a neutrality gate needs a
+      # positive control, because a first attempt passed the gate on binaries
+      # whose source never referenced the macro.
+      - name: Build the seed-window sweep
+        run: cmake --build cpp/spatial_core/cmake-build --target seed_window_sweep --parallel
+
+      - name: Native invariant suites
+        run: ctest --test-dir cpp/spatial_core/cmake-build --output-on-failure
