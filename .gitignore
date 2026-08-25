@@ -36,6 +36,7 @@ outputs/
 
 # --- build ------------------------------------------------------------------
 build/
+cmake-build/
 cmake-build-*/
 *.exe
 *.obj

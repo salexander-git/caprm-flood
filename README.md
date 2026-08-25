@@ -439,10 +439,11 @@ No flags are required. Python 3.14.0; every dependency including `scipy` is pinn
 
 ## C++ builds
 
-These five lines are the verified path. They produced every binary behind every
-measurement in this repository, and they were re-run against the current source
-on 2026-08-24 with g++ 15.2.0 (MSYS2): all five compile clean under
-`-Wall -Wextra`.
+These five lines produced every binary behind every measurement in this
+repository, and they were re-run against the current source on 2026-08-24 with
+g++ 15.2.0 (MSYS2): all five compile clean under `-Wall -Wextra`. Use them if
+you would rather not configure a build system; otherwise CMake below does the
+same work and adds the sweep and `ctest`.
 
 ```powershell
 g++ -std=c++17 -O2 cpp/spatial_core/src/fema_pip_dev.cpp -o cpp/spatial_core/build/fema_pip_dev.exe
@@ -477,9 +478,16 @@ cmake --build cpp/spatial_core/cmake-build --target seed_window_sweep --parallel
 ctest --test-dir cpp/spatial_core/cmake-build --output-on-failure
 ```
 
-**It has not been executed.** CMake is not installed on the machine this
-repository was developed on, so the file is unverified. Use the direct `g++`
-lines above if you want the path that is known to work.
+Verified 2026-08-25 with CMake 4.4.2 and Ninja over g++ 15.2.0: configure and
+build clean (14/14 targets), `ctest` 2/2 passing, and the nine sweep binaries
+produced with **nine distinct SHA-256 digests** — which is the positive control
+B6b's rule demands, since a `SEED_WINDOW` sweep whose binaries are identical is
+a sweep that never reached the source.
+
+The CMake-built binaries were then run through `tests/fixture_crosscheck.py`,
+which exercises every program over the real CSV I/O path: all cross-checks pass,
+including the RMI seam's byte-identity against the binary-search control and
+every refusal case.
 
 The ladder is five separate translation units rather than a library, and
 deliberately so. Each source `#include`s the one below it, so the distance
