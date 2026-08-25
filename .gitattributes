@@ -1,0 +1,31 @@
+# Normalize line endings in the repository regardless of the platform a
+# contributor works on. The index is currently 100% LF for text; this keeps it
+# that way without depending on every clone having core.autocrlf set correctly.
+* text=auto eol=lf
+
+# Windows-native scripts. Some shells will not execute a .ps1 or .bat that
+# arrives with LF endings, so these are checked out CRLF deliberately.
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary. Never diff, never convert.
+*.png    binary
+*.jpg    binary
+*.pdf    binary
+*.pptx   binary
+*.docx   binary
+*.gpkg   binary
+*.tif    binary
+*.tiff   binary
+*.zip    binary
+*.bin    binary
+*.exe    binary
+
+# Generated measurement artifacts. Tracked deliberately (see
+# docs/evidence_index.md) but excluded from language statistics, because they
+# are records rather than source and would otherwise dominate the repository's
+# reported language breakdown.
+outputs/**            linguist-generated=true
+presentation_assets/** linguist-documentation=true
+docs/canon/**         linguist-documentation=true
