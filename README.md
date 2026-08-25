@@ -70,6 +70,7 @@ Cross-implementation  5 designs x 267,362 properties x 10 fields, full agreement
 Max distance error    4.658e-10 m against a 1e-6 m tolerance
 Scoring policy        preliminary_exposure_index_v2, frozen
 Rank stability        moderately sensitive (40 scenarios, min Spearman 0.875)
+CI                    both jobs green on Ubuntu / gcc / Python 3.12
 ```
 
 The single audit warning is recorded, not suppressed: two manifest key
@@ -93,6 +94,17 @@ If you are reading this to judge the engineering rather than to use the tool:
 | [`python/caprm/rmi.py`](python/caprm/rmi.py) | The recursive model index: numpy least squares, no framework, with a per-model error bound verified exhaustively over all 1,189,589 keys. Python trains, C++ infers. |
 | [`python/caprm/ladder_benchmark.py`](python/caprm/ladder_benchmark.py) | The measurement harness. Repetition protocol declared before measuring, blocked and cyclically rotated ordering, session guards, crash-safe append-and-fsync. Two sittings of an identical configuration once measured 11.02 percent apart on provably identical work; that is the evidence behind the session guard. |
 | [`outputs/validation/b6_benchmark_tables.md`](outputs/validation/b6_benchmark_tables.md) | Published results. Any comparison whose gap sits inside its own cells' range is printed `NOT RESOLVED` rather than as though it carried a claim. |
+
+## License
+
+MIT — see [`LICENSE`](LICENSE).
+
+The public datasets this project ingests are **not** covered by that licence.
+FEMA NFHL, USGS 3DHP hydrography, USGS 3DEP elevation, and the NYS parcel
+centroids each carry their own terms; provenance and retrieval detail for every
+one is in [`docs/data_sources.md`](docs/data_sources.md). The repository tracks
+one 21.2 MB hydrography GeoPackage and a 1,000-property sample; the rest is
+re-acquired from source.
 
 ## What this is not
 
