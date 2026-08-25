@@ -1,0 +1,286 @@
+{
+  "created_at_utc": "2026-07-16T01:58:03.490195+00:00",
+  "schema_version": "component_correlation_summary_v1",
+  "purpose": "Measure redundancy between the scoring components. Rank correlation and high-exposure tail overlap determine whether components carry independent information.",
+  "inputs": {
+    "evidence": "outputs/evidence/property_flood_evidence_countywide.csv",
+    "evidence_sha256": "4e0d27e14b30aba4c2afb350b9c58d6b4384f951db7252831c29df8487bd75f2",
+    "terrain": "outputs/evidence/property_terrain_evidence_countywide.csv",
+    "terrain_sha256": "e7768c538b41639032af176bd789bec76137c29348bc9be931ca7b4c44e5d3de"
+  },
+  "property_count": 267362,
+  "arithmetic_checks": {
+    "recomputed_composite": {
+      "description": "The weighted sum of the four components must equal the generated exposure_index_0_100.",
+      "weights": {
+        "fema": 0.4,
+        "water": 0.35,
+        "terrain_absolute": 0.15,
+        "terrain_relative": 0.1
+      },
+      "weight_sum": 1.0,
+      "tolerance": 1e-09,
+      "compared_against_generated_index": true,
+      "generated_index": "outputs/index/property_exposure_index_countywide.csv",
+      "maximum_absolute_difference": 4.999947122996673e-10,
+      "agrees": true
+    }
+  },
+  "component_descriptions": {
+    "fema": {
+      "minimum": 0.0,
+      "maximum": 100.0,
+      "mean": 11.580179681480539,
+      "median": 10.0,
+      "standard_deviation": 11.391420439036462,
+      "unique_value_count": 6,
+      "tied_value_count": 267356
+    },
+    "water": {
+      "minimum": 0.00037402473051518164,
+      "maximum": 99.95044172320674,
+      "mean": 50.00018701236526,
+      "median": 50.00018701236526,
+      "standard_deviation": 28.8675674297175,
+      "unique_value_count": 265773,
+      "tied_value_count": 1589
+    },
+    "terrain_absolute": {
+      "minimum": 0.00037402473051518164,
+      "maximum": 99.99850390107794,
+      "mean": 50.00018701236526,
+      "median": 50.00018701236526,
+      "standard_deviation": 28.86756744389891,
+      "unique_value_count": 260138,
+      "tied_value_count": 7224
+    },
+    "terrain_relative": {
+      "minimum": 0.00037402473051518164,
+      "maximum": 100.0,
+      "mean": 50.00018701236526,
+      "median": 50.00018701236526,
+      "standard_deviation": 28.867567443920706,
+      "unique_value_count": 264447,
+      "tied_value_count": 2915
+    }
+  },
+  "spearman_correlation": {
+    "fema": {
+      "fema": 1.0,
+      "water": 0.15224103716917808,
+      "terrain_absolute": -0.003864451997441547,
+      "terrain_relative": 0.08677467348620893,
+      "exposure_index": 0.2347824933875115
+    },
+    "water": {
+      "fema": 0.15224103716917808,
+      "water": 1.0,
+      "terrain_absolute": 0.10190911496542247,
+      "terrain_relative": -0.06887029761703929,
+      "exposure_index": 0.8932573351875753
+    },
+    "terrain_absolute": {
+      "fema": -0.003864451997441547,
+      "water": 0.10190911496542247,
+      "terrain_absolute": 1.0,
+      "terrain_relative": -0.00599885204636282,
+      "exposure_index": 0.4309855813610765
+    },
+    "terrain_relative": {
+      "fema": 0.08677467348620893,
+      "water": -0.06887029761703929,
+      "terrain_absolute": -0.00599885204636282,
+      "terrain_relative": 1.0,
+      "exposure_index": 0.1674192899183634
+    },
+    "exposure_index": {
+      "fema": 0.2347824933875115,
+      "water": 0.8932573351875753,
+      "terrain_absolute": 0.4309855813610765,
+      "terrain_relative": 0.1674192899183634,
+      "exposure_index": 1.0
+    }
+  },
+  "tail_overlap": [
+    {
+      "requested_fraction": 0.1,
+      "property_count": 267362,
+      "selection": {
+        "fema": {
+          "threshold": 10.0,
+          "selected_count": 267358,
+          "selected_fraction": 0.9999850390107794,
+          "requested_fraction": 0.1,
+          "tie_inflated": true
+        },
+        "water": {
+          "threshold": 90.00003740247305,
+          "selected_count": 26737,
+          "selected_fraction": 0.10000299219784411,
+          "requested_fraction": 0.1,
+          "tie_inflated": false
+        },
+        "terrain_absolute": {
+          "threshold": 90.00003740247305,
+          "selected_count": 26737,
+          "selected_fraction": 0.10000299219784411,
+          "requested_fraction": 0.1,
+          "tie_inflated": false
+        },
+        "terrain_relative": {
+          "threshold": 90.00003740247305,
+          "selected_count": 26737,
+          "selected_fraction": 0.10000299219784411,
+          "requested_fraction": 0.1,
+          "tie_inflated": false
+        }
+      },
+      "pairs": [
+        {
+          "left": "fema",
+          "right": "water",
+          "left_count": 267358,
+          "right_count": 26737,
+          "intersection_count": 26737,
+          "jaccard": 0.10000448836391655,
+          "overlap_of_smaller": 1.0
+        },
+        {
+          "left": "fema",
+          "right": "terrain_absolute",
+          "left_count": 267358,
+          "right_count": 26737,
+          "intersection_count": 26737,
+          "jaccard": 0.10000448836391655,
+          "overlap_of_smaller": 1.0
+        },
+        {
+          "left": "fema",
+          "right": "terrain_relative",
+          "left_count": 267358,
+          "right_count": 26737,
+          "intersection_count": 26736,
+          "jaccard": 0.10000037402892739,
+          "overlap_of_smaller": 0.999962598646071
+        },
+        {
+          "left": "water",
+          "right": "terrain_absolute",
+          "left_count": 26737,
+          "right_count": 26737,
+          "intersection_count": 6431,
+          "jaccard": 0.13670471696107817,
+          "overlap_of_smaller": 0.24052810711747766
+        },
+        {
+          "left": "water",
+          "right": "terrain_relative",
+          "left_count": 26737,
+          "right_count": 26737,
+          "intersection_count": 6358,
+          "jaccard": 0.13494354359453264,
+          "overlap_of_smaller": 0.23779780828065977
+        },
+        {
+          "left": "terrain_absolute",
+          "right": "terrain_relative",
+          "left_count": 26737,
+          "right_count": 26737,
+          "intersection_count": 3395,
+          "jaccard": 0.06779288723816371,
+          "overlap_of_smaller": 0.12697759658899652
+        }
+      ]
+    },
+    {
+      "requested_fraction": 0.05,
+      "property_count": 267362,
+      "selection": {
+        "fema": {
+          "threshold": 10.0,
+          "selected_count": 267358,
+          "selected_fraction": 0.9999850390107794,
+          "requested_fraction": 0.05,
+          "tie_inflated": true
+        },
+        "water": {
+          "threshold": 95.00001870123653,
+          "selected_count": 13369,
+          "selected_fraction": 0.05000336622257464,
+          "requested_fraction": 0.05,
+          "tie_inflated": false
+        },
+        "terrain_absolute": {
+          "threshold": 95.00001870123653,
+          "selected_count": 13369,
+          "selected_fraction": 0.05000336622257464,
+          "requested_fraction": 0.05,
+          "tie_inflated": false
+        },
+        "terrain_relative": {
+          "threshold": 95.00001870123653,
+          "selected_count": 13369,
+          "selected_fraction": 0.05000336622257464,
+          "requested_fraction": 0.05,
+          "tie_inflated": false
+        }
+      },
+      "pairs": [
+        {
+          "left": "fema",
+          "right": "water",
+          "left_count": 267358,
+          "right_count": 13369,
+          "intersection_count": 13369,
+          "jaccard": 0.050004114333590165,
+          "overlap_of_smaller": 1.0
+        },
+        {
+          "left": "fema",
+          "right": "terrain_absolute",
+          "left_count": 267358,
+          "right_count": 13369,
+          "intersection_count": 13369,
+          "jaccard": 0.050004114333590165,
+          "overlap_of_smaller": 1.0
+        },
+        {
+          "left": "fema",
+          "right": "terrain_relative",
+          "left_count": 267358,
+          "right_count": 13369,
+          "intersection_count": 13368,
+          "jaccard": 0.050000187014463696,
+          "overlap_of_smaller": 0.9999252000897599
+        },
+        {
+          "left": "water",
+          "right": "terrain_absolute",
+          "left_count": 13369,
+          "right_count": 13369,
+          "intersection_count": 2689,
+          "jaccard": 0.11181338101376356,
+          "overlap_of_smaller": 0.20113695863564965
+        },
+        {
+          "left": "water",
+          "right": "terrain_relative",
+          "left_count": 13369,
+          "right_count": 13369,
+          "intersection_count": 2759,
+          "jaccard": 0.11505900996705451,
+          "overlap_of_smaller": 0.20637295235245717
+        },
+        {
+          "left": "terrain_absolute",
+          "right": "terrain_relative",
+          "left_count": 13369,
+          "right_count": 13369,
+          "intersection_count": 1206,
+          "jaccard": 0.04723484255052483,
+          "overlap_of_smaller": 0.0902086917495699
+        }
+      ]
+    }
+  ]
+}

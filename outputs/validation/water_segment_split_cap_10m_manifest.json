@@ -1,0 +1,20 @@
+{
+  "created_at_utc": "2026-07-23T13:14:27.879317+00:00",
+  "distance_crs": "EPSG:26918",
+  "split_rule": "each segment divided into ceil(length / cap) equal collinear pieces; distance-exact (min piece distance == original distance)",
+  "vertices_input": "outputs/cpp_input/water_vertices_countywide.csv",
+  "vertices_input_sha256": "dbdce9b217e55798b6f2db486fb101ea4226c555b1c07994cd800ff2d46dd09a",
+  "max_segment_length_cap_m": 10.0,
+  "original_segment_count": 1063159,
+  "split_segment_count": 1683537,
+  "added_segment_count": 620378,
+  "max_original_segment_length_m": 5748.239564584926,
+  "max_split_segment_length_m": 9.999999980460741,
+  "mean_segment_length_m": 9.84003704031746,
+  "segment_count_over_threshold": {
+    "100m": 4333,
+    "200m": 657,
+    "500m": 19,
+    "1000m": 4
+  }
+}

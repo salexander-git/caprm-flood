@@ -1,0 +1,275 @@
+{
+  "schema_version": "spatial_correlation_v2",
+  "dataset": "outputs/training/supervised_dataset_v2.csv",
+  "label_column": "exposure_index_0_100",
+  "label_policy_version": "preliminary_exposure_index_v2",
+  "crs": "EPSG:26918",
+  "rows": 267362,
+  "seed": 20260730,
+  "nearest_neighbour_spacing": {
+    "p0_m": 0.0,
+    "p1_m": 5.341849471868324,
+    "p5_m": 10.07570283120877,
+    "p25_m": 15.114768448051375,
+    "p50_m": 24.386483712813696,
+    "p75_m": 32.02619463576631,
+    "p95_m": 89.23986595140319,
+    "p100_m": 1015.6535820491549,
+    "mean_m": 31.886034704383142,
+    "zero_distance_rows": 1700
+  },
+  "raw": {
+    "short": {
+      "method": "short_range_ball_query",
+      "seed": 20260730,
+      "n_centres": 6000,
+      "bin_width_m": 25.0,
+      "sill_sample_variance": 170.66056964931485,
+      "total_pairs": 62258006,
+      "first_lag_at_ratio_m": {
+        "0.10": 137.5,
+        "0.25": 462.5,
+        "0.50": 2137.5,
+        "0.75": null,
+        "0.90": null,
+        "0.95": null
+      }
+    },
+    "long": {
+      "method": "long_range_subsample_pairwise",
+      "seed": 20260730,
+      "n_centres": 20000,
+      "bin_width_m": 250.0,
+      "sill_sample_variance": 170.66056964931485,
+      "total_pairs": 343249660,
+      "first_lag_at_ratio_m": {
+        "0.10": 125.0,
+        "0.25": 625.0,
+        "0.50": 2125.0,
+        "0.75": 6125.0,
+        "0.90": 7625.0,
+        "0.95": 8125.0
+      }
+    },
+    "exponential_fit_window_sweep": {
+      "short_pass": [
+        {
+          "fit_max_lag_m": 500.0,
+          "nugget": 1.6969088413580202,
+          "partial_sill": 68.44709317821882,
+          "range_parameter_a_m": 503.5123216599783,
+          "practical_range_3a_m": 1510.536964979935,
+          "fitted_sill": 70.14400201957685,
+          "sample_variance": 170.66056964931485,
+          "r_squared": 0.9990425814310855,
+          "n_bins": 20
+        },
+        {
+          "fit_max_lag_m": 1000.0,
+          "nugget": 2.0945259589425804,
+          "partial_sill": 71.57978496489511,
+          "range_parameter_a_m": 548.6676517406329,
+          "practical_range_3a_m": 1646.0029552218987,
+          "fitted_sill": 73.6743109238377,
+          "sample_variance": 170.66056964931485,
+          "r_squared": 0.9993784234926788,
+          "n_bins": 40
+        },
+        {
+          "fit_max_lag_m": 1500.0,
+          "nugget": 3.9599640249416104,
+          "partial_sill": 78.97715868285434,
+          "range_parameter_a_m": 703.4315103109763,
+          "practical_range_3a_m": 2110.294530932929,
+          "fitted_sill": 82.93712270779595,
+          "sample_variance": 170.66056964931485,
+          "r_squared": 0.9971312943981633,
+          "n_bins": 60
+        },
+        {
+          "fit_max_lag_m": 2000.0,
+          "nugget": 5.767295902560832,
+          "partial_sill": 84.98392569190989,
+          "range_parameter_a_m": 860.0115132753182,
+          "practical_range_3a_m": 2580.0345398259547,
+          "fitted_sill": 90.75122159447072,
+          "sample_variance": 170.66056964931485,
+          "r_squared": 0.9961537141608725,
+          "n_bins": 80
+        },
+        {
+          "fit_max_lag_m": 2500.0,
+          "nugget": 6.667250922190439,
+          "partial_sill": 87.20962595605624,
+          "range_parameter_a_m": 933.9984636561954,
+          "practical_range_3a_m": 2801.9953909685864,
+          "fitted_sill": 93.87687687824668,
+          "sample_variance": 170.66056964931485,
+          "r_squared": 0.9964734698589683,
+          "n_bins": 100
+        },
+        {
+          "fit_max_lag_m": 3000.0,
+          "nugget": 7.974597144103005,
+          "partial_sill": 89.6450455661837,
+          "range_parameter_a_m": 1035.755133940197,
+          "practical_range_3a_m": 3107.2654018205913,
+          "fitted_sill": 97.6196427102867,
+          "sample_variance": 170.66056964931485,
+          "r_squared": 0.9956041806163577,
+          "n_bins": 120
+        }
+      ],
+      "long_pass": [
+        {
+          "fit_max_lag_m": 3000.0,
+          "nugget": 12.64246431440255,
+          "partial_sill": 88.26018350151965,
+          "range_parameter_a_m": 1169.522918204038,
+          "practical_range_3a_m": 3508.568754612114,
+          "fitted_sill": 100.9026478159222,
+          "sample_variance": 170.66056964931485,
+          "r_squared": 0.9978256665575456,
+          "n_bins": 12
+        },
+        {
+          "fit_max_lag_m": 5000.0,
+          "nugget": 18.296259169057905,
+          "partial_sill": 98.21733411034,
+          "range_parameter_a_m": 1764.0465058598509,
+          "practical_range_3a_m": 5292.139517579552,
+          "fitted_sill": 116.51359327939791,
+          "sample_variance": 170.66056964931485,
+          "r_squared": 0.9919592791067301,
+          "n_bins": 20
+        },
+        {
+          "fit_max_lag_m": 8000.0,
+          "nugget": 36.2888510740672,
+          "partial_sill": 182.89838020272933,
+          "range_parameter_a_m": 7943.288699394878,
+          "practical_range_3a_m": 23829.866098184633,
+          "fitted_sill": 219.18723127679652,
+          "sample_variance": 170.66056964931485,
+          "r_squared": 0.9646259199882743,
+          "n_bins": 32
+        },
+        {
+          "fit_max_lag_m": 12000.0,
+          "nugget": 39.785842173009534,
+          "partial_sill": 315.0585914456709,
+          "range_parameter_a_m": 16592.46964145473,
+          "practical_range_3a_m": 49777.40892436419,
+          "fitted_sill": 354.84443361868045,
+          "sample_variance": 170.66056964931485,
+          "r_squared": 0.9830303054707457,
+          "n_bins": 48
+        },
+        {
+          "fit_max_lag_m": 20000.0,
+          "nugget": 23.374949786054415,
+          "partial_sill": 175.43981562923247,
+          "range_parameter_a_m": 5305.009519374623,
+          "practical_range_3a_m": 15915.028558123868,
+          "fitted_sill": 198.8147654152869,
+          "sample_variance": 170.66056964931485,
+          "r_squared": 0.9520358037864827,
+          "n_bins": 80
+        }
+      ]
+    }
+  },
+  "detrended": {
+    "polynomial_degree": 3,
+    "trend_r_squared": 0.2526771337404843,
+    "residual_variance": 127.53854606780767,
+    "short": {
+      "method": "short_range_ball_query",
+      "seed": 20260730,
+      "n_centres": 6000,
+      "bin_width_m": 25.0,
+      "sill_sample_variance": 127.53854606780767,
+      "total_pairs": 62258006,
+      "first_lag_at_ratio_m": {
+        "0.10": 87.5,
+        "0.25": 312.5,
+        "0.50": 1087.5,
+        "0.75": null,
+        "0.90": null,
+        "0.95": null
+      }
+    },
+    "exponential_fit_window_sweep": {
+      "short_pass": [
+        {
+          "fit_max_lag_m": 500.0,
+          "nugget": 1.679073192862091,
+          "partial_sill": 67.66356824486084,
+          "range_parameter_a_m": 496.6632222069902,
+          "practical_range_3a_m": 1489.9896666209706,
+          "fitted_sill": 69.34264143772293,
+          "sample_variance": 127.53854606780767,
+          "r_squared": 0.9990643369363678,
+          "n_bins": 20
+        },
+        {
+          "fit_max_lag_m": 1000.0,
+          "nugget": 2.0470065596034495,
+          "partial_sill": 70.34487159298067,
+          "range_parameter_a_m": 536.207843115206,
+          "practical_range_3a_m": 1608.623529345618,
+          "fitted_sill": 72.39187815258411,
+          "sample_variance": 127.53854606780767,
+          "r_squared": 0.9993910477982904,
+          "n_bins": 40
+        },
+        {
+          "fit_max_lag_m": 1500.0,
+          "nugget": 3.849232020938583,
+          "partial_sill": 77.03151797747655,
+          "range_parameter_a_m": 679.2737063247474,
+          "practical_range_3a_m": 2037.8211189742424,
+          "fitted_sill": 80.88074999841514,
+          "sample_variance": 127.53854606780767,
+          "r_squared": 0.997185839290701,
+          "n_bins": 60
+        },
+        {
+          "fit_max_lag_m": 2000.0,
+          "nugget": 5.581321033303349,
+          "partial_sill": 82.2819537928824,
+          "range_parameter_a_m": 820.7324598301866,
+          "practical_range_3a_m": 2462.19737949056,
+          "fitted_sill": 87.86327482618576,
+          "sample_variance": 127.53854606780767,
+          "r_squared": 0.9962124501225008,
+          "n_bins": 80
+        },
+        {
+          "fit_max_lag_m": 2500.0,
+          "nugget": 6.243863520092259,
+          "partial_sill": 83.73610561583583,
+          "range_parameter_a_m": 871.2760666160676,
+          "practical_range_3a_m": 2613.828199848203,
+          "fitted_sill": 89.97996913592809,
+          "sample_variance": 127.53854606780767,
+          "r_squared": 0.9967328003095877,
+          "n_bins": 100
+        },
+        {
+          "fit_max_lag_m": 3000.0,
+          "nugget": 7.0887854906119685,
+          "partial_sill": 85.00290466472008,
+          "range_parameter_a_m": 929.383426771831,
+          "practical_range_3a_m": 2788.1502803154926,
+          "fitted_sill": 92.09169015533205,
+          "sample_variance": 127.53854606780767,
+          "r_squared": 0.9965481917890034,
+          "n_bins": 120
+        }
+      ]
+    }
+  },
+  "determinism_rerun_identical": true,
+  "interpretation": "first_lag_at_ratio is model-free and is what the block edge is chosen against. The fitted range parameter is a diagnostic only: it is swept across fit windows here precisely because it is not stable across them."
+}

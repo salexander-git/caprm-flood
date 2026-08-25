@@ -1,0 +1,30 @@
+{
+  "property_count": 267362,
+  "unique_property_ids": 267362,
+  "minimum_distance_m": 0.0,
+  "maximum_distance_m": 2630.2348569203396,
+  "mean_distance_m": 506.41090488221937,
+  "median_distance_m": 325.3455796086156,
+  "zero_distance_property_count": 266,
+  "multiple_nearest_tie_count": 308,
+  "unique_nearest_feature_count": 2934,
+  "nearest_feature_class_counts": {
+    "flowline": 160479,
+    "waterbody": 106883
+  },
+  "nearest_feature_type_counts": {
+    "Channel Line": 158819,
+    "River": 46079,
+    "Lake": 42610,
+    "Canal": 16111,
+    "Ocean or Great Lake": 3743
+  },
+  "distance_crs": "EPSG:26918",
+  "query_buffer_meters": 20000.0,
+  "tie_tolerance_meters": 1e-06,
+  "hydrography_feature_count": 8572,
+  "hydrography_cache": "data/raw/usgs_3dhp_monroe.gpkg",
+  "hydrography_cache_sha256": "3510ad04f6aae545274ea34bd4a33f17da5667c679f495cfb4706ffc6d7c5de8",
+  "property_cache": "data/processed/monroe_property_points_countywide.geojson",
+  "output_csv": "outputs/baseline/python_nearest_water_countywide.csv"
+}

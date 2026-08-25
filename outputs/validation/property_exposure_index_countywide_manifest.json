@@ -1,0 +1,77 @@
+{
+  "created_at_utc": "2026-07-16T01:57:52.966821+00:00",
+  "schema_version": "preliminary_exposure_index_v2",
+  "input_evidence": "outputs/evidence/property_flood_evidence_countywide.csv",
+  "input_evidence_sha256": "4e0d27e14b30aba4c2afb350b9c58d6b4384f951db7252831c29df8487bd75f2",
+  "input_terrain": "outputs/evidence/property_terrain_evidence_countywide.csv",
+  "input_terrain_sha256": "e7768c538b41639032af176bd789bec76137c29348bc9be931ca7b4c44e5d3de",
+  "output": "outputs/index/property_exposure_index_countywide.csv",
+  "output_sha256": "3cae2e830a5867bee4d51a36f1c5c04f05ee0a6a26d64dace27da75d3c4911b0",
+  "distance_crs": "EPSG:26918",
+  "terrain_crs": "EPSG:26918",
+  "weights": {
+    "fema": 0.4,
+    "water": 0.35,
+    "terrain_absolute": 0.15,
+    "terrain_relative": 0.1
+  },
+  "weights_are_default": true,
+  "summary": {
+    "property_count": 267362,
+    "unique_property_ids": 267362,
+    "minimum_exposure_index": 7.914598933,
+    "maximum_exposure_index": 99.929084911,
+    "mean_exposure_index": 34.63218408001099,
+    "median_exposure_index": 33.7284299935,
+    "minimum_exposure_percentile": 0.00037402473051518164,
+    "maximum_exposure_percentile": 100.0,
+    "component_means": {
+      "fema": 11.580179681480539,
+      "water": 50.00018701236526,
+      "terrain_absolute": 50.00018701236527,
+      "terrain_relative": 50.00018701236526
+    },
+    "component_influence": {
+      "index_standard_deviation": 13.063711939924076,
+      "method": "variance_share is Cov(w_i * C_i, I) / Var(I). Shares sum to 1.0 exactly by linearity of covariance and do not assume the components are uncorrelated. Nominal weight and measured influence diverge when components have unequal spread.",
+      "components": {
+        "fema": {
+          "weight": 0.4,
+          "component_standard_deviation": 11.39142043903646,
+          "weighted_standard_deviation": 4.5565681756145855,
+          "variance_share": 0.1684808437131082,
+          "spearman_with_index": 0.23478249338783652
+        },
+        "water": {
+          "weight": 0.35,
+          "component_standard_deviation": 28.8675674297175,
+          "weighted_standard_deviation": 10.103648600401126,
+          "variance_share": 0.6533233589540037,
+          "spearman_with_index": 0.8932573505511028
+        },
+        "terrain_absolute": {
+          "weight": 0.15,
+          "component_standard_deviation": 28.867567443898906,
+          "weighted_standard_deviation": 4.330135116584836,
+          "variance_share": 0.1347621828551403,
+          "spearman_with_index": 0.4309855700653363
+        },
+        "terrain_relative": {
+          "weight": 0.1,
+          "component_standard_deviation": 28.867567443920706,
+          "weighted_standard_deviation": 2.8867567443920708,
+          "variance_share": 0.04343361447777757,
+          "spearman_with_index": 0.1674192530950837
+        }
+      }
+    },
+    "scoring_policy_version": "preliminary_exposure_index_v2",
+    "weights": {
+      "fema": 0.4,
+      "water": 0.35,
+      "terrain_absolute": 0.15,
+      "terrain_relative": 0.1
+    }
+  },
+  "interpretation": "The exposure index is a preliminary relative ranking built from validated evidence components. It is not a flood-probability model, hydrologic simulation, actuarial model, insurance-pricing tool, or loss estimate."
+}

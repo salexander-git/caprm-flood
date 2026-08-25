@@ -17,6 +17,7 @@
 
 #include <cassert>
 #include <cstdio>
+#include <limits>
 #include <random>
 
 
@@ -166,10 +167,30 @@ SegmentNearestResult query(
     SplitStatistics statistics;
     const std::vector<SegmentLeaf> segments =
         build_split_segments(features, cap, statistics);
+    const PartExteriorBounds part_exterior_bounds =
+        build_part_exterior_bounds(features);
     SegmentBvh index(segments, features);
-    std::vector<char> scratch(features.size(), 0);
+
+    std::vector<char> is_candidate(features.size(), 0);
+    std::vector<double> best_split(
+        features.size(),
+        std::numeric_limits<double>::infinity()
+    );
+
+    // OriginalGeometry is this suite's subject. These tests predate the
+    // verification-mode fork and assert against unsplit geometry throughout:
+    // distance-invariance under splitting, polygon interior-zero, and the
+    // tie-break. SplitGeometry is covered by
+    // test_water_segment_bvh_verify_modes.cpp, which exercises both modes.
     return find_nearest_segment_bvh(
-        point, features, index, scratch, DEFAULT_TIE_TOLERANCE_METERS
+        point,
+        features,
+        index,
+        part_exterior_bounds,
+        is_candidate,
+        best_split,
+        VerificationMode::OriginalGeometry,
+        DEFAULT_TIE_TOLERANCE_METERS
     );
 }
 

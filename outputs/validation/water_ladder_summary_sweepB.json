@@ -1,0 +1,1624 @@
+{
+  "chunk": "B6",
+  "report": "ladder_matrix",
+  "label": "sweepB",
+  "session_id": "7bd2071b3c6b",
+  "created_at_utc": "2026-07-29T23:06:47.123042+00:00",
+  "started_at_utc": "2026-07-29T22:34:37.165761+00:00",
+  "ended_at_utc": "2026-07-29T23:06:47.123048+00:00",
+  "workloads": [
+    "countywide"
+  ],
+  "verification_modes": [
+    "split"
+  ],
+  "seed_windows": [
+    8,
+    16,
+    32,
+    64,
+    128,
+    256,
+    512,
+    1024,
+    2048
+  ],
+  "region_mode": "disk",
+  "max_segment_length_cap_m": 25.0,
+  "protocol": {
+    "expected_output_digests": {
+      "hilbert_binary@countywide@split@w64": "05c799b1fcef76bee01701d88ae4f2512d0e6b460aa63aa7f17143616ede12ee",
+      "hilbert_rmi@countywide@split@w64": "008945d1a38aff3570c2eafaed7ec1b6276243062b63f1dd5c8fafa78b424620"
+    },
+    "repetitions": {
+      "hilbert_binary@countywide@split@w8": 7,
+      "hilbert_binary@countywide@split@w16": 7,
+      "hilbert_binary@countywide@split@w32": 7,
+      "hilbert_binary@countywide@split@w64": 7,
+      "hilbert_binary@countywide@split@w128": 7,
+      "hilbert_binary@countywide@split@w256": 7,
+      "hilbert_binary@countywide@split@w512": 7,
+      "hilbert_binary@countywide@split@w1024": 7,
+      "hilbert_binary@countywide@split@w2048": 7,
+      "hilbert_rmi@countywide@split@w8": 7,
+      "hilbert_rmi@countywide@split@w16": 7,
+      "hilbert_rmi@countywide@split@w32": 7,
+      "hilbert_rmi@countywide@split@w64": 7,
+      "hilbert_rmi@countywide@split@w128": 7,
+      "hilbert_rmi@countywide@split@w256": 7,
+      "hilbert_rmi@countywide@split@w512": 7,
+      "hilbert_rmi@countywide@split@w1024": 7,
+      "hilbert_rmi@countywide@split@w2048": 7
+    },
+    "warmups": 1,
+    "ordering": "blocked by repetition; cyclically rotated by block index",
+    "resumed": false,
+    "stdout": "captured to a pipe on every run",
+    "timing_source": "binary self-reported computation seconds",
+    "forbidden_flags": [
+      "--verify-counts",
+      "--uncapped-half",
+      "--seed-error-stats"
+    ]
+  },
+  "machine": {
+    "cpu_model_declared": "AMD Ryzen 7 7700X 8-Core Processor",
+    "physical_cores_declared": 8,
+    "processor_identifier": "AMD64 Family 25 Model 97 Stepping 2, AuthenticAMD",
+    "processor": "AMD64 Family 25 Model 97 Stepping 2, AuthenticAMD",
+    "logical_processors": 16,
+    "total_physical_memory_bytes": 33454284800,
+    "operating_system": "Windows",
+    "operating_system_release": "11",
+    "operating_system_version": "10.0.26200",
+    "machine": "AMD64",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python_version": "3.14.0",
+    "power_source": "AC",
+    "power_plan": "High performance",
+    "notes": "B6c-2 optional; nine-window sweep under Option B, countywide"
+  },
+  "inputs": {
+    "countywide": {
+      "properties_projected": {
+        "path": "outputs\\cpp_input\\water_properties_projected_countywide.csv",
+        "sha256": "fa73b346cd592ec3521c41a1440a07f4d6502dc9fb1859512d4444260b5a6621"
+      },
+      "features": {
+        "path": "outputs\\cpp_input\\water_features_countywide.csv",
+        "sha256": "f70cc1a2aa635051f92854ea7893729457349cda842c2074d017a6424d9bc098"
+      },
+      "vertices": {
+        "path": "outputs\\cpp_input\\water_vertices_countywide.csv",
+        "sha256": "dbdce9b217e55798b6f2db486fb101ea4226c555b1c07994cd800ff2d46dd09a"
+      }
+    }
+  },
+  "python_references": {
+    "sample": {
+      "path": "outputs/baseline/python_nearest_water.csv",
+      "sha256": "799dae573b8b382b12d56375e15699d2f63cfd2a27a525c86e2ff47286c42851"
+    },
+    "10000": {
+      "path": "outputs/baseline/python_nearest_water_10000.csv",
+      "sha256": "40590dc7dfd97d4d22c9edd7f7603fd25c0e5b8dc7e87a5790932911cfe52d94"
+    },
+    "100000": {
+      "path": "outputs/baseline/python_nearest_water_100000.csv",
+      "sha256": "4aef82a6559b42fdd65779585967b2add4deac7970b7cf316424c98928916e6e"
+    },
+    "countywide": {
+      "path": "outputs/baseline/python_nearest_water_countywide.csv",
+      "sha256": "23c717a6f6028a33abbe43b4292379304301e3665e52e433f48f73b52826af66"
+    }
+  },
+  "executables": {
+    "cpp/spatial_core/build/water_distance_bruteforce.exe": "9d92a6857766ccdcf14ff27a34faf714362bae9e4cb36ba704ce3e8da2306051",
+    "cpp/spatial_core/build/water_distance_hilbert.exe": "1c98fbc3e5e4bb892827e210c5d9f2c52b4def4ca2a902ad8ec6a49ff6d27f5f",
+    "cpp/spatial_core/build/water_distance_hilbert_w1024.exe": "f047e6d3adf8b5bad719877735422b9b81dd4f44c8bb226f0772d1f89baa2e50",
+    "cpp/spatial_core/build/water_distance_hilbert_w128.exe": "ab1ae0b23a99a2da12c8d9274a0c50e83cc5501ddaea8b103bd5eddb9905f245",
+    "cpp/spatial_core/build/water_distance_hilbert_w16.exe": "e1d64a39e2b4215fd6a792f20be7246d5e98a8c4945fd2edca9f21d67fadff69",
+    "cpp/spatial_core/build/water_distance_hilbert_w2048.exe": "dd9ef6a018bac8529a65f93216c247ba1e15320c60dd49f5c3730efd15154285",
+    "cpp/spatial_core/build/water_distance_hilbert_w256.exe": "940bf303f586ee0e12554f94d75080270b0ce9ba6e6aea6b5200c8c8a8ca9010",
+    "cpp/spatial_core/build/water_distance_hilbert_w32.exe": "1a851e35ec20f8d2d0204a5bbedb3555ad370b19aa0e90125028a6d23ea0388b",
+    "cpp/spatial_core/build/water_distance_hilbert_w512.exe": "3fad4d548595ac3d089718ba998dbd825df7f1f9c6093264478ba4e10095cdce",
+    "cpp/spatial_core/build/water_distance_hilbert_w64.exe": "1c98fbc3e5e4bb892827e210c5d9f2c52b4def4ca2a902ad8ec6a49ff6d27f5f",
+    "cpp/spatial_core/build/water_distance_hilbert_w8.exe": "c2a717cf4fb8e0a2a1c475044bb00ac80891ba2fa2183536ab7e625ae7f758df",
+    "cpp/spatial_core/build/water_distance_indexed.exe": "abd8bc082dfe557a80b61349c0f54a6164947a5729df3720867980115bae4243",
+    "cpp/spatial_core/build/water_distance_segment_bvh.exe": "d67bddd354081f9b2ae7c5538b62fca910dba901b4bff3a0eeeb99fd39b60c5a"
+  },
+  "skipped": [],
+  "cells": {
+    "hilbert_binary@countywide@split@w8": {
+      "algorithm": "hilbert_binary",
+      "rung": 4,
+      "sessions": [
+        "7bd2071b3c6b"
+      ],
+      "output_sha256": "05c799b1fcef76bee01701d88ae4f2512d0e6b460aa63aa7f17143616ede12ee",
+      "computation_seconds": {
+        "n": 7,
+        "minimum": 9.612589,
+        "median": 9.970493,
+        "maximum": 10.129555,
+        "relative_spread": 0.05184959259286377,
+        "standard_deviation": 0.19239949879154583,
+        "standard_deviation_withheld_reason": null
+      },
+      "total_process_seconds": {
+        "n": 7,
+        "minimum": 12.138655599999765,
+        "median": 12.543879099999685,
+        "maximum": 12.74953110000024,
+        "relative_spread": 0.048699090220065196,
+        "standard_deviation": 0.24531899116443814,
+        "standard_deviation_withheld_reason": null
+      },
+      "deterministic_counters": {
+        "average_segment_checks_per_property": 7616.515122,
+        "average_seed_probes_per_property": 20.23764,
+        "resolve_entries_per_property": 167.972087,
+        "tight_entries_per_property": 47.59262348426478,
+        "n_true_r_per_property": 1.606679,
+        "n_disk_infl_per_property": 10.278319,
+        "n_decomp_per_property": 47.592623,
+        "resolve_nodes_per_property": 74.983988,
+        "geometric_inflation_capped": 6.397244,
+        "mean_d_seed_over_d_best": 1.2995785295067468
+      },
+      "peak_working_set_bytes": {
+        "n": 7,
+        "minimum": 232349696.0,
+        "median": 232378368.0,
+        "maximum": 232435712.0,
+        "relative_spread": 0.0003701549362804717,
+        "standard_deviation": 36252.10688130186,
+        "standard_deviation_withheld_reason": null
+      },
+      "peak_commit_bytes": {
+        "n": 7,
+        "minimum": 285159424.0,
+        "median": 285171712.0,
+        "maximum": 285179904.0,
+        "relative_spread": 7.181637987992301e-05,
+        "standard_deviation": 7370.632485621247,
+        "standard_deviation_withheld_reason": null
+      },
+      "peak_memory_method": "psapi:GetProcessMemoryInfo",
+      "key_array_bytes": 9516712,
+      "workload": "countywide",
+      "verification_mode": "split",
+      "seed_window": 8,
+      "executable": "cpp/spatial_core/build/water_distance_hilbert_w8.exe",
+      "command": [
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\cpp\\spatial_core\\build\\water_distance_hilbert_w8.exe",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_properties_projected_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_features_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_vertices_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_binary_countywide_split_w8.csv",
+        "EPSG:26918",
+        "25",
+        "split",
+        "disk",
+        "32",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_binary_countywide_split_w8_manifest.json",
+        "--seed",
+        "binary",
+        "--query-stats",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_binary_countywide_split_w8_query_stats.json"
+      ],
+      "output_path": "outputs\\benchmark\\ladder_work\\hilbert_binary_countywide_split_w8.csv"
+    },
+    "hilbert_binary@countywide@split@w16": {
+      "algorithm": "hilbert_binary",
+      "rung": 4,
+      "sessions": [
+        "7bd2071b3c6b"
+      ],
+      "output_sha256": "05c799b1fcef76bee01701d88ae4f2512d0e6b460aa63aa7f17143616ede12ee",
+      "computation_seconds": {
+        "n": 7,
+        "minimum": 9.724844,
+        "median": 9.766943,
+        "maximum": 10.195029,
+        "relative_spread": 0.048140446811249,
+        "standard_deviation": 0.18188603434725684,
+        "standard_deviation_withheld_reason": null
+      },
+      "total_process_seconds": {
+        "n": 7,
+        "minimum": 12.322367299999314,
+        "median": 12.348333800000546,
+        "maximum": 12.84870679999949,
+        "relative_spread": 0.042624333657076324,
+        "standard_deviation": 0.2146981509477743,
+        "standard_deviation_withheld_reason": null
+      },
+      "deterministic_counters": {
+        "average_segment_checks_per_property": 7616.515122,
+        "average_seed_probes_per_property": 20.23764,
+        "resolve_entries_per_property": 162.071065,
+        "tight_entries_per_property": 47.59262348426478,
+        "n_true_r_per_property": 1.606679,
+        "n_disk_infl_per_property": 10.278319,
+        "n_decomp_per_property": 47.592623,
+        "resolve_nodes_per_property": 73.973366,
+        "geometric_inflation_capped": 6.397244,
+        "mean_d_seed_over_d_best": 1.2595458506267132
+      },
+      "peak_working_set_bytes": {
+        "n": 7,
+        "minimum": 232259584.0,
+        "median": 232382464.0,
+        "maximum": 232415232.0,
+        "relative_spread": 0.0006697923643670462,
+        "standard_deviation": 53494.98762100453,
+        "standard_deviation_withheld_reason": null
+      },
+      "peak_commit_bytes": {
+        "n": 7,
+        "minimum": 285159424.0,
+        "median": 285171712.0,
+        "maximum": 285179904.0,
+        "relative_spread": 7.181637987992301e-05,
+        "standard_deviation": 8432.285528733906,
+        "standard_deviation_withheld_reason": null
+      },
+      "peak_memory_method": "psapi:GetProcessMemoryInfo",
+      "key_array_bytes": 9516712,
+      "workload": "countywide",
+      "verification_mode": "split",
+      "seed_window": 16,
+      "executable": "cpp/spatial_core/build/water_distance_hilbert_w16.exe",
+      "command": [
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\cpp\\spatial_core\\build\\water_distance_hilbert_w16.exe",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_properties_projected_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_features_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_vertices_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_binary_countywide_split_w16.csv",
+        "EPSG:26918",
+        "25",
+        "split",
+        "disk",
+        "32",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_binary_countywide_split_w16_manifest.json",
+        "--seed",
+        "binary",
+        "--query-stats",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_binary_countywide_split_w16_query_stats.json"
+      ],
+      "output_path": "outputs\\benchmark\\ladder_work\\hilbert_binary_countywide_split_w16.csv"
+    },
+    "hilbert_binary@countywide@split@w32": {
+      "algorithm": "hilbert_binary",
+      "rung": 4,
+      "sessions": [
+        "7bd2071b3c6b"
+      ],
+      "output_sha256": "05c799b1fcef76bee01701d88ae4f2512d0e6b460aa63aa7f17143616ede12ee",
+      "computation_seconds": {
+        "n": 7,
+        "minimum": 9.747368,
+        "median": 9.932578,
+        "maximum": 10.228479,
+        "relative_spread": 0.04843767650251529,
+        "standard_deviation": 0.1994803210456517,
+        "standard_deviation_withheld_reason": null
+      },
+      "total_process_seconds": {
+        "n": 7,
+        "minimum": 12.298951099999613,
+        "median": 12.52970170000117,
+        "maximum": 12.937330000000657,
+        "relative_spread": 0.05094924965380335,
+        "standard_deviation": 0.2501927146535125,
+        "standard_deviation_withheld_reason": null
+      },
+      "deterministic_counters": {
+        "average_segment_checks_per_property": 7616.515122,
+        "average_seed_probes_per_property": 20.23764,
+        "resolve_entries_per_property": 153.844982,
+        "tight_entries_per_property": 47.59262348426478,
+        "n_true_r_per_property": 1.606679,
+        "n_disk_infl_per_property": 10.278319,
+        "n_decomp_per_property": 47.592623,
+        "resolve_nodes_per_property": 72.745742,
+        "geometric_inflation_capped": 6.397244,
+        "mean_d_seed_over_d_best": 1.2149287631756989
+      },
+      "peak_working_set_bytes": {
+        "n": 7,
+        "minimum": 232235008.0,
+        "median": 232341504.0,
+        "maximum": 232423424.0,
+        "relative_spread": 0.0008109442211409633,
+        "standard_deviation": 57670.47202198102,
+        "standard_deviation_withheld_reason": null
+      },
+      "peak_commit_bytes": {
+        "n": 7,
+        "minimum": 285155328.0,
+        "median": 285163520.0,
+        "maximum": 285196288.0,
+        "relative_spread": 0.00014363688595231256,
+        "standard_deviation": 14550.343213101456,
+        "standard_deviation_withheld_reason": null
+      },
+      "peak_memory_method": "psapi:GetProcessMemoryInfo",
+      "key_array_bytes": 9516712,
+      "workload": "countywide",
+      "verification_mode": "split",
+      "seed_window": 32,
+      "executable": "cpp/spatial_core/build/water_distance_hilbert_w32.exe",
+      "command": [
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\cpp\\spatial_core\\build\\water_distance_hilbert_w32.exe",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_properties_projected_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_features_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_vertices_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_binary_countywide_split_w32.csv",
+        "EPSG:26918",
+        "25",
+        "split",
+        "disk",
+        "32",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_binary_countywide_split_w32_manifest.json",
+        "--seed",
+        "binary",
+        "--query-stats",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_binary_countywide_split_w32_query_stats.json"
+      ],
+      "output_path": "outputs\\benchmark\\ladder_work\\hilbert_binary_countywide_split_w32.csv"
+    },
+    "hilbert_binary@countywide@split@w64": {
+      "algorithm": "hilbert_binary",
+      "rung": 4,
+      "sessions": [
+        "7bd2071b3c6b"
+      ],
+      "output_sha256": "05c799b1fcef76bee01701d88ae4f2512d0e6b460aa63aa7f17143616ede12ee",
+      "computation_seconds": {
+        "n": 7,
+        "minimum": 9.570088,
+        "median": 9.727646,
+        "maximum": 10.005171,
+        "relative_spread": 0.044726442553522254,
+        "standard_deviation": 0.16151674222757698,
+        "standard_deviation_withheld_reason": null
+      },
+      "total_process_seconds": {
+        "n": 7,
+        "minimum": 12.142702400000417,
+        "median": 12.292574900000545,
+        "maximum": 12.580490300000747,
+        "relative_spread": 0.03561401118656686,
+        "standard_deviation": 0.1768590205409383,
+        "standard_deviation_withheld_reason": null
+      },
+      "deterministic_counters": {
+        "average_segment_checks_per_property": 7616.515122,
+        "average_seed_probes_per_property": 20.23764,
+        "resolve_entries_per_property": 141.174168,
+        "tight_entries_per_property": 47.59262348426478,
+        "n_true_r_per_property": 1.606679,
+        "n_disk_infl_per_property": 10.278319,
+        "n_decomp_per_property": 47.592623,
+        "resolve_nodes_per_property": 70.913503,
+        "geometric_inflation_capped": 6.397244,
+        "mean_d_seed_over_d_best": 1.1716919272505513
+      },
+      "peak_working_set_bytes": {
+        "n": 7,
+        "minimum": 232239104.0,
+        "median": 232341504.0,
+        "maximum": 232402944.0,
+        "relative_spread": 0.0007051688879486638,
+        "standard_deviation": 58441.097085624846,
+        "standard_deviation_withheld_reason": null
+      },
+      "peak_commit_bytes": {
+        "n": 7,
+        "minimum": 285163520.0,
+        "median": 285167616.0,
+        "maximum": 285188096.0,
+        "relative_spread": 8.618089369586763e-05,
+        "standard_deviation": 8665.911058636044,
+        "standard_deviation_withheld_reason": null
+      },
+      "peak_memory_method": "psapi:GetProcessMemoryInfo",
+      "key_array_bytes": 9516712,
+      "workload": "countywide",
+      "verification_mode": "split",
+      "seed_window": 64,
+      "executable": "cpp/spatial_core/build/water_distance_hilbert_w64.exe",
+      "command": [
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\cpp\\spatial_core\\build\\water_distance_hilbert_w64.exe",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_properties_projected_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_features_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_vertices_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_binary_countywide_split_w64.csv",
+        "EPSG:26918",
+        "25",
+        "split",
+        "disk",
+        "32",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_binary_countywide_split_w64_manifest.json",
+        "--seed",
+        "binary",
+        "--query-stats",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_binary_countywide_split_w64_query_stats.json"
+      ],
+      "output_path": "outputs\\benchmark\\ladder_work\\hilbert_binary_countywide_split_w64.csv"
+    },
+    "hilbert_binary@countywide@split@w128": {
+      "algorithm": "hilbert_binary",
+      "rung": 4,
+      "sessions": [
+        "7bd2071b3c6b"
+      ],
+      "output_sha256": "05c799b1fcef76bee01701d88ae4f2512d0e6b460aa63aa7f17143616ede12ee",
+      "computation_seconds": {
+        "n": 7,
+        "minimum": 9.510811,
+        "median": 9.681948,
+        "maximum": 10.169047,
+        "relative_spread": 0.0679859053157485,
+        "standard_deviation": 0.22711919057748386,
+        "standard_deviation_withheld_reason": null
+      },
+      "total_process_seconds": {
+        "n": 7,
+        "minimum": 12.119269599999825,
+        "median": 12.267334199999823,
+        "maximum": 12.835932100000718,
+        "relative_spread": 0.05842039422068601,
+        "standard_deviation": 0.24976460467582048,
+        "standard_deviation_withheld_reason": null
+      },
+      "deterministic_counters": {
+        "average_segment_checks_per_property": 7616.515122,
+        "average_seed_probes_per_property": 20.23764,
+        "resolve_entries_per_property": 133.036864,
+        "tight_entries_per_property": 47.59262348426478,
+        "n_true_r_per_property": 1.606679,
+        "n_disk_infl_per_property": 10.278319,
+        "n_decomp_per_property": 47.592623,
+        "resolve_nodes_per_property": 69.511206,
+        "geometric_inflation_capped": 6.397244,
+        "mean_d_seed_over_d_best": 1.1379628107584276
+      },
+      "peak_working_set_bytes": {
+        "n": 7,
+        "minimum": 232288256.0,
+        "median": 232341504.0,
+        "maximum": 232443904.0,
+        "relative_spread": 0.0006699104435512305,
+        "standard_deviation": 56004.82547917082,
+        "standard_deviation_withheld_reason": null
+      },
+      "peak_commit_bytes": {
+        "n": 7,
+        "minimum": 285163520.0,
+        "median": 285171712.0,
+        "maximum": 285237248.0,
+        "relative_spread": 0.0002585389675677228,
+        "standard_deviation": 25657.474529619925,
+        "standard_deviation_withheld_reason": null
+      },
+      "peak_memory_method": "psapi:GetProcessMemoryInfo",
+      "key_array_bytes": 9516712,
+      "workload": "countywide",
+      "verification_mode": "split",
+      "seed_window": 128,
+      "executable": "cpp/spatial_core/build/water_distance_hilbert_w128.exe",
+      "command": [
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\cpp\\spatial_core\\build\\water_distance_hilbert_w128.exe",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_properties_projected_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_features_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_vertices_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_binary_countywide_split_w128.csv",
+        "EPSG:26918",
+        "25",
+        "split",
+        "disk",
+        "32",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_binary_countywide_split_w128_manifest.json",
+        "--seed",
+        "binary",
+        "--query-stats",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_binary_countywide_split_w128_query_stats.json"
+      ],
+      "output_path": "outputs\\benchmark\\ladder_work\\hilbert_binary_countywide_split_w128.csv"
+    },
+    "hilbert_binary@countywide@split@w256": {
+      "algorithm": "hilbert_binary",
+      "rung": 4,
+      "sessions": [
+        "7bd2071b3c6b"
+      ],
+      "output_sha256": "05c799b1fcef76bee01701d88ae4f2512d0e6b460aa63aa7f17143616ede12ee",
+      "computation_seconds": {
+        "n": 7,
+        "minimum": 9.519836,
+        "median": 9.820365,
+        "maximum": 9.931204,
+        "relative_spread": 0.041889278046182546,
+        "standard_deviation": 0.16356265440235068,
+        "standard_deviation_withheld_reason": null
+      },
+      "total_process_seconds": {
+        "n": 7,
+        "minimum": 12.075744499999928,
+        "median": 12.381407300001229,
+        "maximum": 12.500019400000383,
+        "relative_spread": 0.03426709821592033,
+        "standard_deviation": 0.1769802253038165,
+        "standard_deviation_withheld_reason": null
+      },
+      "deterministic_counters": {
+        "average_segment_checks_per_property": 7616.515122,
+        "average_seed_probes_per_property": 20.23764,
+        "resolve_entries_per_property": 98.352634,
+        "tight_entries_per_property": 47.59262348426478,
+        "n_true_r_per_property": 1.606679,
+        "n_disk_infl_per_property": 10.278319,
+        "n_decomp_per_property": 47.592623,
+        "resolve_nodes_per_property": 67.145582,
+        "geometric_inflation_capped": 6.397244,
+        "mean_d_seed_over_d_best": 1.1085579986699086
+      },
+      "peak_working_set_bytes": {
+        "n": 7,
+        "minimum": 232304640.0,
+        "median": 232345600.0,
+        "maximum": 232439808.0,
+        "relative_spread": 0.0005817540766857647,
+        "standard_deviation": 56727.68117779471,
+        "standard_deviation_withheld_reason": null
+      },
+      "peak_commit_bytes": {
+        "n": 7,
+        "minimum": 285163520.0,
+        "median": 285179904.0,
+        "maximum": 285204480.0,
+        "relative_spread": 0.00014362863380443526,
+        "standard_deviation": 15660.999955911104,
+        "standard_deviation_withheld_reason": null
+      },
+      "peak_memory_method": "psapi:GetProcessMemoryInfo",
+      "key_array_bytes": 9516712,
+      "workload": "countywide",
+      "verification_mode": "split",
+      "seed_window": 256,
+      "executable": "cpp/spatial_core/build/water_distance_hilbert_w256.exe",
+      "command": [
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\cpp\\spatial_core\\build\\water_distance_hilbert_w256.exe",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_properties_projected_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_features_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_vertices_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_binary_countywide_split_w256.csv",
+        "EPSG:26918",
+        "25",
+        "split",
+        "disk",
+        "32",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_binary_countywide_split_w256_manifest.json",
+        "--seed",
+        "binary",
+        "--query-stats",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_binary_countywide_split_w256_query_stats.json"
+      ],
+      "output_path": "outputs\\benchmark\\ladder_work\\hilbert_binary_countywide_split_w256.csv"
+    },
+    "hilbert_binary@countywide@split@w512": {
+      "algorithm": "hilbert_binary",
+      "rung": 4,
+      "sessions": [
+        "7bd2071b3c6b"
+      ],
+      "output_sha256": "05c799b1fcef76bee01701d88ae4f2512d0e6b460aa63aa7f17143616ede12ee",
+      "computation_seconds": {
+        "n": 7,
+        "minimum": 10.01593,
+        "median": 10.117247,
+        "maximum": 10.303887,
+        "relative_spread": 0.028461991686078107,
+        "standard_deviation": 0.09799032028118633,
+        "standard_deviation_withheld_reason": null
+      },
+      "total_process_seconds": {
+        "n": 7,
+        "minimum": 12.57440040000074,
+        "median": 12.676416999999674,
+        "maximum": 12.899128400000336,
+        "relative_spread": 0.025616702258974573,
+        "standard_deviation": 0.12172493821920458,
+        "standard_deviation_withheld_reason": null
+      },
+      "deterministic_counters": {
+        "average_segment_checks_per_property": 7616.515122,
+        "average_seed_probes_per_property": 20.23764,
+        "resolve_entries_per_property": 87.909441,
+        "tight_entries_per_property": 47.59262348426478,
+        "n_true_r_per_property": 1.606679,
+        "n_disk_infl_per_property": 10.278319,
+        "n_decomp_per_property": 47.592623,
+        "resolve_nodes_per_property": 65.929904,
+        "geometric_inflation_capped": 6.397244,
+        "mean_d_seed_over_d_best": 1.0851163047527554
+      },
+      "peak_working_set_bytes": {
+        "n": 7,
+        "minimum": 232300544.0,
+        "median": 232366080.0,
+        "maximum": 232374272.0,
+        "relative_spread": 0.00031729243786356425,
+        "standard_deviation": 28448.21511515433,
+        "standard_deviation_withheld_reason": null
+      },
+      "peak_commit_bytes": {
+        "n": 7,
+        "minimum": 285151232.0,
+        "median": 285167616.0,
+        "maximum": 285179904.0,
+        "relative_spread": 0.00010054437597851223,
+        "standard_deviation": 9374.46826428546,
+        "standard_deviation_withheld_reason": null
+      },
+      "peak_memory_method": "psapi:GetProcessMemoryInfo",
+      "key_array_bytes": 9516712,
+      "workload": "countywide",
+      "verification_mode": "split",
+      "seed_window": 512,
+      "executable": "cpp/spatial_core/build/water_distance_hilbert_w512.exe",
+      "command": [
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\cpp\\spatial_core\\build\\water_distance_hilbert_w512.exe",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_properties_projected_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_features_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_vertices_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_binary_countywide_split_w512.csv",
+        "EPSG:26918",
+        "25",
+        "split",
+        "disk",
+        "32",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_binary_countywide_split_w512_manifest.json",
+        "--seed",
+        "binary",
+        "--query-stats",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_binary_countywide_split_w512_query_stats.json"
+      ],
+      "output_path": "outputs\\benchmark\\ladder_work\\hilbert_binary_countywide_split_w512.csv"
+    },
+    "hilbert_binary@countywide@split@w1024": {
+      "algorithm": "hilbert_binary",
+      "rung": 4,
+      "sessions": [
+        "7bd2071b3c6b"
+      ],
+      "output_sha256": "05c799b1fcef76bee01701d88ae4f2512d0e6b460aa63aa7f17143616ede12ee",
+      "computation_seconds": {
+        "n": 7,
+        "minimum": 10.864295,
+        "median": 11.08006,
+        "maximum": 11.194391,
+        "relative_spread": 0.02979189643377376,
+        "standard_deviation": 0.1145067278458012,
+        "standard_deviation_withheld_reason": null
+      },
+      "total_process_seconds": {
+        "n": 7,
+        "minimum": 13.427072500000577,
+        "median": 13.64678880000065,
+        "maximum": 13.8498512999995,
+        "relative_spread": 0.030980094012952195,
+        "standard_deviation": 0.13958362772614463,
+        "standard_deviation_withheld_reason": null
+      },
+      "deterministic_counters": {
+        "average_segment_checks_per_property": 7616.515122,
+        "average_seed_probes_per_property": 20.23764,
+        "resolve_entries_per_property": 81.922005,
+        "tight_entries_per_property": 47.59262348426478,
+        "n_true_r_per_property": 1.606679,
+        "n_disk_infl_per_property": 10.278319,
+        "n_decomp_per_property": 47.592623,
+        "resolve_nodes_per_property": 65.363791,
+        "geometric_inflation_capped": 6.397244,
+        "mean_d_seed_over_d_best": 1.0714848157425225
+      },
+      "peak_working_set_bytes": {
+        "n": 7,
+        "minimum": 232321024.0,
+        "median": 232386560.0,
+        "maximum": 232472576.0,
+        "relative_spread": 0.0006521547545606768,
+        "standard_deviation": 52133.568763321775,
+        "standard_deviation_withheld_reason": null
+      },
+      "peak_commit_bytes": {
+        "n": 7,
+        "minimum": 285167616.0,
+        "median": 285171712.0,
+        "maximum": 285179904.0,
+        "relative_spread": 4.308982792795381e-05,
+        "standard_deviation": 4644.427444337384,
+        "standard_deviation_withheld_reason": null
+      },
+      "peak_memory_method": "psapi:GetProcessMemoryInfo",
+      "key_array_bytes": 9516712,
+      "workload": "countywide",
+      "verification_mode": "split",
+      "seed_window": 1024,
+      "executable": "cpp/spatial_core/build/water_distance_hilbert_w1024.exe",
+      "command": [
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\cpp\\spatial_core\\build\\water_distance_hilbert_w1024.exe",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_properties_projected_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_features_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_vertices_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_binary_countywide_split_w1024.csv",
+        "EPSG:26918",
+        "25",
+        "split",
+        "disk",
+        "32",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_binary_countywide_split_w1024_manifest.json",
+        "--seed",
+        "binary",
+        "--query-stats",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_binary_countywide_split_w1024_query_stats.json"
+      ],
+      "output_path": "outputs\\benchmark\\ladder_work\\hilbert_binary_countywide_split_w1024.csv"
+    },
+    "hilbert_binary@countywide@split@w2048": {
+      "algorithm": "hilbert_binary",
+      "rung": 4,
+      "sessions": [
+        "7bd2071b3c6b"
+      ],
+      "output_sha256": "05c799b1fcef76bee01701d88ae4f2512d0e6b460aa63aa7f17143616ede12ee",
+      "computation_seconds": {
+        "n": 7,
+        "minimum": 12.714072,
+        "median": 12.950638,
+        "maximum": 13.198571,
+        "relative_spread": 0.03741120707721114,
+        "standard_deviation": 0.18309668893120756,
+        "standard_deviation_withheld_reason": null
+      },
+      "total_process_seconds": {
+        "n": 7,
+        "minimum": 15.283685100001094,
+        "median": 15.507349600000452,
+        "maximum": 15.84069449999879,
+        "relative_spread": 0.03591905866349204,
+        "standard_deviation": 0.20607011013730028,
+        "standard_deviation_withheld_reason": null
+      },
+      "deterministic_counters": {
+        "average_segment_checks_per_property": 7616.515122,
+        "average_seed_probes_per_property": 20.23764,
+        "resolve_entries_per_property": 77.464161,
+        "tight_entries_per_property": 47.59262348426478,
+        "n_true_r_per_property": 1.606679,
+        "n_disk_infl_per_property": 10.278319,
+        "n_decomp_per_property": 47.592623,
+        "resolve_nodes_per_property": 64.662173,
+        "geometric_inflation_capped": 6.397244,
+        "mean_d_seed_over_d_best": 1.0609392279398582
+      },
+      "peak_working_set_bytes": {
+        "n": 7,
+        "minimum": 232304640.0,
+        "median": 232382464.0,
+        "maximum": 232431616.0,
+        "relative_spread": 0.0005464095604046956,
+        "standard_deviation": 49135.74334336219,
+        "standard_deviation_withheld_reason": null
+      },
+      "peak_commit_bytes": {
+        "n": 7,
+        "minimum": 285167616.0,
+        "median": 285171712.0,
+        "maximum": 285184000.0,
+        "relative_spread": 5.745310390393841e-05,
+        "standard_deviation": 5792.618751480198,
+        "standard_deviation_withheld_reason": null
+      },
+      "peak_memory_method": "psapi:GetProcessMemoryInfo",
+      "key_array_bytes": 9516712,
+      "workload": "countywide",
+      "verification_mode": "split",
+      "seed_window": 2048,
+      "executable": "cpp/spatial_core/build/water_distance_hilbert_w2048.exe",
+      "command": [
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\cpp\\spatial_core\\build\\water_distance_hilbert_w2048.exe",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_properties_projected_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_features_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_vertices_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_binary_countywide_split_w2048.csv",
+        "EPSG:26918",
+        "25",
+        "split",
+        "disk",
+        "32",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_binary_countywide_split_w2048_manifest.json",
+        "--seed",
+        "binary",
+        "--query-stats",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_binary_countywide_split_w2048_query_stats.json"
+      ],
+      "output_path": "outputs\\benchmark\\ladder_work\\hilbert_binary_countywide_split_w2048.csv"
+    },
+    "hilbert_rmi@countywide@split@w8": {
+      "algorithm": "hilbert_rmi",
+      "rung": 5,
+      "sessions": [
+        "7bd2071b3c6b"
+      ],
+      "output_sha256": "008945d1a38aff3570c2eafaed7ec1b6276243062b63f1dd5c8fafa78b424620",
+      "computation_seconds": {
+        "n": 7,
+        "minimum": 11.762635,
+        "median": 12.104384,
+        "maximum": 12.349521,
+        "relative_spread": 0.048485408261998285,
+        "standard_deviation": 0.20386665601645917,
+        "standard_deviation_withheld_reason": null
+      },
+      "total_process_seconds": {
+        "n": 7,
+        "minimum": 14.287565300000097,
+        "median": 14.670666299999539,
+        "maximum": 14.98728200000005,
+        "relative_spread": 0.04769495029683659,
+        "standard_deviation": 0.2337195270153493,
+        "standard_deviation_withheld_reason": null
+      },
+      "deterministic_counters": {
+        "average_segment_checks_per_property": 7616.515122,
+        "average_seed_probes_per_property": 0.0,
+        "resolve_entries_per_property": 523.042818,
+        "tight_entries_per_property": 47.59262348426478,
+        "n_true_r_per_property": 1.606679,
+        "n_disk_infl_per_property": 10.278319,
+        "n_decomp_per_property": 47.592623,
+        "resolve_nodes_per_property": 97.81237,
+        "geometric_inflation_capped": 6.397244,
+        "mean_d_seed_over_d_best": 2.3084423545694475
+      },
+      "peak_working_set_bytes": {
+        "n": 7,
+        "minimum": 232247296.0,
+        "median": 232353792.0,
+        "maximum": 232448000.0,
+        "relative_spread": 0.0008637862041003402,
+        "standard_deviation": 77982.95546128135,
+        "standard_deviation_withheld_reason": null
+      },
+      "peak_commit_bytes": {
+        "n": 7,
+        "minimum": 285159424.0,
+        "median": 285171712.0,
+        "maximum": 285179904.0,
+        "relative_spread": 7.181637987992301e-05,
+        "standard_deviation": 7370.632485621247,
+        "standard_deviation_withheld_reason": null
+      },
+      "peak_memory_method": "psapi:GetProcessMemoryInfo",
+      "key_array_bytes": 9516712,
+      "rmi_model_bytes": 4194400,
+      "workload": "countywide",
+      "verification_mode": "split",
+      "seed_window": 8,
+      "executable": "cpp/spatial_core/build/water_distance_hilbert_w8.exe",
+      "command": [
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\cpp\\spatial_core\\build\\water_distance_hilbert_w8.exe",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_properties_projected_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_features_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_vertices_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_rmi_countywide_split_w8.csv",
+        "EPSG:26918",
+        "25",
+        "split",
+        "disk",
+        "32",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_rmi_countywide_split_w8_manifest.json",
+        "--seed",
+        "rmi",
+        "--rmi-model",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\models\\water_hilbert_rmi.bin",
+        "--rmi-probes",
+        "0,1615038542230693348,0x0.0p+0,3019,0;297397,5447904346236346589,0x1.f85f031d3b9f0p-3,27183,297569;594794,15403959710719797021,0x1.c59ffb5203579p-1,89950,594794;892191,15998043542986653445,0x1.d92b4191b2ed2p-1,93695,892190;1189588,17178397593379106537,0x1.0000000000000p+0,101137,1189582",
+        "--query-stats",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_rmi_countywide_split_w8_query_stats.json"
+      ],
+      "output_path": "outputs\\benchmark\\ladder_work\\hilbert_rmi_countywide_split_w8.csv"
+    },
+    "hilbert_rmi@countywide@split@w16": {
+      "algorithm": "hilbert_rmi",
+      "rung": 5,
+      "sessions": [
+        "7bd2071b3c6b"
+      ],
+      "output_sha256": "008945d1a38aff3570c2eafaed7ec1b6276243062b63f1dd5c8fafa78b424620",
+      "computation_seconds": {
+        "n": 7,
+        "minimum": 11.506008,
+        "median": 11.631781,
+        "maximum": 11.951143,
+        "relative_spread": 0.03826886011695032,
+        "standard_deviation": 0.188915699013255,
+        "standard_deviation_withheld_reason": null
+      },
+      "total_process_seconds": {
+        "n": 7,
+        "minimum": 14.067034400000011,
+        "median": 14.169022099999893,
+        "maximum": 14.529612700000143,
+        "relative_spread": 0.032647157773868916,
+        "standard_deviation": 0.2032065665318142,
+        "standard_deviation_withheld_reason": null
+      },
+      "deterministic_counters": {
+        "average_segment_checks_per_property": 7616.515122,
+        "average_seed_probes_per_property": 0.0,
+        "resolve_entries_per_property": 481.209914,
+        "tight_entries_per_property": 47.59262348426478,
+        "n_true_r_per_property": 1.606679,
+        "n_disk_infl_per_property": 10.278319,
+        "n_decomp_per_property": 47.592623,
+        "resolve_nodes_per_property": 93.958554,
+        "geometric_inflation_capped": 6.397244,
+        "mean_d_seed_over_d_best": 1.9849233826174602
+      },
+      "peak_working_set_bytes": {
+        "n": 7,
+        "minimum": 232292352.0,
+        "median": 232353792.0,
+        "maximum": 232456192.0,
+        "relative_spread": 0.0007051315951839512,
+        "standard_deviation": 61654.17906818182,
+        "standard_deviation_withheld_reason": null
+      },
+      "peak_commit_bytes": {
+        "n": 7,
+        "minimum": 285163520.0,
+        "median": 285171712.0,
+        "maximum": 285171712.0,
+        "relative_spread": 2.8726551951969206e-05,
+        "standard_deviation": 3896.0731390416563,
+        "standard_deviation_withheld_reason": null
+      },
+      "peak_memory_method": "psapi:GetProcessMemoryInfo",
+      "key_array_bytes": 9516712,
+      "rmi_model_bytes": 4194400,
+      "workload": "countywide",
+      "verification_mode": "split",
+      "seed_window": 16,
+      "executable": "cpp/spatial_core/build/water_distance_hilbert_w16.exe",
+      "command": [
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\cpp\\spatial_core\\build\\water_distance_hilbert_w16.exe",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_properties_projected_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_features_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_vertices_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_rmi_countywide_split_w16.csv",
+        "EPSG:26918",
+        "25",
+        "split",
+        "disk",
+        "32",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_rmi_countywide_split_w16_manifest.json",
+        "--seed",
+        "rmi",
+        "--rmi-model",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\models\\water_hilbert_rmi.bin",
+        "--rmi-probes",
+        "0,1615038542230693348,0x0.0p+0,3019,0;297397,5447904346236346589,0x1.f85f031d3b9f0p-3,27183,297569;594794,15403959710719797021,0x1.c59ffb5203579p-1,89950,594794;892191,15998043542986653445,0x1.d92b4191b2ed2p-1,93695,892190;1189588,17178397593379106537,0x1.0000000000000p+0,101137,1189582",
+        "--query-stats",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_rmi_countywide_split_w16_query_stats.json"
+      ],
+      "output_path": "outputs\\benchmark\\ladder_work\\hilbert_rmi_countywide_split_w16.csv"
+    },
+    "hilbert_rmi@countywide@split@w32": {
+      "algorithm": "hilbert_rmi",
+      "rung": 5,
+      "sessions": [
+        "7bd2071b3c6b"
+      ],
+      "output_sha256": "008945d1a38aff3570c2eafaed7ec1b6276243062b63f1dd5c8fafa78b424620",
+      "computation_seconds": {
+        "n": 7,
+        "minimum": 11.081781,
+        "median": 11.341009,
+        "maximum": 11.841294,
+        "relative_spread": 0.06697049618777308,
+        "standard_deviation": 0.2548390460947383,
+        "standard_deviation_withheld_reason": null
+      },
+      "total_process_seconds": {
+        "n": 7,
+        "minimum": 13.649741600000198,
+        "median": 13.900580399999853,
+        "maximum": 14.470044000001508,
+        "relative_spread": 0.05901209707771043,
+        "standard_deviation": 0.2777778929012792,
+        "standard_deviation_withheld_reason": null
+      },
+      "deterministic_counters": {
+        "average_segment_checks_per_property": 7616.515122,
+        "average_seed_probes_per_property": 0.0,
+        "resolve_entries_per_property": 425.239118,
+        "tight_entries_per_property": 47.59262348426478,
+        "n_true_r_per_property": 1.606679,
+        "n_disk_infl_per_property": 10.278319,
+        "n_decomp_per_property": 47.592623,
+        "resolve_nodes_per_property": 89.14373,
+        "geometric_inflation_capped": 6.397244,
+        "mean_d_seed_over_d_best": 1.7367465528732917
+      },
+      "peak_working_set_bytes": {
+        "n": 7,
+        "minimum": 232284160.0,
+        "median": 232378368.0,
+        "maximum": 232415232.0,
+        "relative_spread": 0.0005640456171892902,
+        "standard_deviation": 44332.054059595044,
+        "standard_deviation_withheld_reason": null
+      },
+      "peak_commit_bytes": {
+        "n": 7,
+        "minimum": 285159424.0,
+        "median": 285163520.0,
+        "maximum": 285171712.0,
+        "relative_spread": 4.3091065785693765e-05,
+        "standard_deviation": 4378.808187493161,
+        "standard_deviation_withheld_reason": null
+      },
+      "peak_memory_method": "psapi:GetProcessMemoryInfo",
+      "key_array_bytes": 9516712,
+      "rmi_model_bytes": 4194400,
+      "workload": "countywide",
+      "verification_mode": "split",
+      "seed_window": 32,
+      "executable": "cpp/spatial_core/build/water_distance_hilbert_w32.exe",
+      "command": [
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\cpp\\spatial_core\\build\\water_distance_hilbert_w32.exe",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_properties_projected_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_features_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_vertices_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_rmi_countywide_split_w32.csv",
+        "EPSG:26918",
+        "25",
+        "split",
+        "disk",
+        "32",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_rmi_countywide_split_w32_manifest.json",
+        "--seed",
+        "rmi",
+        "--rmi-model",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\models\\water_hilbert_rmi.bin",
+        "--rmi-probes",
+        "0,1615038542230693348,0x0.0p+0,3019,0;297397,5447904346236346589,0x1.f85f031d3b9f0p-3,27183,297569;594794,15403959710719797021,0x1.c59ffb5203579p-1,89950,594794;892191,15998043542986653445,0x1.d92b4191b2ed2p-1,93695,892190;1189588,17178397593379106537,0x1.0000000000000p+0,101137,1189582",
+        "--query-stats",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_rmi_countywide_split_w32_query_stats.json"
+      ],
+      "output_path": "outputs\\benchmark\\ladder_work\\hilbert_rmi_countywide_split_w32.csv"
+    },
+    "hilbert_rmi@countywide@split@w64": {
+      "algorithm": "hilbert_rmi",
+      "rung": 5,
+      "sessions": [
+        "7bd2071b3c6b"
+      ],
+      "output_sha256": "008945d1a38aff3570c2eafaed7ec1b6276243062b63f1dd5c8fafa78b424620",
+      "computation_seconds": {
+        "n": 7,
+        "minimum": 10.595424,
+        "median": 11.004442,
+        "maximum": 11.518809,
+        "relative_spread": 0.08391020644208945,
+        "standard_deviation": 0.2861291979813947,
+        "standard_deviation_withheld_reason": null
+      },
+      "total_process_seconds": {
+        "n": 7,
+        "minimum": 13.154780999999275,
+        "median": 13.559958600000755,
+        "maximum": 14.10124580000047,
+        "relative_spread": 0.06979850218725167,
+        "standard_deviation": 0.3033200426320163,
+        "standard_deviation_withheld_reason": null
+      },
+      "deterministic_counters": {
+        "average_segment_checks_per_property": 7616.515122,
+        "average_seed_probes_per_property": 0.0,
+        "resolve_entries_per_property": 352.515432,
+        "tight_entries_per_property": 47.59262348426478,
+        "n_true_r_per_property": 1.606679,
+        "n_disk_infl_per_property": 10.278319,
+        "n_decomp_per_property": 47.592623,
+        "resolve_nodes_per_property": 83.16842,
+        "geometric_inflation_capped": 6.397244,
+        "mean_d_seed_over_d_best": 1.5388433412534919
+      },
+      "peak_working_set_bytes": {
+        "n": 7,
+        "minimum": 232366080.0,
+        "median": 232407040.0,
+        "maximum": 232443904.0,
+        "relative_spread": 0.00033486076841734226,
+        "standard_deviation": 25516.970114210733,
+        "standard_deviation_withheld_reason": null
+      },
+      "peak_commit_bytes": {
+        "n": 7,
+        "minimum": 285163520.0,
+        "median": 285171712.0,
+        "maximum": 285175808.0,
+        "relative_spread": 4.308982792795381e-05,
+        "standard_deviation": 3896.0731390416563,
+        "standard_deviation_withheld_reason": null
+      },
+      "peak_memory_method": "psapi:GetProcessMemoryInfo",
+      "key_array_bytes": 9516712,
+      "rmi_model_bytes": 4194400,
+      "workload": "countywide",
+      "verification_mode": "split",
+      "seed_window": 64,
+      "executable": "cpp/spatial_core/build/water_distance_hilbert_w64.exe",
+      "command": [
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\cpp\\spatial_core\\build\\water_distance_hilbert_w64.exe",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_properties_projected_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_features_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_vertices_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_rmi_countywide_split_w64.csv",
+        "EPSG:26918",
+        "25",
+        "split",
+        "disk",
+        "32",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_rmi_countywide_split_w64_manifest.json",
+        "--seed",
+        "rmi",
+        "--rmi-model",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\models\\water_hilbert_rmi.bin",
+        "--rmi-probes",
+        "0,1615038542230693348,0x0.0p+0,3019,0;297397,5447904346236346589,0x1.f85f031d3b9f0p-3,27183,297569;594794,15403959710719797021,0x1.c59ffb5203579p-1,89950,594794;892191,15998043542986653445,0x1.d92b4191b2ed2p-1,93695,892190;1189588,17178397593379106537,0x1.0000000000000p+0,101137,1189582",
+        "--query-stats",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_rmi_countywide_split_w64_query_stats.json"
+      ],
+      "output_path": "outputs\\benchmark\\ladder_work\\hilbert_rmi_countywide_split_w64.csv"
+    },
+    "hilbert_rmi@countywide@split@w128": {
+      "algorithm": "hilbert_rmi",
+      "rung": 5,
+      "sessions": [
+        "7bd2071b3c6b"
+      ],
+      "output_sha256": "008945d1a38aff3570c2eafaed7ec1b6276243062b63f1dd5c8fafa78b424620",
+      "computation_seconds": {
+        "n": 7,
+        "minimum": 10.28948,
+        "median": 10.480321,
+        "maximum": 10.815823,
+        "relative_spread": 0.050222030412999816,
+        "standard_deviation": 0.16993713737242178,
+        "standard_deviation_withheld_reason": null
+      },
+      "total_process_seconds": {
+        "n": 7,
+        "minimum": 12.851149100000839,
+        "median": 13.047615100000257,
+        "maximum": 13.707418599999983,
+        "relative_spread": 0.0656265143810938,
+        "standard_deviation": 0.2746614662090732,
+        "standard_deviation_withheld_reason": null
+      },
+      "deterministic_counters": {
+        "average_segment_checks_per_property": 7616.515122,
+        "average_seed_probes_per_property": 0.0,
+        "resolve_entries_per_property": 285.395722,
+        "tight_entries_per_property": 47.59262348426478,
+        "n_true_r_per_property": 1.606679,
+        "n_disk_infl_per_property": 10.278319,
+        "n_decomp_per_property": 47.592623,
+        "resolve_nodes_per_property": 77.994345,
+        "geometric_inflation_capped": 6.397244,
+        "mean_d_seed_over_d_best": 1.3716233479402213
+      },
+      "peak_working_set_bytes": {
+        "n": 7,
+        "minimum": 232308736.0,
+        "median": 232390656.0,
+        "maximum": 232427520.0,
+        "relative_spread": 0.0005111393119007332,
+        "standard_deviation": 46513.02988359693,
+        "standard_deviation_withheld_reason": null
+      },
+      "peak_commit_bytes": {
+        "n": 7,
+        "minimum": 285159424.0,
+        "median": 285175808.0,
+        "maximum": 285179904.0,
+        "relative_spread": 7.181534837625497e-05,
+        "standard_deviation": 7478.238651803868,
+        "standard_deviation_withheld_reason": null
+      },
+      "peak_memory_method": "psapi:GetProcessMemoryInfo",
+      "key_array_bytes": 9516712,
+      "rmi_model_bytes": 4194400,
+      "workload": "countywide",
+      "verification_mode": "split",
+      "seed_window": 128,
+      "executable": "cpp/spatial_core/build/water_distance_hilbert_w128.exe",
+      "command": [
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\cpp\\spatial_core\\build\\water_distance_hilbert_w128.exe",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_properties_projected_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_features_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_vertices_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_rmi_countywide_split_w128.csv",
+        "EPSG:26918",
+        "25",
+        "split",
+        "disk",
+        "32",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_rmi_countywide_split_w128_manifest.json",
+        "--seed",
+        "rmi",
+        "--rmi-model",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\models\\water_hilbert_rmi.bin",
+        "--rmi-probes",
+        "0,1615038542230693348,0x0.0p+0,3019,0;297397,5447904346236346589,0x1.f85f031d3b9f0p-3,27183,297569;594794,15403959710719797021,0x1.c59ffb5203579p-1,89950,594794;892191,15998043542986653445,0x1.d92b4191b2ed2p-1,93695,892190;1189588,17178397593379106537,0x1.0000000000000p+0,101137,1189582",
+        "--query-stats",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_rmi_countywide_split_w128_query_stats.json"
+      ],
+      "output_path": "outputs\\benchmark\\ladder_work\\hilbert_rmi_countywide_split_w128.csv"
+    },
+    "hilbert_rmi@countywide@split@w256": {
+      "algorithm": "hilbert_rmi",
+      "rung": 5,
+      "sessions": [
+        "7bd2071b3c6b"
+      ],
+      "output_sha256": "008945d1a38aff3570c2eafaed7ec1b6276243062b63f1dd5c8fafa78b424620",
+      "computation_seconds": {
+        "n": 7,
+        "minimum": 9.982714,
+        "median": 10.253361,
+        "maximum": 10.565659,
+        "relative_spread": 0.056854040348330706,
+        "standard_deviation": 0.2307271922278201,
+        "standard_deviation_withheld_reason": null
+      },
+      "total_process_seconds": {
+        "n": 7,
+        "minimum": 12.568886400000338,
+        "median": 12.778289800000493,
+        "maximum": 13.218427699999665,
+        "relative_spread": 0.05083163006674826,
+        "standard_deviation": 0.2616971656798178,
+        "standard_deviation_withheld_reason": null
+      },
+      "deterministic_counters": {
+        "average_segment_checks_per_property": 7616.515122,
+        "average_seed_probes_per_property": 0.0,
+        "resolve_entries_per_property": 196.291163,
+        "tight_entries_per_property": 47.59262348426478,
+        "n_true_r_per_property": 1.606679,
+        "n_disk_infl_per_property": 10.278319,
+        "n_decomp_per_property": 47.592623,
+        "resolve_nodes_per_property": 72.356827,
+        "geometric_inflation_capped": 6.397244,
+        "mean_d_seed_over_d_best": 1.2434167205239846
+      },
+      "peak_working_set_bytes": {
+        "n": 7,
+        "minimum": 232296448.0,
+        "median": 232374272.0,
+        "maximum": 232431616.0,
+        "relative_spread": 0.000581682295706127,
+        "standard_deviation": 46081.625368159795,
+        "standard_deviation_withheld_reason": null
+      },
+      "peak_commit_bytes": {
+        "n": 7,
+        "minimum": 285159424.0,
+        "median": 285167616.0,
+        "maximum": 285184000.0,
+        "relative_spread": 8.618089369586763e-05,
+        "standard_deviation": 9374.46826428546,
+        "standard_deviation_withheld_reason": null
+      },
+      "peak_memory_method": "psapi:GetProcessMemoryInfo",
+      "key_array_bytes": 9516712,
+      "rmi_model_bytes": 4194400,
+      "workload": "countywide",
+      "verification_mode": "split",
+      "seed_window": 256,
+      "executable": "cpp/spatial_core/build/water_distance_hilbert_w256.exe",
+      "command": [
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\cpp\\spatial_core\\build\\water_distance_hilbert_w256.exe",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_properties_projected_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_features_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_vertices_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_rmi_countywide_split_w256.csv",
+        "EPSG:26918",
+        "25",
+        "split",
+        "disk",
+        "32",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_rmi_countywide_split_w256_manifest.json",
+        "--seed",
+        "rmi",
+        "--rmi-model",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\models\\water_hilbert_rmi.bin",
+        "--rmi-probes",
+        "0,1615038542230693348,0x0.0p+0,3019,0;297397,5447904346236346589,0x1.f85f031d3b9f0p-3,27183,297569;594794,15403959710719797021,0x1.c59ffb5203579p-1,89950,594794;892191,15998043542986653445,0x1.d92b4191b2ed2p-1,93695,892190;1189588,17178397593379106537,0x1.0000000000000p+0,101137,1189582",
+        "--query-stats",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_rmi_countywide_split_w256_query_stats.json"
+      ],
+      "output_path": "outputs\\benchmark\\ladder_work\\hilbert_rmi_countywide_split_w256.csv"
+    },
+    "hilbert_rmi@countywide@split@w512": {
+      "algorithm": "hilbert_rmi",
+      "rung": 5,
+      "sessions": [
+        "7bd2071b3c6b"
+      ],
+      "output_sha256": "008945d1a38aff3570c2eafaed7ec1b6276243062b63f1dd5c8fafa78b424620",
+      "computation_seconds": {
+        "n": 7,
+        "minimum": 10.149733,
+        "median": 10.261203,
+        "maximum": 10.487506,
+        "relative_spread": 0.03291748540595097,
+        "standard_deviation": 0.132131816576514,
+        "standard_deviation_withheld_reason": null
+      },
+      "total_process_seconds": {
+        "n": 7,
+        "minimum": 12.770534499999485,
+        "median": 12.825718500000221,
+        "maximum": 13.083248000000822,
+        "relative_spread": 0.024381752959986718,
+        "standard_deviation": 0.13203445270407715,
+        "standard_deviation_withheld_reason": null
+      },
+      "deterministic_counters": {
+        "average_segment_checks_per_property": 7616.515122,
+        "average_seed_probes_per_property": 0.0,
+        "resolve_entries_per_property": 150.062529,
+        "tight_entries_per_property": 47.59262348426478,
+        "n_true_r_per_property": 1.606679,
+        "n_disk_infl_per_property": 10.278319,
+        "n_decomp_per_property": 47.592623,
+        "resolve_nodes_per_property": 68.800836,
+        "geometric_inflation_capped": 6.397244,
+        "mean_d_seed_over_d_best": 1.1591483187648373
+      },
+      "peak_working_set_bytes": {
+        "n": 7,
+        "minimum": 232247296.0,
+        "median": 232361984.0,
+        "maximum": 232435712.0,
+        "relative_spread": 0.0008108727458619048,
+        "standard_deviation": 59952.63796729961,
+        "standard_deviation_withheld_reason": null
+      },
+      "peak_commit_bytes": {
+        "n": 7,
+        "minimum": 285163520.0,
+        "median": 285171712.0,
+        "maximum": 285184000.0,
+        "relative_spread": 7.181637987992301e-05,
+        "standard_deviation": 7037.949484926768,
+        "standard_deviation_withheld_reason": null
+      },
+      "peak_memory_method": "psapi:GetProcessMemoryInfo",
+      "key_array_bytes": 9516712,
+      "rmi_model_bytes": 4194400,
+      "workload": "countywide",
+      "verification_mode": "split",
+      "seed_window": 512,
+      "executable": "cpp/spatial_core/build/water_distance_hilbert_w512.exe",
+      "command": [
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\cpp\\spatial_core\\build\\water_distance_hilbert_w512.exe",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_properties_projected_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_features_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_vertices_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_rmi_countywide_split_w512.csv",
+        "EPSG:26918",
+        "25",
+        "split",
+        "disk",
+        "32",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_rmi_countywide_split_w512_manifest.json",
+        "--seed",
+        "rmi",
+        "--rmi-model",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\models\\water_hilbert_rmi.bin",
+        "--rmi-probes",
+        "0,1615038542230693348,0x0.0p+0,3019,0;297397,5447904346236346589,0x1.f85f031d3b9f0p-3,27183,297569;594794,15403959710719797021,0x1.c59ffb5203579p-1,89950,594794;892191,15998043542986653445,0x1.d92b4191b2ed2p-1,93695,892190;1189588,17178397593379106537,0x1.0000000000000p+0,101137,1189582",
+        "--query-stats",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_rmi_countywide_split_w512_query_stats.json"
+      ],
+      "output_path": "outputs\\benchmark\\ladder_work\\hilbert_rmi_countywide_split_w512.csv"
+    },
+    "hilbert_rmi@countywide@split@w1024": {
+      "algorithm": "hilbert_rmi",
+      "rung": 5,
+      "sessions": [
+        "7bd2071b3c6b"
+      ],
+      "output_sha256": "008945d1a38aff3570c2eafaed7ec1b6276243062b63f1dd5c8fafa78b424620",
+      "computation_seconds": {
+        "n": 7,
+        "minimum": 10.807466,
+        "median": 11.028295,
+        "maximum": 11.233304,
+        "relative_spread": 0.03861322171740968,
+        "standard_deviation": 0.17441829828768363,
+        "standard_deviation_withheld_reason": null
+      },
+      "total_process_seconds": {
+        "n": 7,
+        "minimum": 13.377421699999104,
+        "median": 13.59366240000054,
+        "maximum": 13.79358880000018,
+        "relative_spread": 0.030614788550365875,
+        "standard_deviation": 0.17704316585887211,
+        "standard_deviation_withheld_reason": null
+      },
+      "deterministic_counters": {
+        "average_segment_checks_per_property": 7616.515122,
+        "average_seed_probes_per_property": 0.0,
+        "resolve_entries_per_property": 113.145638,
+        "tight_entries_per_property": 47.59262348426478,
+        "n_true_r_per_property": 1.606679,
+        "n_disk_infl_per_property": 10.278319,
+        "n_decomp_per_property": 47.592623,
+        "resolve_nodes_per_property": 66.746045,
+        "geometric_inflation_capped": 6.397244,
+        "mean_d_seed_over_d_best": 1.1064928565938394
+      },
+      "peak_working_set_bytes": {
+        "n": 7,
+        "minimum": 232263680.0,
+        "median": 232386560.0,
+        "maximum": 232468480.0,
+        "relative_spread": 0.0008812902088657794,
+        "standard_deviation": 73036.67416409636,
+        "standard_deviation_withheld_reason": null
+      },
+      "peak_commit_bytes": {
+        "n": 7,
+        "minimum": 285159424.0,
+        "median": 285175808.0,
+        "maximum": 285179904.0,
+        "relative_spread": 7.181534837625497e-05,
+        "standard_deviation": 7424.630515097319,
+        "standard_deviation_withheld_reason": null
+      },
+      "peak_memory_method": "psapi:GetProcessMemoryInfo",
+      "key_array_bytes": 9516712,
+      "rmi_model_bytes": 4194400,
+      "workload": "countywide",
+      "verification_mode": "split",
+      "seed_window": 1024,
+      "executable": "cpp/spatial_core/build/water_distance_hilbert_w1024.exe",
+      "command": [
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\cpp\\spatial_core\\build\\water_distance_hilbert_w1024.exe",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_properties_projected_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_features_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_vertices_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_rmi_countywide_split_w1024.csv",
+        "EPSG:26918",
+        "25",
+        "split",
+        "disk",
+        "32",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_rmi_countywide_split_w1024_manifest.json",
+        "--seed",
+        "rmi",
+        "--rmi-model",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\models\\water_hilbert_rmi.bin",
+        "--rmi-probes",
+        "0,1615038542230693348,0x0.0p+0,3019,0;297397,5447904346236346589,0x1.f85f031d3b9f0p-3,27183,297569;594794,15403959710719797021,0x1.c59ffb5203579p-1,89950,594794;892191,15998043542986653445,0x1.d92b4191b2ed2p-1,93695,892190;1189588,17178397593379106537,0x1.0000000000000p+0,101137,1189582",
+        "--query-stats",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_rmi_countywide_split_w1024_query_stats.json"
+      ],
+      "output_path": "outputs\\benchmark\\ladder_work\\hilbert_rmi_countywide_split_w1024.csv"
+    },
+    "hilbert_rmi@countywide@split@w2048": {
+      "algorithm": "hilbert_rmi",
+      "rung": 5,
+      "sessions": [
+        "7bd2071b3c6b"
+      ],
+      "output_sha256": "008945d1a38aff3570c2eafaed7ec1b6276243062b63f1dd5c8fafa78b424620",
+      "computation_seconds": {
+        "n": 7,
+        "minimum": 12.580968,
+        "median": 12.934401,
+        "maximum": 13.240256,
+        "relative_spread": 0.05097166849860307,
+        "standard_deviation": 0.21447681972862415,
+        "standard_deviation_withheld_reason": null
+      },
+      "total_process_seconds": {
+        "n": 7,
+        "minimum": 15.144569399999455,
+        "median": 15.50332890000027,
+        "maximum": 15.830399200000102,
+        "relative_spread": 0.044237583065185125,
+        "standard_deviation": 0.22868811718040846,
+        "standard_deviation_withheld_reason": null
+      },
+      "deterministic_counters": {
+        "average_segment_checks_per_property": 7616.515122,
+        "average_seed_probes_per_property": 0.0,
+        "resolve_entries_per_property": 94.188789,
+        "tight_entries_per_property": 47.59262348426478,
+        "n_true_r_per_property": 1.606679,
+        "n_disk_infl_per_property": 10.278319,
+        "n_decomp_per_property": 47.592623,
+        "resolve_nodes_per_property": 65.419865,
+        "geometric_inflation_capped": 6.397244,
+        "mean_d_seed_over_d_best": 1.0783234430702657
+      },
+      "peak_working_set_bytes": {
+        "n": 7,
+        "minimum": 232255488.0,
+        "median": 232349696.0,
+        "maximum": 232419328.0,
+        "relative_spread": 0.0007051440256672425,
+        "standard_deviation": 52969.70499481846,
+        "standard_deviation_withheld_reason": null
+      },
+      "peak_commit_bytes": {
+        "n": 7,
+        "minimum": 285163520.0,
+        "median": 285175808.0,
+        "maximum": 285179904.0,
+        "relative_spread": 5.745227870100398e-05,
+        "standard_deviation": 6980.961101794072,
+        "standard_deviation_withheld_reason": null
+      },
+      "peak_memory_method": "psapi:GetProcessMemoryInfo",
+      "key_array_bytes": 9516712,
+      "rmi_model_bytes": 4194400,
+      "workload": "countywide",
+      "verification_mode": "split",
+      "seed_window": 2048,
+      "executable": "cpp/spatial_core/build/water_distance_hilbert_w2048.exe",
+      "command": [
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\cpp\\spatial_core\\build\\water_distance_hilbert_w2048.exe",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_properties_projected_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_features_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\cpp_input\\water_vertices_countywide.csv",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_rmi_countywide_split_w2048.csv",
+        "EPSG:26918",
+        "25",
+        "split",
+        "disk",
+        "32",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_rmi_countywide_split_w2048_manifest.json",
+        "--seed",
+        "rmi",
+        "--rmi-model",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\models\\water_hilbert_rmi.bin",
+        "--rmi-probes",
+        "0,1615038542230693348,0x0.0p+0,3019,0;297397,5447904346236346589,0x1.f85f031d3b9f0p-3,27183,297569;594794,15403959710719797021,0x1.c59ffb5203579p-1,89950,594794;892191,15998043542986653445,0x1.d92b4191b2ed2p-1,93695,892190;1189588,17178397593379106537,0x1.0000000000000p+0,101137,1189582",
+        "--query-stats",
+        "C:\\Users\\salexander\\Documents\\MY Documents\\Summer 2026\\caprm-flood\\outputs\\benchmark\\ladder_work\\hilbert_rmi_countywide_split_w2048_query_stats.json"
+      ],
+      "output_path": "outputs\\benchmark\\ladder_work\\hilbert_rmi_countywide_split_w2048.csv"
+    }
+  },
+  "rmi_model": {
+    "path": "models/water_hilbert_rmi.bin",
+    "sha256": "9be3263cd40e8f7edbac762834879f45c769b6f1b1cb26c202c0c1bc3c4ef844",
+    "manifest": "outputs/validation/water_hilbert_rmi_manifest.json",
+    "manifest_sha256": "116c3a9af919d96c739f19a730f0fd68fad7ea5c3f5c0ee987a6c547893547c2"
+  }
+}

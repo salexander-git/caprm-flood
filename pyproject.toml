@@ -1,0 +1,56 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "caprm-flood"
+version = "0.4.0"
+description = "Reproducible C++/Python geospatial evidence extraction and exact spatial indexing for property-level flood exposure"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.12"
+authors = [{ name = "Sterling Alexander", email = "sa5836@rit.edu" }]
+keywords = ["geospatial", "spatial-index", "learned-index", "flood", "reproducibility"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: GIS",
+    "License :: OSI Approved :: MIT License",
+]
+
+# Runtime versions are pinned exactly in requirements.txt, which is what the
+# published measurements were taken under. This table carries lower bounds so
+# the package installs; it does not replace the pins. Reproducing a figure
+# means installing requirements.txt, not this list.
+dependencies = [
+    "geopandas>=1.1",
+    "shapely>=2.1",
+    "pyproj>=3.7",
+    "pyogrio>=0.12",
+    "rasterio>=1.5",
+    "numpy>=2.4",
+    "pandas>=3.0",
+    "scipy>=1.18",
+    "matplotlib>=3.11",
+    "PyYAML>=6.0",
+    "requests>=2.34",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0,<9.0"]
+
+[project.urls]
+Repository = "https://github.com/salexander-git/caprm-flood"
+
+[tool.setuptools]
+package-dir = { "" = "python" }
+
+[tool.setuptools.packages.find]
+where = ["python"]
+include = ["caprm*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# tests/conftest.py puts python/ on sys.path, so the suite runs from a clean
+# checkout without an install step. An editable install makes the same imports
+# work from python/scripts/ without their sys.path prelude.
+addopts = "-q"

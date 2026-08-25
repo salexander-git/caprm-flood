@@ -1,0 +1,115 @@
+{
+  "property_count": 10000,
+  "water_feature_count": 8572,
+  "vertex_count": 1072254,
+  "segment_count": 1063159,
+  "algorithms": {
+    "brute_force": {
+      "run_count": 7,
+      "total_segment_checks": 10631590000,
+      "input_loading_seconds": {
+        "minimum": 1.28957,
+        "median": 1.314245,
+        "mean": 1.3161272857142858,
+        "maximum": 1.33103
+      },
+      "computation_seconds": {
+        "minimum": 48.796346,
+        "median": 48.945093,
+        "mean": 49.161043428571425,
+        "maximum": 50.117912
+      },
+      "total_process_seconds": {
+        "minimum": 50.121457599976566,
+        "median": 50.28536430001259,
+        "mean": 50.49062049998819,
+        "maximum": 51.44314200000372
+      },
+      "properties_per_second": {
+        "minimum": 199.529463,
+        "median": 204.310574,
+        "mean": 203.43232842857145,
+        "maximum": 204.933377
+      },
+      "average_segment_checks_per_property": {
+        "minimum": 1063159.0,
+        "median": 1063159.0,
+        "mean": 1063159.0,
+        "maximum": 1063159.0
+      }
+    },
+    "feature_bvh": {
+      "run_count": 7,
+      "total_segment_checks": 340112139,
+      "input_loading_seconds": {
+        "minimum": 1.281087,
+        "median": 1.300358,
+        "mean": 1.3133985714285714,
+        "maximum": 1.351293
+      },
+      "index_construction_seconds": {
+        "minimum": 0.002834,
+        "median": 0.00317,
+        "mean": 0.003144,
+        "maximum": 0.003419
+      },
+      "computation_seconds": {
+        "minimum": 1.005665,
+        "median": 1.023932,
+        "mean": 1.0306934285714286,
+        "maximum": 1.063115
+      },
+      "total_process_seconds": {
+        "minimum": 2.3183114000130445,
+        "median": 2.336756599979708,
+        "mean": 2.359852299996419,
+        "maximum": 2.417941099993186
+      },
+      "properties_per_second": {
+        "minimum": 9406.321876,
+        "median": 9766.277357,
+        "mean": 9705.740262285715,
+        "maximum": 9943.669114
+      },
+      "average_segment_checks_per_property": {
+        "minimum": 34011.2139,
+        "median": 34011.2139,
+        "mean": 34011.2139,
+        "maximum": 34011.2139
+      },
+      "average_node_visits_per_property": {
+        "minimum": 27.369,
+        "median": 27.369,
+        "mean": 27.369,
+        "maximum": 27.369
+      },
+      "average_candidate_features_per_property": {
+        "minimum": 7.8152,
+        "median": 7.8152,
+        "mean": 7.8152,
+        "maximum": 7.8152
+      },
+      "total_candidate_feature_checks": 78152,
+      "total_index_node_visits": 273690,
+      "bvh_node_count": 2807
+    }
+  },
+  "comparison": {
+    "median_computation_speedup": 47.80111667571674,
+    "median_total_process_speedup": 21.519299143286577,
+    "segment_check_reduction_rate": 0.9680092875101467,
+    "segment_check_speedup_factor": 31.259072467272333,
+    "average_candidate_features_per_property": 7.8152,
+    "candidate_feature_fraction": 0.0009117125524965002
+  },
+  "repetitions": 7,
+  "warmups_per_algorithm": 1,
+  "created_at_utc": "2026-06-22T21:45:47.487464+00:00",
+  "brute_force_executable": "cpp/spatial_core/build/water_distance_bruteforce.exe",
+  "brute_force_executable_sha256": "6066f1d36c97fe0a89e585c44296c1e40c274f1974f95bfa8bfaf008452ccc6c",
+  "indexed_executable": "cpp/spatial_core/build/water_distance_indexed.exe",
+  "indexed_executable_sha256": "9227bdc9ae817ff7891557edc2ba14bbe77f33f29a885c902455fd741b8f3ac9",
+  "properties_input": "outputs/cpp_input/water_properties_projected_10000.csv",
+  "features_input": "outputs/cpp_input/water_features_10000.csv",
+  "vertices_input": "outputs/cpp_input/water_vertices_10000.csv"
+}

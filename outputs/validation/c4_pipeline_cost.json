@@ -1,0 +1,989 @@
+{
+  "task": "C4_item2c_pipeline_cost",
+  "schema_version": "c4_pipeline_cost_v1",
+  "tool_version": "caprm.pipeline_cost/c4.0",
+  "generated_utc": "2026-08-24T22:24:55.614778+00:00",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "python_version": "3.14.0",
+  "inputs": {
+    "runs": "C:/Users/salexander/Documents/MY Documents/Summer 2026/caprm-flood/outputs/benchmark/c4_pipeline_runs.jsonl",
+    "n_cells": 12
+  },
+  "timing_boundary": {
+    "declared_in_source_before_any_run": true,
+    "warm_or_cold": {
+      "choice": "warm",
+      "detail": "Caches are staged and every stage gets one discarded warm-up invocation at each workload size before the timed repeats.",
+      "not_claimed": "Cold start is a different number. C4 does not measure it and does not claim it."
+    },
+    "what_is_inside": {
+      "choice": "two columns, reported separately",
+      "setup_s": "config load, cached property GeoJSON read, NFHL shapefile read, CRS normalization, the hydrography GeoPackage sha256 and its read, and the evidence/terrain CSV reads",
+      "compute_s": "the per-property kernel call only, timed with perf_counter",
+      "correction_2026_07_30": "An earlier draft placed the DEM open in setup_s. It is not there and cannot be: caprm.terrain.build_terrain_evidence takes a raster PATH and opens it internally, so for the terrain stage the raster open, its window reads and its close all fall inside compute_s. Corrected BEFORE any timing run. This is one reason the terrain stage is expected to carry a large fixed term a, and the fit must not be read as though a were pure per-row overhead.",
+      "why": "A reader wants the marginal cost and the total, and they differ by a large factor. run_water_baseline.py digests a 21.2 MB GeoPackage on every invocation; that is a fixed I/O cost of the shipped CLI and not a cost of the algorithm."
+    },
+    "marginal_or_total": {
+      "choice": "both, via a + b*N fitted over three workload sizes",
+      "a": "fixed cost in seconds, independent of property count",
+      "b": "marginal cost in seconds per additional property",
+      "why": "Total seconds over properties is not the marginal cost of one more property when setup is fixed.",
+      "caveat": "Three points is the MINIMUM for a linearity claim, not a comfortable number of them. The residual is reported with the fit; a fit reported without its residual is an assertion that the model is linear."
+    },
+    "stages_timed": [
+      {
+        "stage": "fema_point_in_polygon",
+        "entry_point": "caprm.baseline.run_fema_point_in_polygon",
+        "workload_selection": "config YAML"
+      },
+      {
+        "stage": "nearest_water_python",
+        "entry_point": "caprm.water_distance.nearest_water_reference",
+        "workload_selection": "config YAML"
+      },
+      {
+        "stage": "terrain_sampling",
+        "entry_point": "caprm.terrain.build_terrain_evidence",
+        "workload_selection": "scratch subset of the countywide evidence CSV"
+      },
+      {
+        "stage": "scoring",
+        "entry_point": "caprm.scoring.build_exposure_index",
+        "workload_selection": "scratch subsets of the evidence and terrain CSVs"
+      }
+    ],
+    "stages_cited_not_measured": [
+      {
+        "stage": "nearest_water_cpp",
+        "source": "outputs/validation/b6_analysis.json, docs/benchmark_results.md",
+        "operating_point": "25 m entry-extent cap, original verification, disk predicate",
+        "why": "B6 already measured it at the shipped operating point. Re-running it here would add a second measurement of the same thing under a different harness. B1's cap=100 figures belong to a different operating point and are not quoted."
+      }
+    ],
+    "stages_skipped": [
+      {
+        "stage": "property_cache_refresh",
+        "why": "network; --refresh-properties is never passed"
+      },
+      {
+        "stage": "evidence_merge",
+        "script": "build_property_evidence.py",
+        "why": "It asserts the water benchmark summary's algorithm set and has no workload flag. Subsetting replaces it, so it is outside the boundary and named here rather than silently omitted."
+      },
+      {
+        "stage": "cpp_input_export",
+        "why": "export is not part of the per-property computation"
+      },
+      {
+        "stage": "figure_generation",
+        "why": "presentation, not pipeline"
+      },
+      {
+        "stage": "cpp_compilation",
+        "why": "build cost, measured nowhere in this project"
+      }
+    ],
+    "two_clocks": {
+      "in_process_s": "perf_counter around the library call, inside one interpreter",
+      "process_wall_clock_s": "the shipped CLI run as a subprocess, including interpreter startup and the geopandas import",
+      "why_both": "Interpreter startup plus the geopandas import is a real fixed cost of the shipped CLI and a meaningless fixed cost of the algorithm. Both belong in the table, labelled."
+    }
+  },
+  "cells": [
+    {
+      "stage": "fema_point_in_polygon",
+      "workload": "10000",
+      "n_properties": 10000,
+      "setup_median_s": 3.761213100005989,
+      "setup_relative_spread": 0.021112576683632884,
+      "compute_median_s": 0.22354619999532588,
+      "compute_relative_spread": 0.10434979437403683,
+      "compute_n_repeat": 5,
+      "compute_us_per_property": 22.354619999532588,
+      "process_median_s": 4.658261999997194,
+      "compute_fraction_of_setup_plus_compute": 0.05610030196685961
+    },
+    {
+      "stage": "fema_point_in_polygon",
+      "workload": "100000",
+      "n_properties": 100000,
+      "setup_median_s": 4.809645000001183,
+      "setup_relative_spread": 0.007643308393927016,
+      "compute_median_s": 1.0677029000071343,
+      "compute_relative_spread": 0.01807562760182108,
+      "compute_n_repeat": 3,
+      "compute_us_per_property": 10.677029000071343,
+      "process_median_s": 7.108671200010576,
+      "compute_fraction_of_setup_plus_compute": 0.1816640631407277
+    },
+    {
+      "stage": "fema_point_in_polygon",
+      "workload": "countywide",
+      "n_properties": 267362,
+      "setup_median_s": 9.283257299975958,
+      "setup_relative_spread": 0.0013558603004925744,
+      "compute_median_s": 2.9726607999764383,
+      "compute_relative_spread": 0.05387029022540655,
+      "compute_n_repeat": 3,
+      "compute_us_per_property": 11.118486546242318,
+      "process_median_s": 14.109887350001372,
+      "compute_fraction_of_setup_plus_compute": 0.24254900985247158
+    },
+    {
+      "stage": "nearest_water_python",
+      "workload": "10000",
+      "n_properties": 10000,
+      "setup_median_s": 0.5522936000052141,
+      "setup_relative_spread": 0.0600649726746538,
+      "compute_median_s": 7.809450700005982,
+      "compute_relative_spread": 0.02173704739819321,
+      "compute_n_repeat": 5,
+      "compute_us_per_property": 780.9450700005982,
+      "process_median_s": 9.077376899993396,
+      "compute_fraction_of_setup_plus_compute": 0.9339499534798649
+    },
+    {
+      "stage": "nearest_water_python",
+      "workload": "100000",
+      "n_properties": 100000,
+      "setup_median_s": 1.7547382500051754,
+      "setup_relative_spread": 0.0015640509354706844,
+      "compute_median_s": 123.41892690000532,
+      "compute_relative_spread": 0.04517792076183077,
+      "compute_n_repeat": 3,
+      "compute_us_per_property": 1234.1892690000532,
+      "process_median_s": 128.18293809999886,
+      "compute_fraction_of_setup_plus_compute": 0.9859815701018081
+    },
+    {
+      "stage": "nearest_water_python",
+      "workload": "countywide",
+      "n_properties": 267362,
+      "setup_median_s": 5.159720700001344,
+      "setup_relative_spread": 0.0029668272833718876,
+      "compute_median_s": 329.5718094999902,
+      "compute_relative_spread": 0.02119267485457284,
+      "compute_n_repeat": 3,
+      "compute_us_per_property": 1232.6800723363463,
+      "process_median_s": 294.81398079998326,
+      "compute_fraction_of_setup_plus_compute": 0.9845854954359436
+    },
+    {
+      "stage": "terrain_sampling",
+      "workload": "10000",
+      "n_properties": 10000,
+      "setup_median_s": 0.027332799989380874,
+      "setup_relative_spread": 0.23363870553645882,
+      "compute_median_s": 1.1489346000016667,
+      "compute_relative_spread": 0.05661114218834369,
+      "compute_n_repeat": 5,
+      "compute_us_per_property": 114.89346000016667,
+      "process_median_s": 2.018354800005909,
+      "compute_fraction_of_setup_plus_compute": 0.9767631067650189
+    },
+    {
+      "stage": "terrain_sampling",
+      "workload": "100000",
+      "n_properties": 100000,
+      "setup_median_s": 0.21987899999658111,
+      "setup_relative_spread": 0.21557583951032147,
+      "compute_median_s": 11.138411899999483,
+      "compute_relative_spread": 0.02879325193511668,
+      "compute_n_repeat": 3,
+      "compute_us_per_property": 111.38411899999483,
+      "process_median_s": 12.695976900002279,
+      "compute_fraction_of_setup_plus_compute": 0.9806415417660541
+    },
+    {
+      "stage": "terrain_sampling",
+      "workload": "countywide",
+      "n_properties": 267362,
+      "setup_median_s": 0.6249099000124261,
+      "setup_relative_spread": 0.24729068938101056,
+      "compute_median_s": 32.50772280001547,
+      "compute_relative_spread": 0.011056741878750512,
+      "compute_n_repeat": 3,
+      "compute_us_per_property": 121.58692259938013,
+      "process_median_s": 35.61256834998494,
+      "compute_fraction_of_setup_plus_compute": 0.9811391414117266
+    },
+    {
+      "stage": "scoring",
+      "workload": "10000",
+      "n_properties": 10000,
+      "setup_median_s": 0.03401569998823106,
+      "setup_relative_spread": 0.14204617297715763,
+      "compute_median_s": 0.03561950000585057,
+      "compute_relative_spread": 0.03934361807905681,
+      "compute_n_repeat": 5,
+      "compute_us_per_property": 3.561950000585057,
+      "process_median_s": 0.7764846999925794,
+      "compute_fraction_of_setup_plus_compute": 0.5115157278054476
+    },
+    {
+      "stage": "scoring",
+      "workload": "100000",
+      "n_properties": 100000,
+      "setup_median_s": 0.25225309999950696,
+      "setup_relative_spread": 0.006608442092856845,
+      "compute_median_s": 0.33518829999957234,
+      "compute_relative_spread": 0.05414747476282739,
+      "compute_n_repeat": 3,
+      "compute_us_per_property": 3.3518829999957234,
+      "process_median_s": 1.8315508000086993,
+      "compute_fraction_of_setup_plus_compute": 0.5705901899323025
+    },
+    {
+      "stage": "scoring",
+      "workload": "countywide",
+      "n_properties": 267362,
+      "setup_median_s": 0.7513895999873057,
+      "setup_relative_spread": 0.0021671844095443394,
+      "compute_median_s": 1.1343527999706566,
+      "compute_relative_spread": 0.05403812655504947,
+      "compute_n_repeat": 3,
+      "compute_us_per_property": 4.242760003181666,
+      "process_median_s": 4.3375457499641925,
+      "compute_fraction_of_setup_plus_compute": 0.6015417588298084
+    }
+  ],
+  "fits": {
+    "fema_point_in_polygon": {
+      "setup_s": {
+        "a_fixed_s": 3.168514456100716,
+        "b_marginal_s_per_property": 2.212351013531033e-05,
+        "b_marginal_us_per_property": 22.12351013531033,
+        "n_points": 3,
+        "n_values": [
+          10000.0,
+          100000.0,
+          267362.0
+        ],
+        "observed_s": [
+          3.761213100005989,
+          4.809645000001183,
+          9.283257299975958
+        ],
+        "predicted_s": [
+          3.3897495574538192,
+          5.380865469631749,
+          9.083500372897555
+        ],
+        "residual_s": [
+          0.37146354255216973,
+          -0.5712204696305658,
+          0.1997569270784023
+        ],
+        "residual_fraction_of_observed": [
+          0.09876163160007559,
+          0.11876561983897467,
+          0.021517978078547887
+        ],
+        "max_abs_residual_fraction": 0.11876561983897467,
+        "three_points_is_the_minimum": true,
+        "caveat": "Three points fit two parameters. The residual qualifies the linearity claim; it does not confirm it.",
+        "stage": "fema_point_in_polygon",
+        "clock": "setup_s",
+        "workloads": [
+          "10000",
+          "100000",
+          "countywide"
+        ],
+        "intercept_is_negative": false,
+        "per_property_us_by_workload": [
+          {
+            "workload": "10000",
+            "n_properties": 10000,
+            "us_per_property": 376.1213100005989
+          },
+          {
+            "workload": "100000",
+            "n_properties": 100000,
+            "us_per_property": 48.09645000001183
+          },
+          {
+            "workload": "countywide",
+            "n_properties": 267362,
+            "us_per_property": 34.721678099266
+          }
+        ]
+      },
+      "compute_s": {
+        "a_fixed_s": 0.06651093459415276,
+        "b_marginal_s_per_property": 1.0770499139278571e-05,
+        "b_marginal_us_per_property": 10.770499139278572,
+        "n_points": 3,
+        "n_values": [
+          10000.0,
+          100000.0,
+          267362.0
+        ],
+        "observed_s": [
+          0.22354619999532588,
+          1.0677029000071343,
+          2.9726607999764383
+        ],
+        "predicted_s": [
+          0.17421592598693847,
+          1.14356084852201,
+          2.94613312546995
+        ],
+        "residual_s": [
+          0.04933027400838741,
+          -0.0758579485148756,
+          0.026527674506488186
+        ],
+        "residual_fraction_of_observed": [
+          0.2206714943462195,
+          0.07104780600892693,
+          0.008923882101415152
+        ],
+        "max_abs_residual_fraction": 0.2206714943462195,
+        "three_points_is_the_minimum": true,
+        "caveat": "Three points fit two parameters. The residual qualifies the linearity claim; it does not confirm it.",
+        "stage": "fema_point_in_polygon",
+        "clock": "compute_s",
+        "workloads": [
+          "10000",
+          "100000",
+          "countywide"
+        ],
+        "intercept_is_negative": false,
+        "per_property_us_by_workload": [
+          {
+            "workload": "10000",
+            "n_properties": 10000,
+            "us_per_property": 22.354619999532588
+          },
+          {
+            "workload": "100000",
+            "n_properties": 100000,
+            "us_per_property": 10.677029000071343
+          },
+          {
+            "workload": "countywide",
+            "n_properties": 267362,
+            "us_per_property": 11.118486546242318
+          }
+        ]
+      },
+      "process_wall_clock_s": {
+        "a_fixed_s": 3.9247842331853375,
+        "b_marginal_s_per_property": 3.737119225161286e-05,
+        "b_marginal_us_per_property": 37.37119225161286,
+        "n_points": 3,
+        "n_values": [
+          10000.0,
+          100000.0,
+          267362.0
+        ],
+        "observed_s": [
+          4.658261999997194,
+          7.108671200010576,
+          14.109887350001372
+        ],
+        "predicted_s": [
+          4.298496155701466,
+          7.6619034583466235,
+          13.916420935961057
+        ],
+        "residual_s": [
+          0.3597658442957279,
+          -0.5532322583360472,
+          0.19346641404031573
+        ],
+        "residual_fraction_of_observed": [
+          0.07723177534796123,
+          0.077824989054948,
+          0.013711407415332548
+        ],
+        "max_abs_residual_fraction": 0.077824989054948,
+        "three_points_is_the_minimum": true,
+        "caveat": "Three points fit two parameters. The residual qualifies the linearity claim; it does not confirm it.",
+        "stage": "fema_point_in_polygon",
+        "clock": "process_wall_clock_s",
+        "workloads": [
+          "10000",
+          "100000",
+          "countywide"
+        ],
+        "intercept_is_negative": false,
+        "per_property_us_by_workload": [
+          {
+            "workload": "10000",
+            "n_properties": 10000,
+            "us_per_property": 465.8261999997194
+          },
+          {
+            "workload": "100000",
+            "n_properties": 100000,
+            "us_per_property": 71.08671200010576
+          },
+          {
+            "workload": "countywide",
+            "n_properties": 267362,
+            "us_per_property": 52.774468136838344
+          }
+        ]
+      }
+    },
+    "nearest_water_python": {
+      "setup_s": {
+        "a_fixed_s": 0.19814021602652243,
+        "b_marginal_s_per_property": 1.8211510173075625e-05,
+        "b_marginal_us_per_property": 18.211510173075624,
+        "n_points": 3,
+        "n_values": [
+          10000.0,
+          100000.0,
+          267362.0
+        ],
+        "observed_s": [
+          0.5522936000052141,
+          1.7547382500051754,
+          5.159720700001344
+        ],
+        "predicted_s": [
+          0.3802553177572787,
+          2.019291233334085,
+          5.067205998920368
+        ],
+        "residual_s": [
+          0.17203828224793538,
+          -0.26455298332890953,
+          0.09251470108097593
+        ],
+        "residual_fraction_of_observed": [
+          0.3114978740407479,
+          0.15076492652287557,
+          0.017930176158750574
+        ],
+        "max_abs_residual_fraction": 0.3114978740407479,
+        "three_points_is_the_minimum": true,
+        "caveat": "Three points fit two parameters. The residual qualifies the linearity claim; it does not confirm it.",
+        "stage": "nearest_water_python",
+        "clock": "setup_s",
+        "workloads": [
+          "10000",
+          "100000",
+          "countywide"
+        ],
+        "intercept_is_negative": false,
+        "per_property_us_by_workload": [
+          {
+            "workload": "10000",
+            "n_properties": 10000,
+            "us_per_property": 55.22936000052141
+          },
+          {
+            "workload": "100000",
+            "n_properties": 100000,
+            "us_per_property": 17.547382500051754
+          },
+          {
+            "workload": "countywide",
+            "n_properties": 267362,
+            "us_per_property": 19.298631443516072
+          }
+        ]
+      },
+      "compute_s": {
+        "a_fixed_s": -3.369696697184579,
+        "b_marginal_s_per_property": 0.0012478979791064157,
+        "b_marginal_us_per_property": 1247.8979791064157,
+        "n_points": 3,
+        "n_values": [
+          10000.0,
+          100000.0,
+          267362.0
+        ],
+        "observed_s": [
+          7.809450700005982,
+          123.41892690000532,
+          329.5718094999902
+        ],
+        "predicted_s": [
+          9.109283093879577,
+          121.42010121345699,
+          330.27080279266494
+        ],
+        "residual_s": [
+          -1.2998323938735954,
+          1.9988256865483294,
+          -0.6989932926747429
+        ],
+        "residual_fraction_of_observed": [
+          0.16644351104906774,
+          0.01619545507933146,
+          0.002120913477809951
+        ],
+        "max_abs_residual_fraction": 0.16644351104906774,
+        "three_points_is_the_minimum": true,
+        "caveat": "Three points fit two parameters. The residual qualifies the linearity claim; it does not confirm it.",
+        "stage": "nearest_water_python",
+        "clock": "compute_s",
+        "workloads": [
+          "10000",
+          "100000",
+          "countywide"
+        ],
+        "intercept_is_negative": true,
+        "per_property_us_by_workload": [
+          {
+            "workload": "10000",
+            "n_properties": 10000,
+            "us_per_property": 780.9450700005982
+          },
+          {
+            "workload": "100000",
+            "n_properties": 100000,
+            "us_per_property": 1234.1892690000532
+          },
+          {
+            "workload": "countywide",
+            "n_properties": 267362,
+            "us_per_property": 1232.6800723363463
+          }
+        ]
+      },
+      "process_wall_clock_s": {
+        "a_fixed_s": 6.193105131324767,
+        "b_marginal_s_per_property": 0.0010957515075868827,
+        "b_marginal_us_per_property": 1095.7515075868828,
+        "n_points": 3,
+        "n_values": [
+          10000.0,
+          100000.0,
+          267362.0
+        ],
+        "observed_s": [
+          9.077376899993396,
+          128.18293809999886,
+          294.81398079998326
+        ],
+        "predicted_s": [
+          17.150620207193594,
+          115.76825589001305,
+          299.15541970276894
+        ],
+        "residual_s": [
+          -8.073243307200197,
+          12.414682209985813,
+          -4.341438902785683
+        ],
+        "residual_fraction_of_observed": [
+          0.889380643344893,
+          0.0968512845313375,
+          0.014726027887161616
+        ],
+        "max_abs_residual_fraction": 0.889380643344893,
+        "three_points_is_the_minimum": true,
+        "caveat": "Three points fit two parameters. The residual qualifies the linearity claim; it does not confirm it.",
+        "stage": "nearest_water_python",
+        "clock": "process_wall_clock_s",
+        "workloads": [
+          "10000",
+          "100000",
+          "countywide"
+        ],
+        "intercept_is_negative": false,
+        "per_property_us_by_workload": [
+          {
+            "workload": "10000",
+            "n_properties": 10000,
+            "us_per_property": 907.7376899993396
+          },
+          {
+            "workload": "100000",
+            "n_properties": 100000,
+            "us_per_property": 1281.8293809999886
+          },
+          {
+            "workload": "countywide",
+            "n_properties": 267362,
+            "us_per_property": 1102.6771972082167
+          }
+        ]
+      }
+    },
+    "terrain_sampling": {
+      "setup_s": {
+        "a_fixed_s": -0.0029243920684931405,
+        "b_marginal_s_per_property": 2.3343497124879225e-06,
+        "b_marginal_us_per_property": 2.3343497124879224,
+        "n_points": 3,
+        "n_values": [
+          10000.0,
+          100000.0,
+          267362.0
+        ],
+        "observed_s": [
+          0.027332799989380874,
+          0.21987899999658111,
+          0.6249099000124261
+        ],
+        "predicted_s": [
+          0.020419105056386087,
+          0.2305105791802991,
+          0.6211920157617028
+        ],
+        "residual_s": [
+          0.006913694932994787,
+          -0.010631579183717987,
+          0.00371788425072328
+        ],
+        "residual_fraction_of_observed": [
+          0.2529449941345505,
+          0.0483519535011679,
+          0.005949472476991245
+        ],
+        "max_abs_residual_fraction": 0.2529449941345505,
+        "three_points_is_the_minimum": true,
+        "caveat": "Three points fit two parameters. The residual qualifies the linearity claim; it does not confirm it.",
+        "stage": "terrain_sampling",
+        "clock": "setup_s",
+        "workloads": [
+          "10000",
+          "100000",
+          "countywide"
+        ],
+        "intercept_is_negative": true,
+        "per_property_us_by_workload": [
+          {
+            "workload": "10000",
+            "n_properties": 10000,
+            "us_per_property": 2.7332799989380874
+          },
+          {
+            "workload": "100000",
+            "n_properties": 100000,
+            "us_per_property": 2.198789999965811
+          },
+          {
+            "workload": "countywide",
+            "n_properties": 267362,
+            "us_per_property": 2.337317569484168
+          }
+        ]
+      },
+      "compute_s": {
+        "a_fixed_s": -0.4879910554550604,
+        "b_marginal_s_per_property": 0.0001225853224924126,
+        "b_marginal_us_per_property": 122.58532249241262,
+        "n_points": 3,
+        "n_values": [
+          10000.0,
+          100000.0,
+          267362.0
+        ],
+        "observed_s": [
+          1.1489346000016667,
+          11.138411899999483,
+          32.50772280001547
+        ],
+        "predicted_s": [
+          0.7378621694690657,
+          11.770541193786201,
+          32.28666593676136
+        ],
+        "residual_s": [
+          0.411072430532601,
+          -0.6321292937867184,
+          0.22105686325411256
+        ],
+        "residual_fraction_of_observed": [
+          0.35778575258505113,
+          0.05675219227498202,
+          0.006800133759415696
+        ],
+        "max_abs_residual_fraction": 0.35778575258505113,
+        "three_points_is_the_minimum": true,
+        "caveat": "Three points fit two parameters. The residual qualifies the linearity claim; it does not confirm it.",
+        "stage": "terrain_sampling",
+        "clock": "compute_s",
+        "workloads": [
+          "10000",
+          "100000",
+          "countywide"
+        ],
+        "intercept_is_negative": true,
+        "per_property_us_by_workload": [
+          {
+            "workload": "10000",
+            "n_properties": 10000,
+            "us_per_property": 114.89346000016667
+          },
+          {
+            "workload": "100000",
+            "n_properties": 100000,
+            "us_per_property": 111.38411899999483
+          },
+          {
+            "workload": "countywide",
+            "n_properties": 267362,
+            "us_per_property": 121.58692259938013
+          }
+        ]
+      },
+      "process_wall_clock_s": {
+        "a_fixed_s": 0.25447551215378145,
+        "b_marginal_s_per_property": 0.00013134198333041423,
+        "b_marginal_us_per_property": 131.34198333041422,
+        "n_points": 3,
+        "n_values": [
+          10000.0,
+          100000.0,
+          267362.0
+        ],
+        "observed_s": [
+          2.018354800005909,
+          12.695976900002279,
+          35.61256834998494
+        ],
+        "predicted_s": [
+          1.5678953454579236,
+          13.388673845195205,
+          35.370330859339994
+        ],
+        "residual_s": [
+          0.4504594545479854,
+          -0.6926969451929263,
+          0.24223749064494626
+        ],
+        "residual_fraction_of_observed": [
+          0.22318150136272702,
+          0.05456035015255912,
+          0.006802022484431363
+        ],
+        "max_abs_residual_fraction": 0.22318150136272702,
+        "three_points_is_the_minimum": true,
+        "caveat": "Three points fit two parameters. The residual qualifies the linearity claim; it does not confirm it.",
+        "stage": "terrain_sampling",
+        "clock": "process_wall_clock_s",
+        "workloads": [
+          "10000",
+          "100000",
+          "countywide"
+        ],
+        "intercept_is_negative": false,
+        "per_property_us_by_workload": [
+          {
+            "workload": "10000",
+            "n_properties": 10000,
+            "us_per_property": 201.8354800005909
+          },
+          {
+            "workload": "100000",
+            "n_properties": 100000,
+            "us_per_property": 126.95976900002279
+          },
+          {
+            "workload": "countywide",
+            "n_properties": 267362,
+            "us_per_property": 133.19981280056606
+          }
+        ]
+      }
+    },
+    "scoring": {
+      "setup_s": {
+        "a_fixed_s": -0.007837460475977326,
+        "b_marginal_s_per_property": 2.812076418407194e-06,
+        "b_marginal_us_per_property": 2.812076418407194,
+        "n_points": 3,
+        "n_values": [
+          10000.0,
+          100000.0,
+          267362.0
+        ],
+        "observed_s": [
+          0.03401569998823106,
+          0.25225309999950696,
+          0.7513895999873057
+        ],
+        "predicted_s": [
+          0.020283303708094613,
+          0.27337018136474206,
+          0.7440049149022069
+        ],
+        "residual_s": [
+          0.01373239628013645,
+          -0.021117081365235102,
+          0.007384685085098819
+        ],
+        "residual_fraction_of_observed": [
+          0.4037075904622765,
+          0.08371386264540011,
+          0.009828037392617065
+        ],
+        "max_abs_residual_fraction": 0.4037075904622765,
+        "three_points_is_the_minimum": true,
+        "caveat": "Three points fit two parameters. The residual qualifies the linearity claim; it does not confirm it.",
+        "stage": "scoring",
+        "clock": "setup_s",
+        "workloads": [
+          "10000",
+          "100000",
+          "countywide"
+        ],
+        "intercept_is_negative": true,
+        "per_property_us_by_workload": [
+          {
+            "workload": "10000",
+            "n_properties": 10000,
+            "us_per_property": 3.4015699988231063
+          },
+          {
+            "workload": "100000",
+            "n_properties": 100000,
+            "us_per_property": 2.5225309999950696
+          },
+          {
+            "workload": "countywide",
+            "n_properties": 267362,
+            "us_per_property": 2.8103829264716214
+          }
+        ]
+      },
+      "compute_s": {
+        "a_fixed_s": -0.043342425205841306,
+        "b_marginal_s_per_property": 4.333207571492634e-06,
+        "b_marginal_us_per_property": 4.333207571492634,
+        "n_points": 3,
+        "n_values": [
+          10000.0,
+          100000.0,
+          267362.0
+        ],
+        "observed_s": [
+          0.03561950000585057,
+          0.33518829999957234,
+          1.1343527999706566
+        ],
+        "predicted_s": [
+          -1.0349490914961235e-05,
+          0.38997833194342213,
+          1.1151926175235722
+        ],
+        "residual_s": [
+          0.03562984949676553,
+          -0.05479003194384979,
+          0.019160182447084395
+        ],
+        "residual_fraction_of_observed": [
+          1.0002905568835403,
+          0.16346045474713675,
+          0.016890849520166944
+        ],
+        "max_abs_residual_fraction": 1.0002905568835403,
+        "three_points_is_the_minimum": true,
+        "caveat": "Three points fit two parameters. The residual qualifies the linearity claim; it does not confirm it.",
+        "stage": "scoring",
+        "clock": "compute_s",
+        "workloads": [
+          "10000",
+          "100000",
+          "countywide"
+        ],
+        "intercept_is_negative": true,
+        "per_property_us_by_workload": [
+          {
+            "workload": "10000",
+            "n_properties": 10000,
+            "us_per_property": 3.561950000585057
+          },
+          {
+            "workload": "100000",
+            "n_properties": 100000,
+            "us_per_property": 3.3518829999957234
+          },
+          {
+            "workload": "countywide",
+            "n_properties": 267362,
+            "us_per_property": 4.242760003181666
+          }
+        ]
+      },
+      "process_wall_clock_s": {
+        "a_fixed_s": 0.5566135279104294,
+        "b_marginal_s_per_property": 1.3980582746101044e-05,
+        "b_marginal_us_per_property": 13.980582746101044,
+        "n_points": 3,
+        "n_values": [
+          10000.0,
+          100000.0,
+          267362.0
+        ],
+        "observed_s": [
+          0.7764846999925794,
+          1.8315508000086993,
+          4.3375457499641925
+        ],
+        "predicted_s": [
+          0.6964193553714398,
+          1.9546718025205339,
+          4.294490092073497
+        ],
+        "residual_s": [
+          0.08006534462113957,
+          -0.12312100251183455,
+          0.04305565789069554
+        ],
+        "residual_fraction_of_observed": [
+          0.10311258498963949,
+          0.06722227006275217,
+          0.00992627176117992
+        ],
+        "max_abs_residual_fraction": 0.10311258498963949,
+        "three_points_is_the_minimum": true,
+        "caveat": "Three points fit two parameters. The residual qualifies the linearity claim; it does not confirm it.",
+        "stage": "scoring",
+        "clock": "process_wall_clock_s",
+        "workloads": [
+          "10000",
+          "100000",
+          "countywide"
+        ],
+        "intercept_is_negative": false,
+        "per_property_us_by_workload": [
+          {
+            "workload": "10000",
+            "n_properties": 10000,
+            "us_per_property": 77.64846999925794
+          },
+          {
+            "workload": "100000",
+            "n_properties": 100000,
+            "us_per_property": 18.315508000086993
+          },
+          {
+            "workload": "countywide",
+            "n_properties": 267362,
+            "us_per_property": 16.223493802276288
+          }
+        ]
+      }
+    }
+  },
+  "unfitted": [],
+  "countywide_totals": {
+    "stages": [
+      "fema_point_in_polygon",
+      "nearest_water_python",
+      "scoring",
+      "terrain_sampling"
+    ],
+    "compute_seconds": 366.18654589995276,
+    "us_per_property": 1369.6282414851503,
+    "what_this_is": "The four Python stages' compute time summed at countywide, amortized per property. Setup is excluded: it is a fixed cost of the invocation, reported in its own column. The C++ nearest-water query is NOT in this total -- the Python reference stage is, and they are different implementations of the same query.",
+    "complete": true
+  },
+  "cpp_nearest_water_cited": {
+    "stage": "nearest_water_cpp",
+    "source": "outputs/validation/b6_benchmark_tables.md",
+    "operating_point": "segment BVH, 25 m cap, original verification, disk predicate",
+    "invocation": "ladder",
+    "us_per_property": 34.099,
+    "note": "Cited, not re-measured. Absolutes move about one percent between invocations; the same cell reads 36.004 and 37.856 in two others. Quoted with its invocation named, as the protocol requires."
+  }
+}

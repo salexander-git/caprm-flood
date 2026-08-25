@@ -1,4 +1,24 @@
-# Milestone 2 Benchmark Results
+# Benchmark results
+
+Two documents in one, in the order they were written.
+
+- **[Milestone 2](#purpose)** — brute force against the feature-level hierarchy.
+  Two rungs, one workload, the original harness.
+- **[Milestone 4 Phase B](#milestone-4-phase-b--the-five-rung-ladder)** — the
+  full five-rung ladder, three workloads, two verification modes, and the
+  reading rules that govern every figure in it.
+
+The generated tables live in
+[`outputs/validation/b6_benchmark_tables.md`](../outputs/validation/b6_benchmark_tables.md)
+and are written by `python/scripts/analyze_b6_results.py`. They are not
+hand-edited: every derived number is computed there and nowhere else, so an
+analysis performed in conversation is not reportable until it lands in that
+script with a test.
+
+---
+
+## Milestone 2
+
 
 ## Purpose
 

@@ -1,0 +1,30 @@
+{
+  "created_at_utc": "2026-07-09T01:43:53.948851+00:00",
+  "schema_version": "terrain_evidence_v1",
+  "input_evidence": "outputs/evidence/property_flood_evidence_10000.csv",
+  "input_evidence_sha256": "a755c32ea92942e04eaa5c08075472638d206b13fc6cc3210dc0eb92fc204026",
+  "terrain_raster": "data/raw/terrain/monroe_dem_utm18.tif",
+  "terrain_raster_sha256": "0af2a7e0f1ff0d7d4ca44048f0617a05ee754b1349ab98557b16eb591ab4d43d",
+  "output_sha256": "outputs/evidence/property_terrain_evidence_10000.csv",
+  "terrain_crs": "EPSG:26918",
+  "sample_radius_meters": 90.0,
+  "summary": {
+    "property_count": 10000,
+    "unique_property_ids": 10000,
+    "minimum_elevation_m": 75.8325424194336,
+    "maximum_elevation_m": 216.96286010742188,
+    "mean_elevation_m": 145.15938117141724,
+    "median_elevation_m": 147.7473602294922,
+    "minimum_relative_elevation_m": -10.583420766098513,
+    "maximum_relative_elevation_m": 17.142084680568075,
+    "mean_relative_elevation_m": 0.21648923227349834,
+    "median_relative_elevation_m": 0.17272551163382843,
+    "missing_slope_count": 0,
+    "mean_slope_degrees": 1.6339056494880997,
+    "median_slope_degrees": 1.0507122114614953,
+    "terrain_crs_values": [
+      "EPSG:26918"
+    ]
+  },
+  "interpretation": "Terrain evidence is property-centroid evidence derived from a projected DEM. It is not a hydrologic simulation, finished flood probability estimate, or loss model."
+}

@@ -1,5 +1,24 @@
 # CAPRM-Flood Project Nucleus — 2026-07-30
 
+> **Currency notice, added 2026-08-24.**
+>
+> The filename carries `2026-07-15`, the heading `2026-07-30`, and the purpose
+> statement below says "as of July 28, 2026". The heading date is the accurate
+> one; the filename is the date the document was created and has not been
+> changed because every cross-reference in the repository points at it.
+>
+> This is the durable document: what CAPRM-Flood is, why it exists, how it is
+> architected, and which principles govern it. That content did not change when
+> the project finished. The numbered nuclei are the project's decision record
+> and are cited by commit messages and by the report.
+>
+> For present state, start at [`README.md`](../../README.md). For any published
+> figure, [`docs/evidence_index.md`](../evidence_index.md) names the artifact
+> that establishes it.
+>
+> All four milestones are complete. The report is submitted and accepted.
+
+
 ## Purpose of This Document
 
 This document is the canonical context-restoration source for **CAPRM-Flood** as of **July 28, 2026**. It exists so that a new AI assistant, collaborator, reviewer, or future project conversation can reconstruct the project's purpose, architecture, technical history, standards, and current implementation state without relying on stale proposal-era assumptions or raw chat transcripts.
