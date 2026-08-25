@@ -25,7 +25,6 @@ It should be read together with:
 CAPRM_Flood_Project_Nucleus_2026-07-15.md
 CAPRM_Flood_Current_Status.md
 Capstone_Proposal.pdf
-Professor_Milestone_Requirements.txt
 ```
 
 This roadmap is intentionally implementation-focused. It identifies:
@@ -1485,9 +1484,8 @@ say why.
   `python/caprm/chart_style.py` records the style MEASURED out of slide07 so C3's
   figure matches the set, but it does not fix the five. Either reconstruct their
   scripts or state in the report that they are unreproducible. PHASE D5.
-- **Poster format constraints**, supplied 2026-07-30 and belonging in
-  `Professor_Milestone_Requirements.txt`, which the chunking plan still records
-  as NOT READ this cycle: the RIT brand logos policy applies and the campus seal
+- **Poster format constraints**, supplied 2026-07-30 by the course: the RIT
+  brand logos policy applies and the campus seal
   is reserved for official presidential communications; top headers may occupy
   at most 25 percent of the poster and may use a darker background; the
   background must be a light colour covering less than 75 percent of the page;
@@ -1891,7 +1889,7 @@ Validate on stable smaller workloads before trusting countywide outputs.
 
 ## Large-data Git discipline
 
-Do not add full countywide rasters or large generated outputs to normal Git tracking merely to make them visible to an AI assistant.
+Do not add full countywide rasters or large generated outputs to normal Git tracking merely to make them easier to inspect.
 
 ## Manifests must reproduce the result
 
@@ -2132,16 +2130,6 @@ literature's N-scaling axis (Nucleus 14b), and a
 `SEED_WINDOW` sweep upward as well as downward for BOTH seeders, because the
 exact binary control misses the +/-64 window on 38.62 percent of queries and the
 window is therefore a query-design parameter rather than an RMI tuning knob.
-
-The current chunk prompt lives in `CAPRM_Flood_Current_Status.md` section 22,
-which is kept in step with the active chunk. The B2-era text below is retained
-only as a record of the form these prompts take:
-
-> We are continuing CAPRM-Flood at Milestone 4, chunk B2. B1 (Segment BVH) is
-> complete and validated countywide — 267,362/267,362 field-for-field
-> agreement, max abs error 4.658e-10 m, 9,716.87 segment checks per property.
-> Read Nucleus section 14b, `CAPRM_Flood_Current_Status.md` sections 19b and
-> 21, and this document's PHASE B and B2 before proposing anything.
 
 ---
 

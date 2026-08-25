@@ -155,8 +155,8 @@ is now a Roadmap item under PHASE D: a `pre-commit` hook that extracts the
 7-hex token from this block and fails the commit when it does not equal
 `git rev-parse --short HEAD`, with an explicit environment-variable bypass for
 the follow-up commit itself, which is the one commit that legitimately writes a
-hash it does not yet have. Until that exists, the instruction in section 22 to
-diff this section against `git log -1 --oneline` is the only live check.
+hash it does not yet have. Until that exists, diffing this section against
+`git rev-parse --short HEAD` by hand is the only live check.
 
 The `<C1_REMEDIATION_HASH>` placeholder that once stood here is retired: a
 document that names no commit does not record where its own state lives, which
@@ -242,9 +242,8 @@ root and no longer directly under `docs/`.** They were moved from `docs/` to
 
 The move should be staged as a rename so history follows the files:
 `git add -A docs/` will detect it. Anything that referenced the old paths —
-`README.md`, `docs/kickoff_prompts_m4.md`, `docs/caprm_flood_m4_chunking_plan.md`
-— must be updated in the same commit, or the pointers a new assistant is told to
-follow will be dead.
+`README.md` and the planning notes — must be updated in the same commit, or the
+pointers will be dead.
 
 `models/` is a tracked directory and `models/water_hilbert_rmi.bin` is tracked
 and clean: `git check-ignore -v models/water_hilbert_rmi.bin` prints nothing,
@@ -4037,69 +4036,7 @@ Beyond the unit tests, four checks are structural rather than incidental:
 
 ---
 
-# 22. Recommended First Prompt for a New AI Assistant
-
-Use:
-
-> We are continuing CAPRM-Flood at Milestone 4, PHASE C, chunk C4 — benchmarking
-> and documenting the neural surrogate. Read Nucleus sections 14b, 18.18, 18.20,
-> 18.22, 18.25, 18.27, 18.32, 18.36, 18.37 and 18.38; this document's sections
-> 16, 20 and 21 including the C1, C2 and C3 result subsections; and
-> `CAPRM_Flood_Roadmap.md` PHASE C, before proposing anything.
->
-> C2 and C3 are complete and their findings are negative, measured, and not to
-> be improved upon. The surrogate did not beat its declared floor; the declared
-> prediction about FEMA boundaries was REFUTED as a spatial claim; the mechanism
-> behind it was confirmed. C4 measures cost and reuses
-> `outputs/training/c3_property_features.csv` for distance-to-discontinuity
-> rather than recomputing it.
->
-> Confirm the commit recorded in this document's section 2 matches
-> `git log -1 --oneline`. If it does not, say so before continuing — you are
-> reading a stale copy. The canonical documents live under `docs/canon/`.
->
-> Milestones 1 through 3 are frozen. The exposure index is not under active work
-> and must not be modified. `python/caprm/scoring.py` is read-only for the whole
-> of PHASE C. PHASE B is closed; no kernel, tolerance, tie rule, region
-> predicate or emitted field changes.
->
-> C1 is complete. The dataset is `outputs/training/supervised_dataset_v2.csv`
-> and the partition of record is `outputs/validation/c1_kfold_manifest.json`:
-> blocked K-fold, block edge 10,000 m, buffer 2,125 m, K = 5, five recorded
-> seeds, test isolated from validation as well as training. The gate passed on
-> all 25 fold-by-seed cells with both controls failing. Do not rebuild the
-> partition; consume it.
->
-> Six traps, all measured and all still walkable-into:
->
-> - **A single-seed number is not a result.** The seed moves a blocked split's
->   reported error materially (Nucleus 18.32). Report across all five.
-> - **The floor is already declared.** Nearest-training-neighbour scores RMSE
->   14.05 to 16.53. Beating it on some seeds is not beating it.
-> - **Test error is error at separation >= 2,125 m**, not countywide error.
->   Never quote it as the latter.
-> - **The target has zero coordinate ambiguity** (measured: 376 co-located
->   groups, none conflicting). Any residual is model error. Do not attribute it
->   to label noise.
-> - **Read the split, do not recompute it.** The split file stores `fold` and a
->   `dropped_mask` bitmask; `caprm.spatial_kfold.roles_from_codes` rebuilds the
->   full role matrix and is tested to do so exactly.
-> - **A parameter that moves the headline must be swept, not fixed silently**
->   (Nucleus 18.27). If a Fourier feature scale changes the answer, the sweep is
->   the result.
->
-> Every number reported in conversation must land in a module with a test before
-> it is quoted, the rule `analyze_b6_results.py` exists to enforce.
->
-> Completion gate for C2: a trained model per seed, each an artifact with
-> architecture, seed, split-manifest digest, loss curve and weight checksum;
-> test error reported across all five seeds against the declared floor; the
-> memorization gap against the random control measured and reported; and the
-> three canonical documents updated.
-
----
-
-# 23. Current Canonical Summary
+# 22. Current Canonical Summary
 
 As of July 28, 2026, CAPRM-Flood has completed and frozen Milestones 1, 2, and
 3. Three evidence families spanning three different data topologies — FEMA

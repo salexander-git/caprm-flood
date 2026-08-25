@@ -10,8 +10,8 @@
 //   3. a best-first query that reduces the candidate feature set, after which
 //      the UNCHANGED distance_to_feature produces the reported answer.
 //
-// Correctness properties (see docs/caprm_flood_code_reconstruction.md, the
-// B1b/B1c task notes, and the completion record):
+// Correctness properties (see docs/benchmark_results.md and the B1 entries in
+// docs/canon/CAPRM_Flood_Current_Status.md):
 //
 //   - Splitting is used ONLY to build BVH leaf boxes. Reported distances come
 //     from distance_to_feature over ORIGINAL geometry, so a reported value is

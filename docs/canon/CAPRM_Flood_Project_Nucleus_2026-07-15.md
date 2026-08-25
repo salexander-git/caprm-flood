@@ -21,14 +21,13 @@
 
 ## Purpose of This Document
 
-This document is the canonical context-restoration source for **CAPRM-Flood** as of **July 28, 2026**. It exists so that a new AI assistant, collaborator, reviewer, or future project conversation can reconstruct the project's purpose, architecture, technical history, standards, and current implementation state without relying on stale proposal-era assumptions or raw chat transcripts.
+This document is the canonical context-restoration source for **CAPRM-Flood** as of **July 28, 2026**. It exists so that a new contributor, reviewer, or future maintainer can reconstruct the project's purpose, architecture, technical history, standards, and current implementation state without relying on stale proposal-era assumptions or raw chat transcripts.
 
 This nucleus should be treated as the durable description of the project. More time-sensitive operational detail will be maintained separately in:
 
 - `CAPRM_Flood_Current_Status.md`
 - `CAPRM_Flood_Roadmap.md`
 - `Capstone_Proposal.pdf`
-- `Professor_Milestone_Requirements.txt`
 
 Where those documents differ in role:
 
@@ -2283,7 +2282,9 @@ Current `docs/` contents:
 ```text
 docs/canon/                    The three canonical documents (moved from docs/
                                on 2026-07-29): Nucleus, Current Status, Roadmap.
-                               Precedence order is defined in section 26.
+                               Where they conflict, prefer current validated
+                               code and artifacts, then Current Status, then
+                               this nucleus, then the Roadmap.
 docs/benchmark_results.md      Nearest-water benchmark methodology and results
 docs/crs_policy.md             Canonical operational CRS policy
 docs/data_sources.md           Source provenance, vintages, inclusion rules, limits
@@ -2408,7 +2409,7 @@ The standard is:
 
 > Can Sterling explain what the code does, why the design is defensible, how correctness was validated, what assumptions remain, and where the system can fail?
 
-When an AI assistant proposes changes, it should:
+When a contributor proposes changes, they should:
 
 1. inspect or reconstruct the current repository state first;
 2. identify the exact files involved;
@@ -2506,45 +2507,7 @@ The exact latest implementation and output state should be read from
 
 ---
 
-# 26. Handoff Protocol for a New AI Assistant
-
-A new assistant continuing this project should begin by reading:
-
-1. `docs/canon/CAPRM_Flood_Project_Nucleus_2026-07-15.md`
-2. `docs/canon/CAPRM_Flood_Current_Status.md`
-3. `docs/canon/CAPRM_Flood_Roadmap.md`
-4. `docs/scoring_methodology.md`
-5. `docs/crs_policy.md`
-6. `docs/data_sources.md`
-7. `docs/Professor_Milestone_Requirements.txt`
-8. the current GitHub repository
-
-Before writing new code, the assistant should reconstruct:
-
-- the project purpose;
-- the architecture;
-- the Python/C++ boundary;
-- completed Milestones 1 and 2;
-- current Milestone 3 implementation;
-- the evidence-product separation;
-- the current repository tree;
-- the exact next roadmap chunk.
-
-It should then identify any contradiction between the canonical documents and the current repository.
-
-When conflicts exist, prefer:
-
-1. current validated code and artifacts;
-2. `CAPRM_Flood_Current_Status.md`;
-3. this nucleus;
-4. `CAPRM_Flood_Roadmap.md`;
-5. older proposal-era documents.
-
-Older documents are valuable for project intent, but they may describe work that has since been completed or revised.
-
----
-
-# 27. Canonical One-Paragraph Summary
+# 26. Canonical One-Paragraph Summary
 
 CAPRM-Flood is a reproducible C++/Python geospatial evidence-extraction
 framework for large-batch property-to-hazard spatial joins, demonstrated
