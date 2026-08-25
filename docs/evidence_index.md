@@ -92,11 +92,17 @@ Countywide, original-geometry verification, from
 `b6_benchmark_tables.md`:
 
 ```text
-rung 2  feature BVH   235.449 us/property   70,770.60 segment checks
-rung 3  segment BVH    34.099 us/property    9,407.62 segment checks
+rung                us/property   checks/property   candidates   checks/candidate
+2  feature BVH        235.449         70,770.60        5.498          12,873
+3  segment BVH         34.099          9,407.62        1.466           6,416
 ```
 
-A ratio of 6.90×. Absolutes move about 1 percent between invocations while
+A ratio of 6.90×. The `candidates` column is why the rebuild was worth doing:
+the feature-level hierarchy prunes down to **5.498 candidate features** per
+property and still performs **70,770.60 segment checks**, because it indexes
+features rather than geometry and the county's largest water features are near
+almost everything in it. Indexing at segment granularity is what turns a good
+candidate count into a good check count. Absolutes move about 1 percent between invocations while
 adjacent ratios agree to 0.116 percentage points, so ratios are quoted within
 an invocation and absolutes with their invocation named. The tables carry both.
 
@@ -107,6 +113,62 @@ no adjacent comparison.
 The learned rung's measured cost is in
 `outputs/validation/water_hilbert_query_stats_b5c_{binary,rmi}.json`, and its
 seed-error distribution in `water_hilbert_seed_error_b5_{binary,rmi}.json`.
+
+### The learned rung against its exact control
+
+Countywide, original-geometry verification, seed window W = 64, one invocation,
+from `b6_benchmark_tables.md`:
+
+| Rung | us/property | checks/property |
+| --- | ---: | ---: |
+| 4 Hilbert + binary search (exact control) | 66.389 | 11,022 |
+| 5 Hilbert + RMI (learned seed) | 70.692 | 11,022 |
+
+**70.692 / 66.389 = 1.0648** — the learned rung is 6.48 percent slower while
+producing byte-identical output. Under split-geometry verification the same
+countywide gap reads +12.52 percent: the per-property penalty is unchanged and
+the denominator shrank, so the counted quantity is the invariant and the
+percentage is the artifact.
+
+The sign is configuration-dependent. Across nine seed windows the
+learned-to-control ratio moves from 1.11620 at W = 8 to 1.00002 at W = 2048
+(`b6_window_resolution.json`), which places the comparison at a configuration
+boundary rather than at a settled result.
+
+### The learned index itself
+
+From `outputs/validation/water_hilbert_rmi_manifest.json`:
+
+| Claim | Field |
+| --- | --- |
+| Two-stage RMI, **131,072** linear second-stage models | `selection.rationale` |
+| Model size **4,194,400 bytes**, under a declared 4,758,356-byte cap | `models/water_hilbert_rmi.bin`; `selection.declared_max_model_bytes` |
+| Error bound verified **exhaustively over all 1,189,589 keys** | `selected_model.keys_verified`, `selected_model.exhaustive` = true |
+| Mean last-mile probes 6.323, against a declared ceiling of 10.0 | `selection.rationale`, `selection.declared_max_mean_last_mile_probes` |
+| Training deterministic; a refit is byte-identical | `training_is_deterministic`, `determinism_check` |
+
+Both the model-size cap and the probe ceiling were declared before the sweep
+that selected the configuration, so the selection is against stated targets
+rather than against whatever the sweep happened to produce.
+
+Seed quality, the mechanism behind the learned rung's loss, from
+`water_hilbert_query_stats_b5c_{binary,rmi}.json` under `seed_quality`:
+
+| Claim | Field | binary | rmi |
+| --- | --- | ---: | ---: |
+| Worst seed overestimate vs true radius | `max_d_seed_over_d_best` | 32.23x | 517.34x |
+| Fraction of queries missing the window | `fraction_window_missed` | 0.38615 | 0.46009 |
+| Resolve entries per property | `resolve_descent.entries_per_property` | 141.1742 | 352.5154 |
+
+Search cost grows as the square of the seed radius. The miss *rate* moves 1.19x
+while the worst overestimate moves 16x, which is why a predictor with a good
+mean error and a bad tail loses. The mean prediction error is the wrong summary
+statistic for a predictor that feeds a radius.
+
+Milestone 2's indexed-vs-brute-force comparison is recorded separately in
+`property_flood_evidence_countywide_manifest.json` under `water_benchmark.comparison`:
+`median_computation_speedup` = 20.392, at `repetitions` = 1 — a single-run
+figure, not a protocol measurement, and it predates B6a's repetition protocol.
 
 ## 5. Scoring, sensitivity, and audit
 
@@ -119,6 +181,13 @@ seed-error distribution in `water_hilbert_seed_error_b5_{binary,rmi}.json`.
 | Thresholds declared before measurement | same | `stability.thresholds_note` |
 | Audit: 49 pass, 1 warn, 0 fail | `outputs/validation/milestone3_audit.json` | `status_counts` |
 | The warning: two manifest key conventions coexist | same | `checks[0].detail` |
+
+The FEMA component is near-constant: of 267,362 properties, **262,297
+(98.11 percent)** fall in one zone bucket. Counted from
+`outputs/validation/scoring_inputs_summary.json`,
+`evidence_table.fema.matched_zone_sfha_counts` (6 buckets, largest is zone `X`).
+This is why FEMA carries 40 percent of the weight and 16.8 percent of the
+variance: a constant does not affect ranking.
 
 The variance decomposition is exact — `Cov(w_i C_i, I) / Var(I)`, shares summing
 to 1.0 by linearity of covariance, assuming nothing about component
@@ -141,6 +210,9 @@ omission as deliberate; the four scored components are exactly those in
 | …mechanism confirmed, spatial claim not | same | `verdict.mechanism_confirmed`, `verdict.spatial_prediction_confirmed` |
 | Inference cost and thread/batch sweep | `docs/c4_inference_tables.md`, `outputs/validation/c4_inference_benchmark_threads{1,8}.json` | — |
 | Pipeline-cost timing boundary, declared before any run | `outputs/validation/c4_pipeline_boundary.json` | `timing_boundary` |
+| Exact pipeline cost, countywide | `outputs/validation/c4_pipeline_cost.json` | `countywide_totals.us_per_property` = 1369.6 |
+| Per-stage cost and the `a + b*N` fits | same | `cells`, `fits` |
+| Per-property cost is NOT constant in N | same | `fits.<stage>.compute_s.per_property_us_by_workload`; three of four stages carry `intercept_is_negative` = `true` |
 
 The prediction in `c2_surrogate_manifest.json` under
 `declared_prediction_for_c3` was written before C3 ran and is stored in the C2
