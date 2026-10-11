@@ -67,7 +67,7 @@ Reporting the two negative results is what makes the positive ones credible.
 Python test suite     656 passed, 0 failed
 Artifact audit        49 pass, 1 warn, 0 fail
 Cross-implementation  5 designs x 267,362 properties x 10 fields, full agreement
-Max distance error    4.658e-10 m against a 1e-6 m tolerance
+Max distance error    4.658e-10 m (rungs 1-3), 9.157e-10 m (rungs 4-5), against a 1e-6 m tolerance
 Scoring policy        preliminary_exposure_index_v2, frozen
 Rank stability        moderately sensitive (40 scenarios, min Spearman 0.875)
 CI                    both jobs green on Ubuntu / gcc / Python 3.12
